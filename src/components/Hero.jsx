@@ -8,7 +8,12 @@ const Hero = () => {
   return (
     <div className="max-w-[1200px] my-40 mx-auto relative">
       <div className="flex gap-8 mx-4">
-        <Carousel className="rounded-xl">
+        <Carousel 
+          className="rounded-xl"
+          loop={true}
+          autoplay={true}
+          autoplayDelay={5000}
+        >
           <div className="flex items-center lg:flex-row flex-col">
             <div className="lg:text-left text-center">
               <h1 className="lg:text-8xl text-xl text-[#1d3866] mb-4 font-bold">

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import News from "../components/News";
 import Contact from "../components/Contact";
 
 const About = () => {
@@ -458,6 +459,9 @@ return (
         </div>
     </div>
     </div>
+
+    {/* News Section */}
+    <News />
 
     {/* Milestone Section - Mobile Responsive */}
     <div className="bg-[#f8f9f5] py-20 mb-20">

@@ -1,0 +1,285 @@
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { newsData } from "../data/newsData";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
+
+const NewsPage = () => {
+const [currentPage, setCurrentPage] = useState(1);
+const newsPerPage = 6;
+
+// Calculate pagination
+const totalPages = Math.ceil(newsData.length / newsPerPage);
+const indexOfLastNews = currentPage * newsPerPage;
+const indexOfFirstNews = indexOfLastNews - newsPerPage;
+const currentNews = newsData.slice(indexOfFirstNews, indexOfLastNews);
+
+// Change page
+const goToPage = (pageNumber) => {
+setCurrentPage(pageNumber);
+window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+const goToPreviousPage = () => {
+if (currentPage > 1) {
+    goToPage(currentPage - 1);
+}
+};
+
+const goToNextPage = () => {
+if (currentPage < totalPages) {
+    goToPage(currentPage + 1);
+}
+};
+
+// Generate page numbers to display
+const getPageNumbers = () => {
+const pages = [];
+const maxPagesToShow = 5;
+
+if (totalPages <= maxPagesToShow) {
+    for (let i = 1; i <= totalPages; i++) {
+    pages.push(i);
+    }
+} else {
+    if (currentPage <= 3) {
+    for (let i = 1; i <= 3; i++) {
+        pages.push(i);
+    }
+    pages.push("...");
+    pages.push(totalPages);
+    } else if (currentPage >= totalPages - 2) {
+    pages.push(1);
+    pages.push("...");
+    for (let i = totalPages - 2; i <= totalPages; i++) {
+        pages.push(i);
+    }
+    } else {
+    pages.push(1);
+    pages.push("...");
+    pages.push(currentPage);
+    pages.push("...");
+    pages.push(totalPages);
+    }
+}
+
+return pages;
+};
+
+// Page transition variants
+const pageVariants = {
+initial: {
+    opacity: 0,
+    y: 20
+},
+animate: {
+    opacity: 1,
+    y: 0,
+    transition: {
+    duration: 0.5,
+    ease: "easeOut"
+    }
+},
+exit: {
+    opacity: 0,
+    y: -20,
+    transition: {
+    duration: 0.3
+    }
+}
+};
+
+const containerVariants = {
+initial: { opacity: 0 },
+animate: {
+    opacity: 1,
+    transition: {
+    staggerChildren: 0.1,
+    delayChildren: 0.3
+    }
+}
+};
+
+const itemVariants = {
+initial: { opacity: 0, y: 20 },
+animate: {
+    opacity: 1,
+    y: 0,
+    transition: {
+    duration: 0.5,
+    ease: "easeOut"
+    }
+}
+};
+
+return (
+<motion.div
+    initial="initial"
+    animate="animate"
+    exit="exit"
+    variants={pageVariants}
+    className="min-h-screen bg-gray-50"
+>
+    {/* Hero Section */}
+    <motion.div 
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.6 }}
+    className="bg-gradient-to-r from-green-700 to-green-600 pt-32 pb-20 relative overflow-hidden"
+    >
+    <div className="absolute inset-0 opacity-10">
+        <div className="absolute transform rotate-45 -left-20 top-20 w-96 h-96 bg-white rounded-full"></div>
+        <div className="absolute transform -rotate-45 -right-20 bottom-20 w-80 h-80 bg-white rounded-full"></div>
+    </div>
+    <div className="max-w-6xl mx-auto px-4 relative z-10">
+        <motion.h1 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="text-5xl md:text-6xl font-bold text-white text-center mb-4"
+        >
+        Forenews
+        </motion.h1>
+        <motion.p 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+        className="text-xl text-white/90 text-center max-w-2xl mx-auto"
+        >
+        Get the latest updates and deeper coffee experience from Fore Coffee
+        </motion.p>
+    </div>
+    </motion.div>
+
+    {/* News Grid */}
+    <div className="max-w-6xl mx-auto px-4 py-16">
+    <motion.div 
+        variants={containerVariants}
+        initial="initial"
+        animate="animate"
+        className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+    >
+        {currentNews.map((article) => (
+        <motion.div
+            key={article.id}
+            variants={itemVariants}
+        >
+            <Link
+            to={`/news/${article.slug}`}
+            className="group bg-white rounded-lg overflow-hidden shadow-md transition-all duration-500 hover:shadow-[0_0_30px_rgba(34,197,94,0.3)] block h-full"
+            >
+            {/* Image */}
+            <div className="relative h-64 overflow-hidden">
+                <img
+                src={article.img}
+                alt={article.tittle}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+                {/* Category & Date */}
+                <div className="flex items-center justify-between mb-3">
+                <span className="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 group-hover:bg-green-700 group-hover:text-white">
+                    {article.category}
+                </span>
+                <span className="text-gray-400 text-xs">
+                    {new Date(article.date).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                    })}
+                </span>
+                </div>
+
+                {/* Title */}
+                <h3 className="text-lg font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-green-700 transition-colors">
+                {article.tittle}
+                </h3>
+
+                {/* Excerpt */}
+                <p className="text-gray-600 text-sm line-clamp-3 mb-4">
+                {article.excerpt}
+                </p>
+
+                {/* Location & Read More */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                <p className="text-xs text-gray-500">
+                    {article.author.split(" ")[0]}
+                </p>
+                <div className="flex items-center text-green-700 font-medium text-sm group-hover:gap-2 transition-all">
+                    <span>Read More</span>
+                    <ArrowRight
+                    size={16}
+                    className="group-hover:translate-x-1 transition-transform"
+                    />
+                </div>
+                </div>
+            </div>
+            </Link>
+        </motion.div>
+        ))}
+    </motion.div>
+
+    {/* Pagination */}
+    {totalPages > 1 && (
+        <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.5 }}
+        className="flex items-center justify-center gap-2 mt-16"
+        >
+        {/* Previous Button */}
+        <button
+            onClick={goToPreviousPage}
+            disabled={currentPage === 1}
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+            currentPage === 1
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-green-700 text-white hover:bg-green-800"
+            }`}
+        >
+            <ChevronLeft size={20} />
+        </button>
+
+        {/* Page Numbers */}
+        {getPageNumbers().map((page, index) => (
+            <React.Fragment key={index}>
+            {page === "..." ? (
+                <span className="px-3 text-gray-400">...</span>
+            ) : (
+                <button
+                onClick={() => goToPage(page)}
+                className={`w-10 h-10 rounded-full font-medium transition-all ${
+                    currentPage === page
+                    ? "bg-green-700 text-white"
+                    : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                }`}
+                >
+                {page}
+                </button>
+            )}
+            </React.Fragment>
+        ))}
+
+        {/* Next Button */}
+        <button
+            onClick={goToNextPage}
+            disabled={currentPage === totalPages}
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+            currentPage === totalPages
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-green-700 text-white hover:bg-green-800"
+            }`}
+        >
+            <ChevronRight size={20} />
+        </button>
+        </motion.div>
+    )}
+    </div>
+</motion.div>
+);
+};
+
+export default NewsPage;
