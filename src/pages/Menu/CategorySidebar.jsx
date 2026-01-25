@@ -1,29 +1,37 @@
-// pages/Menu/CategorySidebar.jsx
+// pages/Menu/ProductCard.jsx
 import React from "react";
+import { motion } from "framer-motion";
 
-const CategorySidebar = ({ categories, activeCategory, onCategoryChange }) => {
+const ProductCard = ({ item, onClick, isMobile = false }) => {
+const titleSize = isMobile ? "text-base" : "text-xl";
+const priceSize = isMobile ? "text-lg" : "text-2xl";
+const padding = isMobile ? "p-3" : "p-5";
+
 return (
-<div className="w-64 bg-white border-r border-gray-200 min-h-screen fixed left-0 top-0 pt-20">
-    <div className="py-6 px-4">
-    {categories.map((category) => (
-        <button
-        key={category.id}
-        onClick={() => onCategoryChange(category.id)}
-        className={`w-full text-left px-4 py-3 mb-2 font-medium transition-all duration-200 flex items-center gap-3 rounded-lg ${
-            activeCategory === category.id
-            ? "text-[#f07828] bg-gray-50"
-            : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
-        }`}
-        >
-        <span className={activeCategory === category.id ? "text-[#f07828]" : "text-gray-400"}>
-            {category.icon}
-        </span>
-        <span className="text-sm">{category.name}</span>
-        </button>
-    ))}
+<motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
+    onClick={onClick}
+    className={`bg-white rounded-${isMobile ? 'xl' : '2xl'} overflow-hidden shadow-md transition-all duration-300 cursor-pointer border-2 border-transparent active:scale-[0.98] [@media(hover:hover)]:hover:shadow-xl [@media(hover:hover)]:hover:border-[#f07828]`}
+>
+    <div className="aspect-square overflow-hidden">
+    <img
+        src={item.image}
+        alt={item.name}
+        className={`w-full h-full object-cover transition-transform duration-300 [@media(hover:hover)]:hover:scale-110`}
+    />
     </div>
-</div>
+    <div className={padding}>
+    <h3 className={`${titleSize} font-bold text-[#1d3866] mb-${isMobile ? '1' : '2'}`}>
+        {item.name}
+    </h3>
+    <p className={`text-[#f07828] ${priceSize} font-bold`}>
+        Rp{item.price}
+    </p>
+    </div>
+</motion.div>
 );
 };
 
-export default CategorySidebar;
+export default ProductCard;

@@ -50,9 +50,9 @@ return (
     {items.length > 1 && (
         <button
         onClick={onPrev}
-        className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} rounded-full border-2 border-[#f07828] flex items-center justify-center hover:bg-[#f07828] hover:text-white transition-all group flex-shrink-0`}
+        className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} rounded-full border-2 border-[#f07828] flex items-center justify-center transition-all group flex-shrink-0 active:scale-95 [@media(hover:hover)]:hover:bg-[#f07828] [@media(hover:hover)]:hover:text-white`}
         >
-        <svg className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-[#f07828] group-hover:text-white`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-[#f07828] [@media(hover:hover)]:group-hover:text-white`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
         </button>
@@ -96,9 +96,9 @@ return (
     {items.length > 1 && (
         <button
         onClick={onNext}
-        className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} rounded-full border-2 border-[#f07828] flex items-center justify-center hover:bg-[#f07828] hover:text-white transition-all group flex-shrink-0`}
+        className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} rounded-full border-2 border-[#f07828] flex items-center justify-center transition-all group flex-shrink-0 active:scale-95 [@media(hover:hover)]:hover:bg-[#f07828] [@media(hover:hover)]:hover:text-white`}
         >
-        <svg className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-[#f07828] group-hover:text-white`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-[#f07828] [@media(hover:hover)]:group-hover:text-white`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
         </button>
@@ -147,7 +147,7 @@ return (
                 className={`h-2 rounded-full transition-all duration-300 ${
                     index === currentIndex
                     ? "bg-[#f07828] w-8"
-                    : "bg-gray-300 w-2 hover:bg-gray-400"
+                    : "bg-gray-300 w-2 [@media(hover:hover)]:hover:bg-gray-400"
                 }`}
                 />
             ))}
@@ -198,7 +198,7 @@ return (
                 className={`h-2 rounded-full transition-all duration-300 ${
                 index === currentIndex
                     ? "bg-[#f07828] w-8"
-                    : "bg-gray-300 w-2 hover:bg-gray-400"
+                    : "bg-gray-300 w-2 [@media(hover:hover)]:hover:bg-gray-400"
                 }`}
             />
             ))}
