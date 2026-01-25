@@ -1,7 +1,24 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { newsData } from "../data/newsData";
-import { ArrowRight } from "lucide-react";
+
+// Native SVG Arrow Right Icon (replaces lucide-react)
+const ArrowRight = ({ size = 16, className = "" }) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+  >
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+    <polyline points="12 5 19 12 12 19"></polyline>
+  </svg>
+);
 
 const News = () => {
   // Ambil 4 berita terbaru saja
@@ -30,6 +47,7 @@ const News = () => {
                 className="object-cover h-full w-full"
                 src={data.img}
                 alt={data.tittle}
+                loading="lazy"
               />
               <div className="absolute top-4 right-4">
                 <span className="bg-[#f39248] text-white px-3 py-1 rounded-full text-xs font-medium">
@@ -75,4 +93,4 @@ const News = () => {
   );
 };
 
-export default News;
+export default React.memo(News);
