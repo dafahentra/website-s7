@@ -8,7 +8,7 @@ import ContactUs from "./pages/ContactUs";
 
 function App() {
   return (
-    <Router basename="/Website-Coffee">
+    <Router basename="/website-s7">
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
