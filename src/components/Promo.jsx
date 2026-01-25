@@ -8,7 +8,7 @@ const Promo = () => {
     <div className="max-w-[1200px] mx-auto my-20 bg-center bg-cover bg-promo rounded-3xl">
       <div className="flex items-center flex-col py-16 mx-4 lg:text-left text-center">
         <h1 className="text-6xl text-[#1d3866] font-semibold">
-          Promo di Fore Coffee
+          Discover Our Promo
         </h1>
         <br />
         <h2 className="text-[#f39248] text-3xl">

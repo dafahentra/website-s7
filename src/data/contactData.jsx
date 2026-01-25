@@ -1,12 +1,12 @@
 // src/data/contactData.js
 
 export const contactInfo = {
-phone: "0812-1111-8456",
-email: "hello@fore.coffee",
+phone: "0895-3671-63744",
+email: "sectorsevenyk@gmail.com",
 address: {
-line1: "Gedung Graha Ganesha, Lantai 1 Suite 120 & 130",
-line2: "Jl. Hayam Wuruk No. 28, RT 014/ RW 001, Kelurahan Kebon Klapa,",
-line3: "Kecamatan Gambir, Jakarta Pusat, DKI Jakarta"
+line1: "CIMB Niaga Digital Lounge FEB UGM",
+line2: "Jl. Sosial Humaniora, Karang Malang, Caturtunggal",
+line3: "Kecamatan Depok, Sleman, Daerah Istimewa Yogyakarta 55281"
 }
 };
 

@@ -86,7 +86,7 @@ return (
         href={whatsappLink}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-500 text-white px-6 py-3 rounded-full hover:from-green-700 hover:to-green-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 whitespace-nowrap"
+        className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-500 text-white px-6 py-3 rounded-full hover:from-[#1d3866] hover:to-green-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 whitespace-nowrap"
         >
         <FaWhatsapp className="text-xl" />
         <span>Order Now</span>

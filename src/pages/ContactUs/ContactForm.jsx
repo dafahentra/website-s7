@@ -23,7 +23,7 @@ return (
         onChange={onChange}
         required
         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-100 transition-all"
-        placeholder="John Doe"
+        placeholder="Siti Intan"
         />
     </div>
 
@@ -39,7 +39,7 @@ return (
         onChange={onChange}
         required
         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-100 transition-all"
-        placeholder="johndoe@example.com"
+        placeholder="SitiIntan@example.com"
         />
     </div>
 
@@ -70,7 +70,7 @@ return (
         required
         rows="4"
         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-100 transition-all resize-none"
-        placeholder="Write your message here..."
+        placeholder="Keren Banget Lu Bang"
         ></textarea>
     </div>
 
@@ -78,10 +78,10 @@ return (
     <button
         type="submit"
         disabled={isSubmitting}
-        className={`w-full bg-green-700 text-white py-4 rounded-lg font-bold text-lg transition-colors duration-300 shadow-lg hover:shadow-xl ${
+        className={`w-full bg-[#1d3866] text-white py-4 rounded-lg font-bold text-lg transition-colors duration-300 shadow-lg hover:shadow-xl ${
         isSubmitting 
             ? 'opacity-50 cursor-not-allowed' 
-            : 'hover:bg-green-800'
+            : 'hover:bg-[#f07828]'
         }`}
     >
         {isSubmitting ? 'SENDING...' : 'SEND'}

@@ -35,7 +35,7 @@ export const bodMembers = [
 
 export const milestones = [
 {
-    year: "2018",
+    year: "2026",
     title: "Launch First Store",
     description: "Sector Seven membuka toko pertama di Yogyakarta dengan fokus pada matcha berkualitas tinggi.",
     details: [
@@ -44,28 +44,6 @@ export const milestones = [
     "Berhasil melayani 500+ pelanggan di bulan pertama"
     ],
     image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&h=400&fit=crop"
-},
-{
-    year: "2020",
-    title: "Menu Innovation",
-    description: "Peluncuran menu baru dengan berbagai varian kopi specialty dan signature drinks.",
-    details: [
-    "Menghadirkan 15+ menu baru berbasis kopi specialty",
-    "Kolaborasi dengan roaster lokal terbaik",
-    "Pelatihan barista profesional untuk semua staff"
-    ],
-    image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=400&fit=crop"
-},
-{
-    year: "2023",
-    title: "National Expansion",
-    description: "Ekspansi ke berbagai kota di Indonesia dengan fokus pada kualitas dan keberlanjutan.",
-    details: [
-    "Membuka cabang di 15 kota besar Indonesia",
-    "Mendapat sertifikasi Halal untuk semua produk",
-    "Partnership dengan petani kopi dan matcha lokal"
-    ],
-    image: "https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=600&h=400&fit=crop"
 }
 ];
 
@@ -75,30 +53,6 @@ export const customerTestimonials = [
     role: "Regular Customer",
     image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
     quote: "Sector Seven adalah tempat favorit saya untuk menikmati matcha latte. Kualitasnya selalu konsisten dan suasananya sangat nyaman untuk bekerja atau sekadar bersantai. Pelayanannya juga sangat ramah!"
-},
-{
-    name: "Dimas Prasetyo",
-    role: "Coffee Enthusiast",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-    quote: "Sebagai penikmat kopi, saya sangat terkesan dengan kualitas biji kopi yang digunakan Sector Seven. Setiap cangkir kopi yang disajikan memiliki karakter rasa yang kuat dan memorable. Highly recommended!"
-},
-{
-    name: "Siti Nurhaliza",
-    role: "Food Blogger",
-    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop",
-    quote: "Saya sudah mencoba berbagai coffee shop di kota ini, tapi Sector Seven memiliki keunikan tersendiri. Menu-menunya inovatif dan instagrammable, perfect untuk konten saya. The ambiance is also on point!"
-},
-{
-    name: "Budi Santoso",
-    role: "Entrepreneur",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop",
-    quote: "Sector Seven adalah go-to place untuk meeting dengan klien. Tempatnya profesional, menu beragam, dan WiFi-nya kencang. Beberapa deal penting saya finalisasi di sini sambil menikmati secangkir kopi mereka."
-},
-{
-    name: "Maya Anggraini",
-    role: "Student",
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop",
-    quote: "Tempat yang sempurna untuk belajar! Suasananya tenang, ada colokan di setiap meja, dan kopinya enak. Harganya juga masih terjangkau untuk mahasiswa seperti saya. Thank you Sector Seven!"
 },
 {
     name: "Andi Firmansyah",

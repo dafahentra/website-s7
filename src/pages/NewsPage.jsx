@@ -125,7 +125,7 @@ return (
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     transition={{ duration: 0.6 }}
-    className="bg-gradient-to-r from-green-700 to-green-600 pt-32 pb-20 relative overflow-hidden"
+    className="bg-gradient-to-r from-[#3962a8] to-[#f0a97a] pt-32 pb-20 relative overflow-hidden"
     >
     <div className="absolute inset-0 opacity-10">
         <div className="absolute transform rotate-45 -left-20 top-20 w-96 h-96 bg-white rounded-full"></div>
@@ -138,7 +138,7 @@ return (
         transition={{ duration: 0.6, delay: 0.2 }}
         className="text-5xl md:text-6xl font-bold text-white text-center mb-4"
         >
-        Forenews
+        Sector News
         </motion.h1>
         <motion.p 
         initial={{ opacity: 0, y: -20 }}
@@ -146,7 +146,7 @@ return (
         transition={{ duration: 0.6, delay: 0.3 }}
         className="text-xl text-white/90 text-center max-w-2xl mx-auto"
         >
-        Get the latest updates and deeper coffee experience from Fore Coffee
+        Get the latest updates and deeper coffee experience!
         </motion.p>
     </div>
     </motion.div>
@@ -181,7 +181,7 @@ return (
             <div className="p-6">
                 {/* Category & Date */}
                 <div className="flex items-center justify-between mb-3">
-                <span className="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 group-hover:bg-green-700 group-hover:text-white">
+                <span className="inline-block bg-[#f39248]/10 text-[#f39248] px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 group-hover:bg-[#1d3866] group-hover:text-white">
                     {article.category}
                 </span>
                 <span className="text-gray-400 text-xs">
@@ -194,7 +194,7 @@ return (
                 </div>
 
                 {/* Title */}
-                <h3 className="text-lg font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-green-700 transition-colors">
+                <h3 className="text-lg font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-[#1d3866] transition-colors">
                 {article.tittle}
                 </h3>
 
@@ -208,7 +208,7 @@ return (
                 <p className="text-xs text-gray-500">
                     {article.author.split(" ")[0]}
                 </p>
-                <div className="flex items-center text-green-700 font-medium text-sm group-hover:gap-2 transition-all">
+                <div className="flex items-center text-[#1d3866] font-medium text-sm group-hover:gap-2 transition-all">
                     <span>Read More</span>
                     <ArrowRight
                     size={16}
@@ -237,7 +237,7 @@ return (
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
             currentPage === 1
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-green-700 text-white hover:bg-green-800"
+                : "bg-[#1d3866] text-white hover:bg-[#f07828]"
             }`}
         >
             <ChevronLeft size={20} />
@@ -253,7 +253,7 @@ return (
                 onClick={() => goToPage(page)}
                 className={`w-10 h-10 rounded-full font-medium transition-all ${
                     currentPage === page
-                    ? "bg-green-700 text-white"
+                    ? "bg-[#1d3866] text-white"
                     : "bg-gray-200 text-gray-600 hover:bg-gray-300"
                 }`}
                 >
@@ -270,7 +270,7 @@ return (
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
             currentPage === totalPages
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-green-700 text-white hover:bg-green-800"
+                : "bg-[#1d3866] text-white hover:bg-[#f07828]"
             }`}
         >
             <ChevronRight size={20} />

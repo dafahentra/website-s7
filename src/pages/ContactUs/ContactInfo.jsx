@@ -13,7 +13,7 @@ return (
     className="relative h-full"
 >
     {/* Green Box with Info */}
-    <div className="bg-gradient-to-br from-green-700 to-green-600 rounded-3xl p-12 text-white shadow-2xl relative overflow-hidden h-full flex flex-col justify-between">
+    <div className="bg-gradient-to-br from-[#3962a8] to-[#f0a97a] rounded-3xl p-12 text-white shadow-2xl relative overflow-hidden h-full flex flex-col justify-between">
     {/* Background decoration */}
     <div className="absolute bottom-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mb-20"></div>
     <div className="absolute top-20 right-10 w-32 h-32 bg-white/5 rounded-full"></div>

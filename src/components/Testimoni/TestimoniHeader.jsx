@@ -13,7 +13,7 @@ return (
     </div>
     <div className="flex flex-col items-center justify-center">
     <h1 className="lg:text-6xl text-2xl text-[#1d3866] font-semibold lg:mb-10 mb-2">
-        Testimoni
+        What They Said
     </h1>
     <p className="lg:text-2xl text-lg text-[#f39248] border-dashed border-[#d0d784] border p-4 rounded-full">
         Kolaborasi Sukses Kami

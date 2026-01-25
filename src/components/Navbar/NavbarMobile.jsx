@@ -62,7 +62,7 @@ return (
         target="_blank"
         rel="noopener noreferrer"
         onClick={handleNavClick}
-        className="inline-flex items-center gap-3 bg-gradient-to-r from-green-600 to-green-500 text-white px-8 py-4 rounded-full hover:from-green-700 hover:to-green-600 transition-all duration-300 shadow-xl text-lg font-bold"
+        className="inline-flex items-center gap-3 bg-gradient-to-r from-green-600 to-green-500 text-white px-8 py-4 rounded-full hover:from-[#1d3866] hover:to-green-600 transition-all duration-300 shadow-xl text-lg font-bold"
         >
         <FaWhatsapp className="text-2xl" />
         <span>Order Now</span>

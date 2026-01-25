@@ -26,7 +26,7 @@ const Contact = () => {
                 clipRule="evenodd"
               />
             </svg>
-            <span className="text-[#1e4a3c] text-sm">CIMB Niaga Digital Lounge</span>
+            <span className="text-[#1e4a3c] text-sm">CIMB Niaga Digital Lounge FEB UGM</span>
           </div>
           <div className="flex gap-2 mb-2 ml-8">
             <p className="text-[#1e4a3c] text-sm">
@@ -36,7 +36,7 @@ const Contact = () => {
           </div>
           <div className="flex gap-2 items-center">
             <IoLogoWhatsapp size={25} />
-            <span className="text-[#1e4a3c] text-sm">0813 4932 2350</span>
+            <span className="text-[#1e4a3c] text-sm">0895 3671 63744</span>
           </div>
         </div>
         
