@@ -176,7 +176,7 @@ return (
             >
             <Link
                 to={`/news/${article.slug}`}
-                className="group bg-white rounded-lg overflow-hidden shadow-md transition-all duration-500 hover:shadow-[0_0_30px_rgba(34,197,94,0.3)] block h-full"
+                className="group bg-white rounded-lg overflow-hidden shadow-md transition-all duration-500 hover:shadow-[0_0_30px_rgba(29,56,102,0.3)] block h-full"
             >
                 {/* Image */}
                 <div className="relative h-64 overflow-hidden">

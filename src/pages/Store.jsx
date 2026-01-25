@@ -51,7 +51,7 @@ return (
 
     {/* Header - SECOND */}
     <div className="text-center mb-12 px-4">
-        <h1 className="text-6xl font-bold text-[#2c5530]">Our Store</h1>
+        <h1 className="text-6xl font-bold text-[#1d3866]">Our Store</h1>
     </div>
 
     {/* Store List Section */}
