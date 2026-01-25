@@ -41,30 +41,6 @@ const bodMembers = [
 },
 ];
 
-// Data Our Staff
-const staffMembers = [
-{
-    name: "Rizky Pratama",
-    position: "Head of Operations",
-    image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop",
-},
-{
-    name: "Andi Firmansyah",
-    position: "Head of Marketing",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-},
-{
-    name: "Siti Nurhaliza",
-    position: "Head of Finance",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
-},
-{
-    name: "Dedi Kurniawan",
-    position: "Head of Product Development",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
-},
-];
-
 // Data Milestone - 3 milestones
 const milestones = [
 {
@@ -408,7 +384,7 @@ return (
     </div>
     </div>
 
-    {/* 3. BOD Section */}
+    {/* BOD Section */}
     <div className="py-20 bg-white">
     <div className="max-w-[1200px] mx-auto px-4">
         <h2 className="text-6xl font-bold text-[#2c5530] mb-16 text-center">Board of Directors</h2>
@@ -483,58 +459,17 @@ return (
     </div>
     </div>
 
-    {/* 4. Our Staff Section */}
-    <div className="py-20 bg-gradient-to-b from-gray-50 to-white">
-    <div className="max-w-[1200px] mx-auto">
-        <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="text-center mb-16 mx-4"
-        >
-        <h2 className="text-6xl font-bold text-[#1d3866] mb-4">Our Staff</h2>
-        </motion.div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mx-4">
-        {staffMembers.map((member, index) => (
-            <motion.div
-            key={member.name}
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: index * 0.1 }}
-            className="text-center group"
-            >
-            <div className="relative mb-6 mx-auto w-48 h-48">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#1d3866] to-[#f39248] rounded-full transform group-hover:scale-110 transition-transform duration-300"></div>
-                <img
-                src={member.image}
-                alt={member.name}
-                className="relative w-full h-full object-cover rounded-full border-4 border-white shadow-xl"
-                />
-            </div>
-            <h3 className="text-2xl font-bold text-[#1d3866] mb-2">
-                {member.name}
-            </h3>
-            <p className="text-[#f39248] font-semibold">
-                {member.position}
-            </p>
-            </motion.div>
-        ))}
-        </div>
-    </div>
-    </div>
-
-    {/* 5. Milestone Section */}
+    {/* Milestone Section - Mobile Responsive */}
     <div className="bg-[#f8f9f5] py-20 mb-20">
     <div className="max-w-[1200px] mx-auto px-4">
         <h2 className="text-5xl font-bold text-[#1d3866] mb-20 text-center">Milestone</h2>
 
-        <div className="relative pl-[200px]">
+        {/* Desktop Layout */}
+        <div className="hidden lg:block relative pl-[200px]">
         {/* Vertical Timeline Line */}
         <div className="absolute left-[130px] top-0 bottom-20 w-0.5 bg-gray-300"></div>
 
-        {/* Display milestones based on showAllMilestones state */}
+        {/* Display milestones */}
         {milestones.slice(0, showAllMilestones ? milestones.length : 2).map((milestone, index) => (
             <motion.div
             key={milestone.year}
@@ -575,6 +510,53 @@ return (
                     </p>
                     ))}
                 </div>
+                </div>
+            </div>
+            </motion.div>
+        ))}
+        </div>
+
+        {/* Mobile Layout */}
+        <div className="lg:hidden space-y-12 relative">
+        {/* Vertical Line connecting milestones - Thicker and darker */}
+        <div className="absolute left-1/2 -translate-x-1/2 top-12 bottom-12 w-1 bg-[#6b8e4e] opacity-30 z-0"></div>
+        
+        {milestones.slice(0, showAllMilestones ? milestones.length : 2).map((milestone, index) => (
+            <motion.div
+            key={milestone.year}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: index * 0.1 }}
+            className="relative z-10"
+            >
+            {/* Year Badge - Mobile */}
+            <div className="text-center mb-4 relative z-20">
+                <div className="inline-block bg-[#6b8e4e] text-white px-6 py-2 rounded-full text-2xl font-bold shadow-lg">
+                {milestone.year}
+                </div>
+            </div>
+
+            {/* Image */}
+            <div className="rounded-2xl overflow-hidden mb-6">
+                <img
+                src={milestone.image}
+                alt={milestone.title}
+                className="w-full h-[200px] object-cover"
+                />
+            </div>
+
+            {/* Content */}
+            <div>
+                <h3 className="text-2xl font-bold text-[#2c5530] mb-4 text-center bg-[#f8f9f5] relative z-20 inline-block px-6 left-1/2 -translate-x-1/2">
+                {milestone.title}
+                </h3>
+                <div className="space-y-3 bg-white p-6 rounded-2xl shadow-md">
+                {milestone.details.map((detail, idx) => (
+                    <p key={idx} className="text-gray-700 leading-relaxed">
+                    <span className="font-bold text-[#6b8e4e]">{idx + 1}.</span> {detail}
+                    </p>
+                ))}
                 </div>
             </div>
             </motion.div>

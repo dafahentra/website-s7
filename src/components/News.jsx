@@ -52,7 +52,7 @@ const News = () => {
   return (
     <div className="max-w-[1200px] mx-auto my-40">
       <div className="flex flex-col justify-between md:flex-row md:items-center relative mx-4 md:text-left text-center">
-        <h1 className="text-6xl text-[#1d3866] mb-4 font-bold">ForeNews</h1>
+        <h1 className="text-6xl text-[#1d3866] mb-4 font-bold">News</h1>
         <p className="text-2xl text-[#f39248] text-wrap tracking-tight">
           Dapatkan berita terbaru dan informasi <br /> menarik dari kami!
         </p>
