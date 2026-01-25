@@ -12,7 +12,7 @@ const Promo = () => {
         </h1>
         <br />
         <h2 className="text-[#f39248] text-3xl">
-          Temukan berbagai promo menarik di sini!
+          Temukan berbagai promo menarik di sini! notes: kalau sudah kaya
         </h2>
       </div>
 
