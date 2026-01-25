@@ -1,34 +1,39 @@
 // src/data/aboutData.js
+import dapekImg from "../assets/Dapek.jpg";
+import clerImg from "../assets/Cler.jpg"
+import abeyImg from "../assets/Abey.jpg"
+import intanImg from "../assets/Intan.jpg"
+import deponImg from "../assets/Depon.jpg"
 
 export const bodMembers = [
 {
     name: "Claresta Zuhrah A",
     position: "Chief Executive Officer",
-    image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop",
+    image: clerImg,
     bio: "Indonesian Citizen, born in 1978. Experienced leader with 20+ years in coffee industry.",
 },
 {
     name: "Dafa Hentra A",
     position: "Finance & Legal Director",
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop",
+    image: dapekImg,
     bio: "Indonesian Citizen, born in 1982. Expert in business development and strategic planning.",
 },
 {
     name: "Siti Intan N",
     position: "Marketing & Brand Director",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop",
+    image: intanImg,
     bio: "Indonesian Citizen, born in 1985. Specialist in corporate finance and investment.",
 },
 {
     name: "Salsabilla Syafa K",
     position: "Operational Director",
-    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop",
+    image: abeyImg,
     bio: "Indonesian Citizen, born in 1980. Expert in retail operations and market expansion.",
 },
 {
     name: "Devon Del Rey",
     position: "Business Development",
-    image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop",
+    image: deponImg,
     bio: "Indonesian Citizen, born in 1975. Expertise in sustainable business practices and ESG.",
 },
 ];
