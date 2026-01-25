@@ -45,17 +45,21 @@ return (
 
         <div className="max-w-7xl mx-auto px-4 mb-20">
           {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-2 gap-8 items-stretch">
+        <div className="grid lg:grid-cols-2 gap-8 items-stretch justify-items-center">
             {/* Left Side - Contact Information */}
+            <div className="w-full max-w-xl lg:max-w-none">
             <ContactInfo />
+            </div>
 
             {/* Right Side - Contact Form */}
+            <div className="w-full max-w-xl lg:max-w-none">
             <ContactForm 
             formData={formData}
             isSubmitting={isSubmitting}
             onSubmit={handleSubmit}
             onChange={handleChange}
             />
+            </div>
         </div>
         </div>
 
