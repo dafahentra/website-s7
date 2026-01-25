@@ -1,6 +1,43 @@
 // components/ContactUs/ContactForm.jsx
-import React from "react";
+import React, { memo } from "react";
 import { motion } from "framer-motion";
+
+// Memoized FormInput component untuk menghindari re-render
+const FormInput = memo(({ 
+label, 
+type = "text", 
+name, 
+value, 
+onChange, 
+required = false, 
+placeholder,
+rows 
+}) => {
+const isTextarea = type === "textarea";
+const InputComponent = isTextarea ? "textarea" : "input";
+
+return (
+<div>
+    <label className="block text-gray-700 font-medium mb-2 text-sm">
+    {label}
+    </label>
+    <InputComponent
+    type={!isTextarea ? type : undefined}
+    name={name}
+    value={value}
+    onChange={onChange}
+    required={required}
+    rows={isTextarea ? rows : undefined}
+    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-100 transition-all ${
+        isTextarea ? 'resize-none' : ''
+    }`}
+    placeholder={placeholder}
+    />
+</div>
+);
+});
+
+FormInput.displayName = 'FormInput';
 
 const ContactForm = ({ formData, isSubmitting, onSubmit, onChange }) => {
 return (
@@ -12,67 +49,48 @@ return (
 >
     <form onSubmit={onSubmit} className="space-y-6">
     {/* Name */}
-    <div>
-        <label className="block text-gray-700 font-medium mb-2 text-sm">
-        Name
-        </label>
-        <input
+    <FormInput
+        label="Name"
         type="text"
         name="name"
         value={formData.name}
         onChange={onChange}
         required
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-100 transition-all"
         placeholder="Siti Intan"
-        />
-    </div>
+    />
 
     {/* Email */}
-    <div>
-        <label className="block text-gray-700 font-medium mb-2 text-sm">
-        Email
-        </label>
-        <input
+    <FormInput
+        label="Email"
         type="email"
         name="email"
         value={formData.email}
         onChange={onChange}
         required
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-100 transition-all"
         placeholder="SitiIntan@example.com"
-        />
-    </div>
+    />
 
     {/* Phone */}
-    <div>
-        <label className="block text-gray-700 font-medium mb-2 text-sm">
-        Phone Number
-        </label>
-        <input
+    <FormInput
+        label="Phone Number"
         type="tel"
         name="phone"
         value={formData.phone}
         onChange={onChange}
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-100 transition-all"
         placeholder="+62 812-3456-7890"
-        />
-    </div>
+    />
 
     {/* Message */}
-    <div>
-        <label className="block text-gray-700 font-medium mb-2 text-sm">
-        Message
-        </label>
-        <textarea
+    <FormInput
+        label="Message"
+        type="textarea"
         name="message"
         value={formData.message}
         onChange={onChange}
         required
-        rows="4"
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-100 transition-all resize-none"
+        rows={4}
         placeholder="Keren Banget Lu Bang"
-        ></textarea>
-    </div>
+    />
 
     {/* Submit Button */}
     <button
@@ -91,4 +109,4 @@ return (
 );
 };
 
-export default ContactForm;
+export default memo(ContactForm);

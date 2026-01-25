@@ -1,5 +1,5 @@
 // components/ContactUs/NotificationPopup.jsx
-import React from "react";
+import React, { memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, XCircle } from "lucide-react";
 
@@ -39,6 +39,7 @@ return (
         <button
             onClick={onClose}
             className="text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+            aria-label="Close notification"
         >
             <XCircle className="w-5 h-5" />
         </button>
@@ -49,4 +50,4 @@ return (
 );
 };
 
-export default NotificationPopup;
+export default memo(NotificationPopup);

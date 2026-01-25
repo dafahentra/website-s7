@@ -1,11 +1,18 @@
 // pages/ContactUs/index.jsx
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import SEO from "../../components/SEO";
 import { useContactForm } from "../../hooks/useContactForm";
 import NotificationPopup from "./NotificationPopup";
 import ContactInfo from "./ContactInfo";
 import ContactForm from "./ContactForm";
-import Contact from "../../components/Contact";
+
+// Lazy load Contact component karena berada di bawah fold
+const Contact = lazy(() => import("../../components/Contact"));
+
+// Loading placeholder component
+const ContactPlaceholder = () => (
+<div className="w-full h-64 bg-gray-100 animate-pulse rounded-lg"></div>
+);
 
 const ContactUs = () => {
 const {
@@ -52,7 +59,10 @@ return (
         </div>
     </div>
 
-    <Contact />
+    {/* Lazy load Contact component dengan Suspense */}
+    <Suspense fallback={<ContactPlaceholder />}>
+        <Contact />
+    </Suspense>
     </div>
 </>
 );

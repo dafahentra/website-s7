@@ -1,40 +1,161 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback, memo } from "react";
 import { Link } from "react-router-dom";
 import { newsData } from "../data/newsData";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import SEO from "../components/SEO";
 
+// Memoized NewsCard Component untuk menghindari re-render yang tidak perlu
+const NewsCard = memo(({ article }) => {
+const formattedDate = useMemo(() => 
+new Date(article.date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+}),
+[article.date]
+);
+
+const authorFirstName = useMemo(() => 
+article.author.split(" ")[0],
+[article.author]
+);
+
+return (
+<motion.div variants={itemVariants}>
+    <Link
+    to={`/news/${article.slug}`}
+    className="group bg-white rounded-lg overflow-hidden shadow-md transition-all duration-500 hover:shadow-[0_0_30px_rgba(29,56,102,0.3)] block h-full"
+    >
+    {/* Image dengan loading lazy */}
+    <div className="relative h-64 overflow-hidden">
+        <img
+        src={article.img}
+        alt={article.tittle}
+        loading="lazy"
+        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+        />
+    </div>
+
+    {/* Content */}
+    <div className="p-6">
+        {/* Category & Date */}
+        <div className="flex items-center justify-between mb-3">
+        <span className="inline-block bg-[#f39248]/10 text-[#f39248] px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 group-hover:bg-[#1d3866] group-hover:text-white">
+            {article.category}
+        </span>
+        <span className="text-gray-400 text-xs">
+            {formattedDate}
+        </span>
+        </div>
+
+        {/* Title */}
+        <h3 className="text-lg font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-[#1d3866] transition-colors">
+        {article.tittle}
+        </h3>
+
+        {/* Excerpt */}
+        <p className="text-gray-600 text-sm line-clamp-3 mb-4">
+        {article.excerpt}
+        </p>
+
+        {/* Location & Read More */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+        <p className="text-xs text-gray-500">
+            {authorFirstName}
+        </p>
+        <div className="flex items-center text-[#1d3866] font-medium text-sm group-hover:gap-2 transition-all">
+            <span>Read More</span>
+            <ArrowRight
+            size={16}
+            className="group-hover:translate-x-1 transition-transform"
+            />
+        </div>
+        </div>
+    </div>
+    </Link>
+</motion.div>
+);
+});
+
+NewsCard.displayName = 'NewsCard';
+
+// Memoized PaginationButton Component
+const PaginationButton = memo(({ page, currentPage, onClick, isEllipsis = false }) => {
+if (isEllipsis) {
+return <span className="px-3 text-gray-400">...</span>;
+}
+
+return (
+<button
+    onClick={onClick}
+    className={`w-10 h-10 rounded-full font-medium transition-all ${
+    currentPage === page
+        ? "bg-[#1d3866] text-white"
+        : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+    }`}
+>
+    {page}
+</button>
+);
+});
+
+PaginationButton.displayName = 'PaginationButton';
+
+// Animation variants (didefinisikan di luar component agar tidak re-create)
+const pageVariants = {
+initial: { opacity: 0, y: 20 },
+animate: {
+opacity: 1,
+y: 0,
+transition: { duration: 0.5, ease: "easeOut" }
+},
+exit: {
+opacity: 0,
+y: -20,
+transition: { duration: 0.3 }
+}
+};
+
+const containerVariants = {
+initial: { opacity: 0 },
+animate: {
+opacity: 1,
+transition: {
+    staggerChildren: 0.1,
+    delayChildren: 0.3
+}
+}
+};
+
+const itemVariants = {
+initial: { opacity: 0, y: 20 },
+animate: {
+opacity: 1,
+y: 0,
+transition: { duration: 0.5, ease: "easeOut" }
+}
+};
+
 const NewsPage = () => {
 const [currentPage, setCurrentPage] = useState(1);
 const newsPerPage = 6;
 
-// Calculate pagination
-const totalPages = Math.ceil(newsData.length / newsPerPage);
+// Memoize perhitungan pagination
+const { totalPages, currentNews } = useMemo(() => {
+const total = Math.ceil(newsData.length / newsPerPage);
 const indexOfLastNews = currentPage * newsPerPage;
 const indexOfFirstNews = indexOfLastNews - newsPerPage;
-const currentNews = newsData.slice(indexOfFirstNews, indexOfLastNews);
+const current = newsData.slice(indexOfFirstNews, indexOfLastNews);
 
-// Change page
-const goToPage = (pageNumber) => {
-setCurrentPage(pageNumber);
-window.scrollTo({ top: 0, behavior: "smooth" });
+return {
+    totalPages: total,
+    currentNews: current
 };
+}, [currentPage, newsPerPage]);
 
-const goToPreviousPage = () => {
-if (currentPage > 1) {
-    goToPage(currentPage - 1);
-}
-};
-
-const goToNextPage = () => {
-if (currentPage < totalPages) {
-    goToPage(currentPage + 1);
-}
-};
-
-// Generate page numbers to display
-const getPageNumbers = () => {
+// Memoize page numbers calculation
+const pageNumbers = useMemo(() => {
 const pages = [];
 const maxPagesToShow = 5;
 
@@ -65,53 +186,25 @@ if (totalPages <= maxPagesToShow) {
 }
 
 return pages;
-};
+}, [currentPage, totalPages]);
 
-// Page transition variants
-const pageVariants = {
-initial: {
-    opacity: 0,
-    y: 20
-},
-animate: {
-    opacity: 1,
-    y: 0,
-    transition: {
-    duration: 0.5,
-    ease: "easeOut"
-    }
-},
-exit: {
-    opacity: 0,
-    y: -20,
-    transition: {
-    duration: 0.3
-    }
-}
-};
+// useCallback untuk fungsi-fungsi yang dipass sebagai props
+const goToPage = useCallback((pageNumber) => {
+setCurrentPage(pageNumber);
+window.scrollTo({ top: 0, behavior: "smooth" });
+}, []);
 
-const containerVariants = {
-initial: { opacity: 0 },
-animate: {
-    opacity: 1,
-    transition: {
-    staggerChildren: 0.1,
-    delayChildren: 0.3
-    }
+const goToPreviousPage = useCallback(() => {
+if (currentPage > 1) {
+    goToPage(currentPage - 1);
 }
-};
+}, [currentPage, goToPage]);
 
-const itemVariants = {
-initial: { opacity: 0, y: 20 },
-animate: {
-    opacity: 1,
-    y: 0,
-    transition: {
-    duration: 0.5,
-    ease: "easeOut"
-    }
+const goToNextPage = useCallback(() => {
+if (currentPage < totalPages) {
+    goToPage(currentPage + 1);
 }
-};
+}, [currentPage, totalPages, goToPage]);
 
 return (
 <>
@@ -170,65 +263,7 @@ return (
         className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
         {currentNews.map((article) => (
-            <motion.div
-            key={article.id}
-            variants={itemVariants}
-            >
-            <Link
-                to={`/news/${article.slug}`}
-                className="group bg-white rounded-lg overflow-hidden shadow-md transition-all duration-500 hover:shadow-[0_0_30px_rgba(29,56,102,0.3)] block h-full"
-            >
-                {/* Image */}
-                <div className="relative h-64 overflow-hidden">
-                <img
-                    src={article.img}
-                    alt={article.tittle}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                </div>
-
-                {/* Content */}
-                <div className="p-6">
-                {/* Category & Date */}
-                <div className="flex items-center justify-between mb-3">
-                    <span className="inline-block bg-[#f39248]/10 text-[#f39248] px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 group-hover:bg-[#1d3866] group-hover:text-white">
-                    {article.category}
-                    </span>
-                    <span className="text-gray-400 text-xs">
-                    {new Date(article.date).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                    })}
-                    </span>
-                </div>
-
-                {/* Title */}
-                <h3 className="text-lg font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-[#1d3866] transition-colors">
-                    {article.tittle}
-                </h3>
-
-                {/* Excerpt */}
-                <p className="text-gray-600 text-sm line-clamp-3 mb-4">
-                    {article.excerpt}
-                </p>
-
-                {/* Location & Read More */}
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                    <p className="text-xs text-gray-500">
-                    {article.author.split(" ")[0]}
-                    </p>
-                    <div className="flex items-center text-[#1d3866] font-medium text-sm group-hover:gap-2 transition-all">
-                    <span>Read More</span>
-                    <ArrowRight
-                        size={16}
-                        className="group-hover:translate-x-1 transition-transform"
-                    />
-                    </div>
-                </div>
-                </div>
-            </Link>
-            </motion.div>
+            <NewsCard key={article.id} article={article} />
         ))}
         </motion.div>
 
@@ -249,28 +284,20 @@ return (
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                 : "bg-[#1d3866] text-white hover:bg-[#f07828]"
             }`}
+            aria-label="Previous page"
             >
             <ChevronLeft size={20} />
             </button>
 
             {/* Page Numbers */}
-            {getPageNumbers().map((page, index) => (
-            <React.Fragment key={index}>
-                {page === "..." ? (
-                <span className="px-3 text-gray-400">...</span>
-                ) : (
-                <button
-                    onClick={() => goToPage(page)}
-                    className={`w-10 h-10 rounded-full font-medium transition-all ${
-                    currentPage === page
-                        ? "bg-[#1d3866] text-white"
-                        : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                    }`}
-                >
-                    {page}
-                </button>
-                )}
-            </React.Fragment>
+            {pageNumbers.map((page, index) => (
+            <PaginationButton
+                key={index}
+                page={page}
+                currentPage={currentPage}
+                onClick={() => typeof page === 'number' && goToPage(page)}
+                isEllipsis={page === "..."}
+            />
             ))}
 
             {/* Next Button */}
@@ -282,6 +309,7 @@ return (
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                 : "bg-[#1d3866] text-white hover:bg-[#f07828]"
             }`}
+            aria-label="Next page"
             >
             <ChevronRight size={20} />
             </button>
