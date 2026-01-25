@@ -6,7 +6,7 @@ import { Carousel } from "@material-tailwind/react";
 
 const Hero = () => {
   return (
-    <div className="max-w-[1200px] my-40 mx-auto relative">
+    <div className="max-w-[1200px] my-20 lg:my-40 mx-auto relative z-0">
       <div className="flex gap-8 mx-4">
         <Carousel 
           className="rounded-xl"
