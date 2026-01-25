@@ -11,7 +11,7 @@ import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   return (
-    <Router basename="/website-s7">
+    <Router basename="/">
       <ScrollToTop />
       <div className="min-h-screen">
         <Navbar />
