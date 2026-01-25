@@ -1,37 +1,8 @@
 // components/ContactUs/ContactInfo.jsx
-import React, { memo } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { contactInfo, socialMediaLinks } from "../../data/contactData";
-
-// Memoized SocialMediaLink component
-const SocialMediaLink = memo(({ social }) => (
-<a
-href={social.url}
-target="_blank"
-rel="noopener noreferrer"
-className="bg-white/20 backdrop-blur-sm p-3 rounded-full hover:bg-white/30 transition-all hover:scale-110"
-aria-label={social.name}
->
-{social.icon}
-</a>
-));
-
-SocialMediaLink.displayName = 'SocialMediaLink';
-
-// Memoized ContactDetail component
-const ContactDetail = memo(({ icon: Icon, children }) => (
-<div className="flex items-start gap-4">
-<div className="bg-white/20 p-3 rounded-full backdrop-blur-sm">
-    <Icon className="w-6 h-6" />
-</div>
-<div>
-    {children}
-</div>
-</div>
-));
-
-ContactDetail.displayName = 'ContactDetail';
 
 const ContactInfo = () => {
 return (
@@ -56,30 +27,54 @@ return (
         {/* Contact Details */}
         <div className="space-y-8 flex-1">
         {/* Phone */}
-        <ContactDetail icon={Phone}>
+        <div className="flex items-center gap-4">
+            <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm">
+            <Phone className="w-6 h-6" />
+            </div>
+            <div>
             <p className="font-bold text-lg">{contactInfo.phone}</p>
-        </ContactDetail>
+            </div>
+        </div>
 
         {/* Email */}
-        <ContactDetail icon={Mail}>
+        <div className="flex items-center gap-4">
+            <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm">
+            <Mail className="w-6 h-6" />
+            </div>
+            <div>
             <p className="font-bold text-lg">{contactInfo.email}</p>
-        </ContactDetail>
+            </div>
+        </div>
 
         {/* Address */}
-        <ContactDetail icon={MapPin}>
+        <div className="flex items-start gap-4">
+            <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm">
+            <MapPin className="w-6 h-6" />
+            </div>
+            <div>
             <p className="font-bold leading-relaxed">
-            {contactInfo.address.line1}<br />
-            {contactInfo.address.line2}<br />
-            {contactInfo.address.line3}
+                {contactInfo.address.line1}<br />
+                {contactInfo.address.line2}<br />
+                {contactInfo.address.line3}
             </p>
-        </ContactDetail>
+            </div>
+        </div>
         </div>
 
         {/* Social Media Icons */}
         <div className="mt-auto pt-8 border-t border-white/20">
         <div className="flex gap-4 justify-center">
             {socialMediaLinks.map((social) => (
-            <SocialMediaLink key={social.name} social={social} />
+            <a
+                key={social.name}
+                href={social.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white/20 backdrop-blur-sm p-3 rounded-full hover:bg-white/30 transition-all hover:scale-110"
+                aria-label={social.name}
+            >
+                {social.icon}
+            </a>
             ))}
         </div>
         </div>
@@ -89,4 +84,4 @@ return (
 );
 };
 
-export default memo(ContactInfo);
+export default ContactInfo;

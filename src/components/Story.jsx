@@ -72,11 +72,14 @@ const Story = () => {
               Kami hadir untuk memberikan pengalaman rasa yang unik bagi para pecinta kopi dan matcha di lingkungan fakultas.
             </p>
             
-            <Link to="/about">
-              <button className="mt-4 bg-[#1d3866] px-8 py-4 rounded-full w-[200px] text-white hover:border-[#1d3866] hover:bg-white hover:text-[#1d3866] transition-all duration-300 text-md shadow-2xl shadow-[#1d3866] border-2 border-[#1d3866]">
-                Selengkapnya
-              </button>
-            </Link>
+            {/* Wrapper div dengan flexbox untuk centering di mobile */}
+            <div className="flex justify-center lg:justify-start">
+              <Link to="/about">
+                <button className="mt-4 bg-[#1d3866] px-8 py-4 rounded-full w-[200px] text-white hover:border-[#1d3866] hover:bg-white hover:text-[#1d3866] transition-all duration-300 text-md shadow-2xl shadow-[#1d3866] border-2 border-[#1d3866]">
+                  Selengkapnya
+                </button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
