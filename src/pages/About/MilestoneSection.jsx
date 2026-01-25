@@ -8,7 +8,7 @@ const [showAllMilestones, setShowAllMilestones] = useState(false);
 return (
 <div className="bg-[#f8f9f5] py-20 mb-20">
     <div className="max-w-[1200px] mx-auto px-4">
-    <h2 className="text-5xl font-bold text-[#1d3866] mb-20 text-center">Milestone</h2>
+    <h2 className="text-5xl font-bold text-[#1d3866] mb-20 text-center">Our Milestones</h2>
 
     {/* Desktop Layout */}
     <div className="hidden lg:block relative pl-[200px]">
@@ -23,10 +23,10 @@ return (
             transition={{ duration: 0.6, delay: index * 0.1 }}
             className="mb-20 last:mb-8 relative"
         >
-            <div className="absolute left-[-70px] top-1/2 -translate-y-1/2 w-2 h-32 bg-[#6b8e4e] rounded-full z-10"></div>
+            <div className="absolute left-[-70px] top-1/2 -translate-y-1/2 w-2 h-32 bg-[#1d3866] rounded-full z-10"></div>
 
             <div className="absolute left-[-200px] top-1/2 -translate-y-1/2 text-right pr-4">
-            <div className="text-4xl font-bold text-[#2c5530]">{milestone.year}</div>
+            <div className="text-4xl font-bold text-[#1d3866]">{milestone.year}</div>
             </div>
 
             <div className="grid grid-cols-[360px,1fr] gap-10 items-start">
@@ -35,7 +35,7 @@ return (
             </div>
 
             <div className="pt-2">
-                <h3 className="text-2xl font-bold text-[#2c5530] mb-6">{milestone.title}</h3>
+                <h3 className="text-2xl font-bold text-[#1d3866] mb-6">{milestone.title}</h3>
                 <div className="space-y-4">
                 {milestone.details.map((detail, idx) => (
                     <p key={idx} className="text-gray-700 leading-relaxed text-lg">
@@ -79,7 +79,7 @@ return (
             <div className="space-y-3 bg-white p-6 rounded-2xl shadow-md">
                 {milestone.details.map((detail, idx) => (
                 <p key={idx} className="text-gray-700 leading-relaxed">
-                    <span className="font-bold text-[#6b8e4e]">{idx + 1}.</span> {detail}
+                    <span className="font-bold text-[#1d3866]">{idx + 1}.</span> {detail}
                 </p>
                 ))}
             </div>
@@ -93,7 +93,7 @@ return (
         {!showAllMilestones && milestones.length > 2 ? (
         <button
             onClick={() => setShowAllMilestones(true)}
-            className="border-2 border-[#2c5530] text-[#2c5530] px-8 py-3 rounded-full font-semibold hover:bg-[#2c5530] hover:text-white transition-colors duration-300 flex items-center gap-2"
+            className="border-2 border-[#1d3866] text-[#1d3866] px-8 py-3 rounded-full font-semibold hover:bg-[#1d3866] hover:text-white transition-colors duration-300 flex items-center gap-2"
         >
             See More
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,7 +103,7 @@ return (
         ) : showAllMilestones && (
         <button
             onClick={() => setShowAllMilestones(false)}
-            className="border-2 border-[#2c5530] text-[#2c5530] px-8 py-3 rounded-full font-semibold hover:bg-[#2c5530] hover:text-white transition-colors duration-300 flex items-center gap-2"
+            className="border-2 border-[#1d3866] text-[#1d3866] px-8 py-3 rounded-full font-semibold hover:bg-[#1d3866] hover:text-white transition-colors duration-300 flex items-center gap-2"
         >
             Show Less
             <svg className="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">

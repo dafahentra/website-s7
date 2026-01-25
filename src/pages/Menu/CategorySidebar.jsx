@@ -11,11 +11,11 @@ return (
         onClick={() => onCategoryChange(category.id)}
         className={`w-full text-left px-4 py-3 mb-2 font-medium transition-all duration-200 flex items-center gap-3 rounded-lg ${
             activeCategory === category.id
-            ? "text-[#0d7d4a] bg-gray-50"
+            ? "text-[#f07828] bg-gray-50"
             : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
         }`}
         >
-        <span className={activeCategory === category.id ? "text-[#0d7d4a]" : "text-gray-400"}>
+        <span className={activeCategory === category.id ? "text-[#f07828]" : "text-gray-400"}>
             {category.icon}
         </span>
         <span className="text-sm">{category.name}</span>

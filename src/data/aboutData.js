@@ -44,6 +44,28 @@ export const milestones = [
     "Berhasil melayani 500+ pelanggan di bulan pertama"
     ],
     image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&h=400&fit=crop"
+},
+{
+    year: "2026",
+    title: "Launch First Store",
+    description: "Sector Seven membuka toko pertama di Yogyakarta dengan fokus pada matcha berkualitas tinggi.",
+    details: [
+    "Toko pertama dibuka di kawasan Kaliurang, Yogyakarta",
+    "Memperkenalkan konsep matcha premium dengan sentuhan lokal",
+    "Berhasil melayani 500+ pelanggan di bulan pertama"
+    ],
+    image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&h=400&fit=crop"
+},
+{
+    year: "2026",
+    title: "Launch First Store",
+    description: "Sector Seven membuka toko pertama di Yogyakarta dengan fokus pada matcha berkualitas tinggi.",
+    details: [
+    "Toko pertama dibuka di kawasan Kaliurang, Yogyakarta",
+    "Memperkenalkan konsep matcha premium dengan sentuhan lokal",
+    "Berhasil melayani 500+ pelanggan di bulan pertama"
+    ],
+    image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&h=400&fit=crop"
 }
 ];
 

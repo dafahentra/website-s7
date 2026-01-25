@@ -18,7 +18,7 @@ return (
         >
             <div className={`${
             activeCategory === category.id
-                ? "text-[#0d7d4a]"
+                ? "text-[#f07828]"
                 : "text-gray-400"
             }`}>
             {category.icon}
