@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import fore1 from "../assets/fore1.jpg";
 import fore2 from "../assets/fore2.jpg";
 import fore3 from "../assets/fore3.jpg";
@@ -7,6 +8,7 @@ import Flickity from "react-flickity-component";
 
 const news = [
   {
+    id: "spesial-hari-kartini-fore-coffee-ajak-konsumen-perempuan-mengenal-industri-kopi",
     tittle:
       "SPESIAL HARI KARTINI! FORE COFFEE AJAK KONSUMEN PEREMPUAN MENGENAL INDUSTRI KOPI",
     img: fore1,
@@ -15,14 +17,16 @@ const news = [
     date: "2024-06-12",
   },
   {
+    id: "fore-coffee-bawa-gebrakan-new-coffee-culture-melalui-inovasi-otentisitas-dan-kampanye-forevolution",
     tittle:
       "FORE COFFEE BAWA GEBRAKAN NEW COFFEE CULTURE MELALUI INOVASI, OTENTISITAS, DAN KAMPANYE #FOREVOLUTION",
     img: fore2,
     description:
-      "Jakarta, 22 Mei 2024 – Sejak didirikan pada tahun 2018, Fore Coffee telah menetapkan langkah untuk terus memberikan pelayanan dan penyajian terbaik kepada pelanggan setianya melalui berbagai inovasi. Seiring dengan perkembangan industri kopi tanah air yang terus berkembang pesat hingga saat ini, Fore Coffee turut berkontribusi dan memberikan keunikan pada aneka ragam menu serta memperkuat posisi sebagai pemain kopi ritel terdepan di Indonesia yang menggebrak dengan new coffee culture. Hal ini didorong oleh perubahan serta perkembangan era kopi yang semakin dinamis. Salah satu gebrakan besar Fore Coffee adalah peluncuran produk Butterscotch Sea-Salt Latte yang terjual lebih dari 5 juta cups hingga April 2024 – menjadikannya produk paling digemari hingga saat ini. Kesuksesan ini diikuti dengan keberhasilan produk Buttercream Series, yang semakin mengukuhkan posisi Fore Coffee sebagai trendsetter dalam produk kopi kekinian yang inovatif dan unik. Fore Coffee terus berkomitmen untuk berinovasi melalui 200 cabang di 45 kota yang tersebar di seluruh Indonesia hingga ke Singapura. Perkembangan industri kopi yang dinamis juga mempengaruhi konsumen dalam mencari tahu bagaimana proses kopi yang sebenarnya, menikmati dengan berbagai cara dan aneka jenis variasi produk yang tercipta. Fore Coffee berkomitmen untuk terus menjaga keaslian citarasa dari biji kopi Indonesia melalui berbagai inovasi dan menjadi sarana bagi konsumen untuk menikmati rasa otentik yang tercermin dalam segelas kopi.",
+      "Jakarta, 22 Mei 2024 - Sejak didirikan pada tahun 2018, Fore Coffee telah menetapkan langkah untuk terus memberikan pelayanan dan penyajian terbaik kepada pelanggan setianya melalui berbagai inovasi. Seiring dengan perkembangan industri kopi tanah air yang terus berkembang pesat hingga saat ini, Fore Coffee turut berkontribusi dan memberikan keunikan pada aneka ragam menu serta memperkuat posisi sebagai pemain kopi ritel terdepan di Indonesia yang menggebrak dengan new coffee culture. Hal ini didorong oleh perubahan serta perkembangan era kopi yang semakin dinamis. Salah satu gebrakan besar Fore Coffee adalah peluncuran produk Butterscotch Sea-Salt Latte yang terjual lebih dari 5 juta cups hingga April 2024 - menjadikannya produk paling digemari hingga saat ini. Kesuksesan ini diikuti dengan keberhasilan produk Buttercream Series, yang semakin mengukuhkan posisi Fore Coffee sebagai trendsetter dalam produk kopi kekinian yang inovatif dan unik. Fore Coffee terus berkomitmen untuk berinovasi melalui 200 cabang di 45 kota yang tersebar di seluruh Indonesia hingga ke Singapura. Perkembangan industri kopi yang dinamis juga mempengaruhi konsumen dalam mencari tahu bagaimana proses kopi yang sebenarnya, menikmati dengan berbagai cara dan aneka jenis variasi produk yang tercipta. Fore Coffee berkomitmen untuk terus menjaga keaslian citarasa dari biji kopi Indonesia melalui berbagai inovasi dan menjadi sarana bagi konsumen untuk menikmati rasa otentik yang tercermin dalam segelas kopi.",
     date: "2024-06-11",
   },
   {
+    id: "sebarkan-kebaikan-ramadan-kepada-sesama-bareng-fore-coffee",
     tittle: "SEBARKAN KEBAIKAN RAMADAN KEPADA SESAMA BARENG FORE COFFEE",
     img: fore3,
     description:
@@ -30,6 +34,7 @@ const news = [
     date: "2024-05-23",
   },
   {
+    id: "fore-coffee-resmi-kantongi-sertifikat-halal-untuk-menjamin-kualitas-bagi-pelanggan",
     tittle:
       "PRESS RELEASE | FORE COFFEE RESMI KANTONGI SERTIFIKAT HALAL UNTUK MENJAMIN KUALITAS BAGI PELANGGAN",
     img: fore4,
@@ -40,6 +45,8 @@ const news = [
 ];
 
 const News = () => {
+  const navigate = useNavigate();
+  
   const flickityOptions = {
     cellAlign: "left",
     contain: true,
@@ -49,31 +56,37 @@ const News = () => {
     prevNextButton: false,
     draggable: ">1",
   };
+
+  const handleNewsClick = (newsId) => {
+    navigate(`/news/${newsId}`);
+  };
+
   return (
     <div className="max-w-[1200px] mx-auto my-40">
       <div className="flex flex-col justify-between md:flex-row md:items-center relative mx-4 md:text-left text-center">
-        <h1 className="text-6xl text-[#1d3866] mb-4 font-bold">News</h1>
+        <h1 className="text-6xl text-[#1d3866] mb-4 font-bold">ForeNews</h1>
         <p className="text-2xl text-[#f39248] text-wrap tracking-tight">
           Dapatkan berita terbaru dan informasi <br /> menarik dari kami!
         </p>
-
-        {/* <div className="absolute bottom-0 left-40 ">1</div> */}
       </div>
 
       <div className="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 place-items-center my-20 gap-4 mx-4">
         {news.map((data, index) => (
           <div
-            className="max-w-sm rounded-2xl overflow-hidden shadow-lg bg-white hover:shadow-2xl h-full"
+            className="max-w-sm rounded-2xl overflow-hidden shadow-lg bg-white h-full cursor-pointer transition-shadow duration-500 hover:shadow-[0_0_40px_rgba(243,146,72,0.25)]"
             key={index}
+            onClick={() => handleNewsClick(data.id)}
           >
-            <img
-              className="object-cover h-52 w-full"
-              src={data.img}
-              alt={data.tittle}
-            />
+            <div className="relative overflow-hidden">
+              <img
+                className="object-cover h-52 w-full"
+                src={data.img}
+                alt={data.tittle}
+              />
+            </div>
             <div className="px-6 py-4">
               <div className="text-xl font-semibold mb-2 capitalize text-gray-700">
-                {data.tittle.toLocaleLowerCase().substring(0, 50)}.....
+                {data.tittle.toLocaleLowerCase().substring(0, 80)}...
               </div>
               <p className="text-gray-500 mt-8 font-[14px]">
                 {data.description.substring(0, 70)}
