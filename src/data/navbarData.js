@@ -10,7 +10,7 @@ export const menuItems = [
 
 // WhatsApp Configuration
 export const whatsappConfig = {
-  phoneNumber: "628125672013", // Format: country code + number (tanpa + dan -)
+  phoneNumber: "6285111042497", // Format: country code + number (tanpa + dan -)
 message: 
     "Halo Sector Seven! Saya ingin order \n\n" +
     "Nama: \n" +
