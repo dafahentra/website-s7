@@ -13,10 +13,6 @@ export const whatsappConfig = {
   phoneNumber: "6285111042497", // Format: country code + number (tanpa + dan -)
 message: 
     "Halo Sector Seven! Saya ingin order \n\n" +
-    "Nama: \n" +
-    "Pesanan: \n" +
-    "Waktu pengambilan: \n" +
-    "Lokasi: "
 };
 
 // Generate WhatsApp Link
