@@ -14,58 +14,61 @@ const Hero = () => {
           autoplay={true}
           autoplayDelay={5000}
         >
-          <div className="flex items-center lg:flex-row flex-col">
-            <div className="lg:text-left text-center">
-              <h1 className="lg:text-8xl text-xl text-[#1d3866] mb-4 font-bold">
+          <div className="flex items-center lg:flex-row flex-col lg:min-h-[500px] min-h-[400px]">
+            <div className="lg:text-left text-center lg:w-1/2 px-4 py-8">
+              <h1 className="lg:text-6xl text-3xl text-[#1d3866] mb-4 font-bold">
                 Grind The Essentials
               </h1>
-              <p className="lg:text-2xl text-lg text-[#f39248]">
+              <p className="lg:text-xl text-base text-[#f39248]">
                 Dibuat dari biji kopi Indonesia pilihan untuk pengalaman minum
                 kopi terbaik setiap hari
               </p>
             </div>
-            <img
-              src={coffee}
-              alt="coffee"
-              width={1000}
-              className="object-cover lg:h-[40rem] h-96 px-4"
-            />
+            <div className="lg:w-1/2 w-full">
+              <img
+                src={coffee}
+                alt="coffee"
+                className="object-contain w-full lg:h-[500px] h-[300px]"
+              />
+            </div>
           </div>
 
-          <div className="flex items-center lg:flex-row flex-col">
-            <div className="lg:text-left text-center">
-              <h1 className="lg:text-8xl text-xl text-[#1d3866] mb-4 font-bold">
+          <div className="flex items-center lg:flex-row flex-col lg:min-h-[500px] min-h-[400px]">
+            <div className="lg:text-left text-center lg:w-1/2 px-4 py-8">
+              <h1 className="lg:text-6xl text-3xl text-[#1d3866] mb-4 font-bold">
                 Fore Grind Master 2023
               </h1>
-              <p className="lg:text-2xl text-lg text-[#f39248]">
+              <p className="lg:text-xl text-base text-[#f39248]">
                 Kompetisi tahunan bergengsi untuk barista Fore Coffee di seluruh
                 Indonesia
               </p>
             </div>
-            <img
-              src={foreMaster}
-              alt="coffee"
-              width={1000}
-              className="object-cover lg:h-[40rem] h-96 px-4"
-            />
+            <div className="lg:w-1/2 w-full">
+              <img
+                src={foreMaster}
+                alt="fore master"
+                className="object-contain w-full lg:h-[500px] h-[300px]"
+              />
+            </div>
           </div>
 
-          <div className="flex items-center lg:flex-row flex-col">
-            <div className="lg:text-left text-center">
-              <h1 className="lg:text-8xl text-xl text-[#1d3866] mb-4 font-bold">
+          <div className="flex items-center lg:flex-row flex-col lg:min-h-[500px] min-h-[400px]">
+            <div className="lg:text-left text-center lg:w-1/2 px-4 py-8">
+              <h1 className="lg:text-5xl text-2xl text-[#1d3866] mb-4 font-bold">
                 The 1st Fore Coffee Store That Embrace Sustainability
               </h1>
-              <p className="lg:text-2xl text-lg text-[#f39248]">
+              <p className="lg:text-xl text-base text-[#f39248]">
                 Dibuat dari 450kg plastik daur ulang, berlokasi di Kuningan
                 City, Jakarta
               </p>
             </div>
-            <img
-              src={foreStore}
-              alt="coffee"
-              width={1000}
-              className="object-cover lg:h-[40rem] h-96 px-4"
-            />
+            <div className="lg:w-1/2 w-full">
+              <img
+                src={foreStore}
+                alt="fore store"
+                className="object-contain w-full lg:h-[500px] h-[300px]"
+              />
+            </div>
           </div>
         </Carousel>
       </div>
