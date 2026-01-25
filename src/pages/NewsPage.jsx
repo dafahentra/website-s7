@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { newsData } from "../data/newsData";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
+import SEO from "../components/SEO";
 
 const NewsPage = () => {
 const [currentPage, setCurrentPage] = useState(1);
@@ -113,172 +114,182 @@ animate: {
 };
 
 return (
-<motion.div
+<>
+    <SEO 
+    title="News & Articles - Sector Seven Coffee"
+    description="Get the latest updates, coffee tips, and stories from Sector Seven Coffee. Discover brewing guides, coffee culture, and more."
+    keywords="sector seven news, coffee news yogyakarta, coffee articles, brewing guides, coffee culture, specialty coffee tips"
+    url="/news"
+    image="/og-image.jpg"
+    />
+
+    <motion.div
     initial="initial"
     animate="animate"
     exit="exit"
     variants={pageVariants}
     className="min-h-screen bg-gray-50"
->
+    >
     {/* Hero Section */}
     <motion.div 
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    transition={{ duration: 0.6 }}
-    className="bg-gradient-to-r from-[#3962a8] to-[#f0a97a] pt-32 pb-20 relative overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="bg-gradient-to-r from-[#3962a8] to-[#f0a97a] pt-32 pb-20 relative overflow-hidden"
     >
-    <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 opacity-10">
         <div className="absolute transform rotate-45 -left-20 top-20 w-96 h-96 bg-white rounded-full"></div>
         <div className="absolute transform -rotate-45 -right-20 bottom-20 w-80 h-80 bg-white rounded-full"></div>
-    </div>
-    <div className="max-w-6xl mx-auto px-4 relative z-10">
+        </div>
+        <div className="max-w-6xl mx-auto px-4 relative z-10">
         <motion.h1 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className="text-5xl md:text-6xl font-bold text-white text-center mb-4"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-5xl md:text-6xl font-bold text-white text-center mb-4"
         >
-        Sector News
+            Sector News
         </motion.h1>
         <motion.p 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3 }}
-        className="text-xl text-white/90 text-center max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-xl text-white/90 text-center max-w-2xl mx-auto"
         >
-        Get the latest updates and deeper coffee experience!
+            Get the latest updates and deeper coffee experience!
         </motion.p>
-    </div>
+        </div>
     </motion.div>
 
     {/* News Grid */}
     <div className="max-w-6xl mx-auto px-4 py-16">
-    <motion.div 
+        <motion.div 
         variants={containerVariants}
         initial="initial"
         animate="animate"
         className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-    >
+        >
         {currentNews.map((article) => (
-        <motion.div
+            <motion.div
             key={article.id}
             variants={itemVariants}
-        >
-            <Link
-            to={`/news/${article.slug}`}
-            className="group bg-white rounded-lg overflow-hidden shadow-md transition-all duration-500 hover:shadow-[0_0_30px_rgba(34,197,94,0.3)] block h-full"
             >
-            {/* Image */}
-            <div className="relative h-64 overflow-hidden">
+            <Link
+                to={`/news/${article.slug}`}
+                className="group bg-white rounded-lg overflow-hidden shadow-md transition-all duration-500 hover:shadow-[0_0_30px_rgba(34,197,94,0.3)] block h-full"
+            >
+                {/* Image */}
+                <div className="relative h-64 overflow-hidden">
                 <img
-                src={article.img}
-                alt={article.tittle}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    src={article.img}
+                    alt={article.tittle}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-            </div>
+                </div>
 
-            {/* Content */}
-            <div className="p-6">
+                {/* Content */}
+                <div className="p-6">
                 {/* Category & Date */}
                 <div className="flex items-center justify-between mb-3">
-                <span className="inline-block bg-[#f39248]/10 text-[#f39248] px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 group-hover:bg-[#1d3866] group-hover:text-white">
+                    <span className="inline-block bg-[#f39248]/10 text-[#f39248] px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 group-hover:bg-[#1d3866] group-hover:text-white">
                     {article.category}
-                </span>
-                <span className="text-gray-400 text-xs">
+                    </span>
+                    <span className="text-gray-400 text-xs">
                     {new Date(article.date).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
                     })}
-                </span>
+                    </span>
                 </div>
 
                 {/* Title */}
                 <h3 className="text-lg font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-[#1d3866] transition-colors">
-                {article.tittle}
+                    {article.tittle}
                 </h3>
 
                 {/* Excerpt */}
                 <p className="text-gray-600 text-sm line-clamp-3 mb-4">
-                {article.excerpt}
+                    {article.excerpt}
                 </p>
 
                 {/* Location & Read More */}
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500">
                     {article.author.split(" ")[0]}
-                </p>
-                <div className="flex items-center text-[#1d3866] font-medium text-sm group-hover:gap-2 transition-all">
+                    </p>
+                    <div className="flex items-center text-[#1d3866] font-medium text-sm group-hover:gap-2 transition-all">
                     <span>Read More</span>
                     <ArrowRight
-                    size={16}
-                    className="group-hover:translate-x-1 transition-transform"
+                        size={16}
+                        className="group-hover:translate-x-1 transition-transform"
                     />
+                    </div>
                 </div>
                 </div>
-            </div>
             </Link>
-        </motion.div>
+            </motion.div>
         ))}
-    </motion.div>
+        </motion.div>
 
-    {/* Pagination */}
-    {totalPages > 1 && (
+        {/* Pagination */}
+        {totalPages > 1 && (
         <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
-        className="flex items-center justify-center gap-2 mt-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="flex items-center justify-center gap-2 mt-16"
         >
-        {/* Previous Button */}
-        <button
+            {/* Previous Button */}
+            <button
             onClick={goToPreviousPage}
             disabled={currentPage === 1}
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-            currentPage === 1
+                currentPage === 1
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                 : "bg-[#1d3866] text-white hover:bg-[#f07828]"
             }`}
-        >
+            >
             <ChevronLeft size={20} />
-        </button>
+            </button>
 
-        {/* Page Numbers */}
-        {getPageNumbers().map((page, index) => (
+            {/* Page Numbers */}
+            {getPageNumbers().map((page, index) => (
             <React.Fragment key={index}>
-            {page === "..." ? (
+                {page === "..." ? (
                 <span className="px-3 text-gray-400">...</span>
-            ) : (
+                ) : (
                 <button
-                onClick={() => goToPage(page)}
-                className={`w-10 h-10 rounded-full font-medium transition-all ${
+                    onClick={() => goToPage(page)}
+                    className={`w-10 h-10 rounded-full font-medium transition-all ${
                     currentPage === page
-                    ? "bg-[#1d3866] text-white"
-                    : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                }`}
+                        ? "bg-[#1d3866] text-white"
+                        : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                    }`}
                 >
-                {page}
+                    {page}
                 </button>
-            )}
+                )}
             </React.Fragment>
-        ))}
+            ))}
 
-        {/* Next Button */}
-        <button
+            {/* Next Button */}
+            <button
             onClick={goToNextPage}
             disabled={currentPage === totalPages}
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-            currentPage === totalPages
+                currentPage === totalPages
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                 : "bg-[#1d3866] text-white hover:bg-[#f07828]"
             }`}
-        >
+            >
             <ChevronRight size={20} />
-        </button>
+            </button>
         </motion.div>
-    )}
+        )}
     </div>
-</motion.div>
+    </motion.div>
+</>
 );
 };
 
