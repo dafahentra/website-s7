@@ -100,7 +100,7 @@ const Navbar = () => {
       <motion.div
         initial={false}
         animate={open ? { x: 0 } : { x: "100%" }}
-        transition={{ type: "spring", stiffness: 20, damping: 15 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className="fixed top-0 right-0 w-full min-h-screen bg-[#ebe9e7] z-[40] flex flex-col items-center justify-center lg:hidden pointer-events-auto"
       >
         <Link to="/" onClick={handleMobileNavClick}>
