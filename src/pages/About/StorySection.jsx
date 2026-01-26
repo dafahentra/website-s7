@@ -11,7 +11,7 @@ return (
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8 }}
     >
-        <p className="text-sm text-[#f39248] mb-4 tracking-wider uppercase">Our Story</p>
+        <p className="text-base md:text-xl lg:text-2xl text-[#f39248] mb-4 tracking-wider uppercase font-semibold">Our Story</p>
         <h2 className="text-6xl font-bold text-[#1d3866] mb-8 leading-tight">
         Your Sector,<br />Your Soul
         </h2>
