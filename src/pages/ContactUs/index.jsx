@@ -28,7 +28,7 @@ const {
 return (
     <>
     <SEO 
-        title="Contact Us - SECTOR SEVEN | Get in Touch"
+        title="Contact - SECTOR SEVEN"
         description="Get in touch with SECTOR SEVEN. Visit us at Digital Lounge CIMB Niaga UGM, call us, or send us a message. We'd love to hear from you! Open daily 07:30-17:00."
         keywords="sector seven contact, contact coffee shop yogyakarta, sector seven ugm contact, coffee shop contact information, reach us"
         url="/contact-us"

@@ -12,7 +12,7 @@ const Home = () => {
 return (
     <>
     <SEO 
-        title="SECTOR SEVEN - Special Duality in Yogyakarta"
+        title="Home - SECTOR SEVEN"
         description="Experience the finest specialty coffee and matcha at SECTOR SEVEN. Located in Digital Lounge CIMB Niaga, FEB UGM. Enjoy our espresso, pure matcha, and signature drinks. Open daily 07:30-17:00."
         keywords="sector seven matcha, sector seven coffee, coffee shop yogyakarta, premium coffee, espresso yogyakarta, manual brew, specialty coffee, cimb niaga ugm, coffee ugm, kedai kopi ugm, kopi premium jogja, matcha jogja, matcha murah jogja, matcha ceremonial jogja"
         url="/"
