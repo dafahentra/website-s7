@@ -55,6 +55,20 @@ description:
 date: "2024-06-11",
 category: "Press Release",
 author: "Fore Coffee Team",
+},
+{
+id: 2,
+slug: "new-coffee-culture-forevolution",
+tittle:
+    "FORE COFFEE BAWA GEBRAKAN NEW COFFEE CULTURE MELALUI INOVASI, OTENTISITAS, DAN KAMPANYE #FOREVOLUTION",
+img: fore2,
+excerpt:
+    "Sejak didirikan pada tahun 2018, Fore Coffee telah menetapkan langkah untuk terus memberikan pelayanan dan penyajian terbaik.",
+description:
+    "Jakarta, 22 Mei 2024 – Sejak didirikan pada tahun 2018, Fore Coffee telah menetapkan langkah untuk terus memberikan pelayanan dan penyajian terbaik kepada pelanggan setianya melalui berbagai inovasi. Seiring dengan perkembangan industri kopi tanah air yang terus berkembang pesat hingga saat ini, Fore Coffee turut berkontribusi dan memberikan keunikan pada aneka ragam menu serta memperkuat posisi sebagai pemain kopi ritel terdepan di Indonesia yang menggebrak dengan new coffee culture. Hal ini didorong oleh perubahan serta perkembangan era kopi yang semakin dinamis. Salah satu gebrakan besar Fore Coffee adalah peluncuran produk Butterscotch Sea-Salt Latte yang terjual lebih dari 5 juta cups hingga April 2024 – menjadikannya produk paling digemari hingga saat ini. Kesuksesan ini diikuti dengan keberhasilan produk Buttercream Series, yang semakin mengukuhkan posisi Fore Coffee sebagai trendsetter dalam produk kopi kekinian yang inovatif dan unik. Fore Coffee terus berkomitmen untuk berinovasi melalui 200 cabang di 45 kota yang tersebar di seluruh Indonesia hingga ke Singapura. Perkembangan industri kopi yang dinamis juga mempengaruhi konsumen dalam mencari tahu bagaimana proses kopi yang sebenarnya, menikmati dengan berbagai cara dan aneka jenis variasi produk yang tercipta. Fore Coffee berkomitmen untuk terus menjaga keaslian citarasa dari biji kopi Indonesia melalui berbagai inovasi dan menjadi sarana bagi konsumen untuk menikmati rasa otentik yang tercermin dalam segelas kopi.",
+date: "2024-06-11",
+category: "Press Release",
+author: "Fore Coffee Team",
 }
 ];
 

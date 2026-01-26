@@ -42,7 +42,7 @@ const News = () => {
       <div className="my-12 md:my-20">
         {/* Mobile: Horizontal Scroll */}
         <div className="md:hidden overflow-x-auto px-4 pb-4 -mx-4">
-          <div className="flex gap-3 w-max">
+          <div className={`flex gap-3 ${latestNews.length < 3 ? 'justify-center' : 'w-max'}`}>
             {latestNews.map((data) => (
               <Link
                 to={`/news/${data.slug}`}
