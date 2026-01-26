@@ -1,8 +1,63 @@
-// pages/Menu/ProductSlider.jsx
-import React from "react";
+// ========================================
+// 5. ProductSlider.jsx - OPTIMIZED
+// ========================================
+import React, { useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const ProductSlider = ({ 
+// Memoized Navigation Button
+const NavButton = React.memo(({ onClick, direction, isMobile }) => {
+const size = isMobile ? 'w-10 h-10' : 'w-12 h-12';
+const iconSize = isMobile ? 'w-4 h-4' : 'w-5 h-5';
+const pathD = direction === 'prev' ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7";
+
+return (
+    <button
+    onClick={onClick}
+    className={`${size} rounded-full border-2 border-[#f07828] flex items-center justify-center transition-all group flex-shrink-0 active:scale-95 [@media(hover:hover)]:hover:bg-[#f07828] [@media(hover:hover)]:hover:text-white`}
+    >
+    <svg className={`${iconSize} text-[#f07828] [@media(hover:hover)]:group-hover:text-white`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={pathD} />
+    </svg>
+    </button>
+);
+});
+
+NavButton.displayName = 'NavButton';
+
+// Memoized Product Info
+const ProductInfo = React.memo(({ currentItem, activeCategory, isMobile }) => {
+const categorySize = isMobile ? "text-sm" : "text-lg";
+const nameSize = isMobile ? "text-2xl" : "text-3xl";
+const priceSize = isMobile ? "text-xl" : "text-2xl";
+const descSize = isMobile ? "text-sm" : "text-sm leading-relaxed";
+
+return (
+    <motion.div
+    key={currentItem.id}
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    transition={{ duration: 0.3 }}
+    >
+    <h2 className={`${categorySize} font-semibold text-[#f07828] uppercase tracking-wider ${isMobile ? 'mb-2' : 'mb-3'}`}>
+        {activeCategory}
+    </h2>
+    <h3 className={`${nameSize} font-bold text-[#f07828] mb-3`}>
+        {currentItem.name}
+    </h3>
+    <p className={`text-gray-600 ${descSize} ${isMobile ? 'mb-3' : 'mb-4 min-h-[60px]'}`}>
+        {currentItem.description}
+    </p>
+    <div className={`${priceSize} font-bold text-gray-900 mb-4`}>
+        Rp{currentItem.price}
+    </div>
+    </motion.div>
+);
+});
+
+ProductInfo.displayName = 'ProductInfo';
+
+const ProductSlider = React.memo(({ 
 items, 
 currentIndex, 
 activeCategory, 
@@ -15,128 +70,138 @@ isMobile = false
 }) => {
 const currentItem = items[currentIndex] || items[0];
 
-const slideVariants = {
-enter: (direction) => ({
+  // Memoize slide variants
+const slideVariants = useMemo(() => ({
+    enter: (direction) => ({
     x: direction > 0 ? 1000 : -1000,
     opacity: 0
-}),
-center: {
+    }),
+    center: {
     zIndex: 1,
     x: 0,
     opacity: 1
-},
-exit: (direction) => ({
+    },
+    exit: (direction) => ({
     zIndex: 0,
     x: direction < 0 ? 1000 : -1000,
     opacity: 0
-})
-};
+    })
+}), []);
 
-const swipeConfidenceThreshold = 10000;
-const swipePower = (offset, velocity) => {
-return Math.abs(offset) * velocity;
-};
+  // Memoize swipe handler
+const handleDragEnd = useCallback((e, { offset, velocity }) => {
+    const swipeConfidenceThreshold = 10000;
+    const swipePower = Math.abs(offset.x) * velocity.x;
+    
+    if (swipePower < -swipeConfidenceThreshold) {
+    onNext();
+    } else if (swipePower > swipeConfidenceThreshold) {
+    onPrev();
+    }
+}, [onNext, onPrev]);
 
 const containerClass = isMobile 
-? "px-6 py-8 border-b border-gray-200"
-: "px-12 pt-24 pb-8 border-b border-gray-200";
+    ? "px-6 py-8 border-b border-gray-200"
+    : "px-12 pt-24 pb-8 border-b border-gray-200";
 
 const imageSize = isMobile ? "w-64 h-64" : "w-72 h-72";
+const flexGap = isMobile ? 'gap-4' : 'gap-8';
 
 return (
-<div className={containerClass}>
-    <div className={`flex items-center ${isMobile ? 'justify-center gap-4' : 'justify-center gap-8'} max-w-5xl mx-auto w-full`}>
-    {/* Navigation Arrow Left */}
-    {items.length > 1 && (
-        <button
-        onClick={onPrev}
-        className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} rounded-full border-2 border-[#f07828] flex items-center justify-center transition-all group flex-shrink-0 active:scale-95 [@media(hover:hover)]:hover:bg-[#f07828] [@media(hover:hover)]:hover:text-white`}
-        >
-        <svg className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-[#f07828] [@media(hover:hover)]:group-hover:text-white`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-        </button>
-    )}
+    <div className={containerClass}>
+    <div className={`flex items-center justify-center ${flexGap} max-w-5xl mx-auto w-full`}>
+        {/* Navigation Arrow Left */}
+        {items.length > 1 && (
+        <NavButton onClick={onPrev} direction="prev" isMobile={isMobile} />
+        )}
 
-    {/* Product Image with Animation */}
-    <div className={`${imageSize} relative overflow-hidden flex-shrink-0`}>
+        {/* Product Image with Animation */}
+        <div className={`${imageSize} relative overflow-hidden flex-shrink-0`}>
         <AnimatePresence initial={false} custom={direction}>
-        {currentItem && (
+            {currentItem && (
             <motion.img
-            key={currentItem.id}
-            src={currentItem.image}
-            alt={currentItem.name}
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{
+                key={currentItem.id}
+                src={currentItem.image}
+                alt={currentItem.name}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
                 x: { type: "spring", stiffness: 300, damping: 30 },
                 opacity: { duration: 0.2 }
-            }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={1}
-            onDragEnd={(e, { offset, velocity }) => {
-                const swipe = swipePower(offset.x, velocity.x);
-                if (swipe < -swipeConfidenceThreshold) {
-                onNext();
-                } else if (swipe > swipeConfidenceThreshold) {
-                onPrev();
-                }
-            }}
-            className="absolute w-full h-full object-cover cursor-grab active:cursor-grabbing"
+                }}
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={1}
+                onDragEnd={handleDragEnd}
+                className="absolute w-full h-full object-cover cursor-grab active:cursor-grabbing"
+                loading="lazy"
             />
-        )}
+            )}
         </AnimatePresence>
+        </div>
+
+        {/* Navigation Arrow Right */}
+        {items.length > 1 && (
+        <NavButton onClick={onNext} direction="next" isMobile={isMobile} />
+        )}
+
+        {/* Product Info - Desktop only */}
+        {!isMobile && (
+        <div className="flex-1 max-w-md flex flex-col">
+            <div className="flex-1">
+            <AnimatePresence mode="wait">
+                {currentItem && (
+                <ProductInfo 
+                    currentItem={currentItem} 
+                    activeCategory={activeCategory} 
+                    isMobile={false}
+                />
+                )}
+            </AnimatePresence>
+            </div>
+            
+            {/* Dots Indicator */}
+            {items.length > 1 && (
+            <div className="flex gap-2">
+                {items.map((_, index) => (
+                <button
+                    key={index}
+                    onClick={() => {
+                    onDirectionChange(index > currentIndex ? 1 : -1);
+                    onIndexChange(index);
+                    }}
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                    index === currentIndex
+                        ? "bg-[#f07828] w-8"
+                        : "bg-gray-300 w-2 [@media(hover:hover)]:hover:bg-gray-400"
+                    }`}
+                />
+                ))}
+            </div>
+            )}
+        </div>
+        )}
     </div>
 
-    {/* Navigation Arrow Right */}
-    {items.length > 1 && (
-        <button
-        onClick={onNext}
-        className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} rounded-full border-2 border-[#f07828] flex items-center justify-center transition-all group flex-shrink-0 active:scale-95 [@media(hover:hover)]:hover:bg-[#f07828] [@media(hover:hover)]:hover:text-white`}
-        >
-        <svg className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-[#f07828] [@media(hover:hover)]:group-hover:text-white`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-        </button>
-    )}
-
-    {/* Product Info - Desktop only */}
-    {!isMobile && (
-        <div className="flex-1 max-w-md flex flex-col">
-        <div className="flex-1">
-            <AnimatePresence mode="wait">
+      {/* Product Info - Mobile */}
+    {isMobile && (
+        <div className="text-center mt-6">
+        <AnimatePresence mode="wait">
             {currentItem && (
-                <motion.div
-                key={currentItem.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                >
-                <h2 className="text-lg font-semibold text-[#f07828] uppercase tracking-wider mb-3">
-                    {activeCategory}
-                </h2>
-                <h3 className="text-3xl font-bold text-[#f07828] mb-3">
-                    {currentItem.name}
-                </h3>
-                <p className="text-gray-600 text-sm leading-relaxed mb-4 min-h-[60px]">
-                    {currentItem.description}
-                </p>
-                <div className="text-2xl font-bold text-gray-900 mb-4">
-                    Rp{currentItem.price}
-                </div>
-                </motion.div>
+            <ProductInfo 
+                currentItem={currentItem} 
+                activeCategory={activeCategory} 
+                isMobile={true}
+            />
             )}
-            </AnimatePresence>
-        </div>
-        
-        {/* Dots Indicator */}
+        </AnimatePresence>
+
+          {/* Dots Indicator - Mobile */}
         {items.length > 1 && (
-            <div className="flex gap-2">
+            <div className="flex justify-center gap-2">
             {items.map((_, index) => (
                 <button
                 key={index}
@@ -156,58 +221,9 @@ return (
         </div>
     )}
     </div>
-
-    {/* Product Info - Mobile */}
-    {isMobile && (
-    <div className="text-center mt-6">
-        <AnimatePresence mode="wait">
-        {currentItem && (
-            <motion.div
-            key={currentItem.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            >
-            <h2 className="text-sm font-semibold text-[#f07828] uppercase tracking-wider mb-2">
-                {activeCategory}
-            </h2>
-            <h3 className="text-2xl font-bold text-[#f07828] mb-3">
-                {currentItem.name}
-            </h3>
-            <p className="text-gray-600 text-sm mb-3">
-                {currentItem.description}
-            </p>
-            <div className="text-xl font-bold text-gray-900 mb-4">
-                Rp{currentItem.price}
-            </div>
-            </motion.div>
-        )}
-        </AnimatePresence>
-
-        {/* Dots Indicator - Mobile */}
-        {items.length > 1 && (
-        <div className="flex justify-center gap-2">
-            {items.map((_, index) => (
-            <button
-                key={index}
-                onClick={() => {
-                onDirectionChange(index > currentIndex ? 1 : -1);
-                onIndexChange(index);
-                }}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                index === currentIndex
-                    ? "bg-[#f07828] w-8"
-                    : "bg-gray-300 w-2 [@media(hover:hover)]:hover:bg-gray-400"
-                }`}
-            />
-            ))}
-        </div>
-        )}
-    </div>
-    )}
-</div>
 );
-};
+});
+
+ProductSlider.displayName = 'ProductSlider';
 
 export default ProductSlider;

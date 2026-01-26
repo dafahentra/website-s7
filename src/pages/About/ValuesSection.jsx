@@ -1,30 +1,9 @@
-// pages/About/ValuesSection.jsx
-import React, { useState, useEffect, useRef } from "react";
+// pages/About/ValuesSection.jsx - FIXED VERSION
+import React from "react";
+import useIntersectionObserver from "../../hooks/useIntersectionObserver";
 
-const ValueCard = ({ icon, title, description, color, delay }) => {
-const [isVisible, setIsVisible] = useState(false);
-const cardRef = useRef(null);
-
-useEffect(() => {
-    const observer = new IntersectionObserver(
-    ([entry]) => {
-        if (entry.isIntersecting) {
-        setIsVisible(true);
-        }
-    },
-    { threshold: 0.2 }
-    );
-
-    if (cardRef.current) {
-    observer.observe(cardRef.current);
-    }
-
-    return () => {
-    if (cardRef.current) {
-        observer.unobserve(cardRef.current);
-    }
-    };
-}, []);
+const ValueCard = ({ icon, title, description, colorClasses, delay }) => {
+const [cardRef, isVisible] = useIntersectionObserver({ threshold: 0.2 });
 
 return (
     <div
@@ -34,10 +13,11 @@ return (
     }`}
     style={{ transitionDelay: isVisible ? `${delay}ms` : '0ms' }}
     >
-    <div className={`w-40 h-40 mx-auto mb-6 rounded-full border-4 border-${color} flex items-center justify-center`}>
+      {/* FIXED: Gunakan colorClasses langsung tanpa template literal */}
+    <div className={`w-40 h-40 mx-auto mb-6 rounded-full border-4 flex items-center justify-center ${colorClasses.border}`}>
         {icon}
     </div>
-    <h3 className={`text-2xl font-bold text-${color} mb-4`}>{title}</h3>
+    <h3 className={`text-2xl font-bold mb-4 ${colorClasses.text}`}>{title}</h3>
     <div className="text-gray-700 leading-relaxed">{description}</div>
     </div>
 );
@@ -46,7 +26,11 @@ return (
 const ValuesSection = () => {
 const values = [
     {
-    color: "[#6b8e4e]",
+      // FIXED: Berikan class lengkap yang bisa di-purge Tailwind
+    colorClasses: {
+        border: "border-[#6b8e4e]",
+        text: "text-[#6b8e4e]"
+    },
     title: "We do the right thing...",
     description: (
         <>
@@ -61,7 +45,10 @@ const values = [
     delay: 100
     },
     {
-    color: "[#f39248]",
+    colorClasses: {
+        border: "border-[#f39248]",
+        text: "text-[#f39248]"
+    },
     title: "We are in it together...",
     description: (
         <>
@@ -76,7 +63,10 @@ const values = [
     delay: 200
     },
     {
-    color: "[#9b4d96]",
+    colorClasses: {
+        border: "border-[#9b4d96]",
+        text: "text-[#9b4d96]"
+    },
     title: "We give a damn...",
     description: (
         <>
@@ -91,7 +81,10 @@ const values = [
     delay: 300
     },
     {
-    color: "[#5dade2]",
+    colorClasses: {
+        border: "border-[#5dade2]",
+        text: "text-[#5dade2]"
+    },
     title: "We get it done...",
     description: (
         <>
@@ -123,7 +116,7 @@ return (
             icon={value.icon}
             title={value.title}
             description={value.description}
-            color={value.color}
+            colorClasses={value.colorClasses}
             delay={value.delay}
             />
         ))}
