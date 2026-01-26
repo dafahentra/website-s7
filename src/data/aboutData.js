@@ -41,7 +41,7 @@ export const bodMembers = [
 export const milestones = [
 {
     year: "2026",
-    title: "Launch First Store",
+    title: "Launched First Store",
     description: "SECTOR SEVEN membuka toko pertamanya di CIMB Niaga Digital Lounge dengan fokus pada matcha berkualitas tinggi.",
     details: [
     "Berhasil membuka toko pertama di CIMB Digital Lounge FEB UGM Yogyakarta",
