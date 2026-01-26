@@ -12,9 +12,9 @@ const Home = () => {
 return (
     <>
     <SEO 
-        title="Sector Seven Coffee - Premium Coffee Experience in Yogyakarta"
-        description="Experience the finest specialty coffee at Sector Seven Coffee. Located in Digital Lounge CIMB Niaga, UGM. Enjoy our espresso, manual brew, and signature drinks. Open daily 07:30-17:00."
-        keywords="sector seven coffee, coffee shop yogyakarta, premium coffee, espresso yogyakarta, manual brew, specialty coffee, cimb niaga ugm, coffee ugm, kedai kopi ugm, kopi premium jogja"
+        title="SECTOR SEVEN - Special Duality in Yogyakarta"
+        description="Experience the finest specialty coffee and matcha at SECTOR SEVEN. Located in Digital Lounge CIMB Niaga, FEB UGM. Enjoy our espresso, pure matcha, and signature drinks. Open daily 07:30-17:00."
+        keywords="sector seven matcha, sector seven coffee, coffee shop yogyakarta, premium coffee, espresso yogyakarta, manual brew, specialty coffee, cimb niaga ugm, coffee ugm, kedai kopi ugm, kopi premium jogja, matcha jogja, matcha murah jogja, matcha ceremonial jogja"
         url="/"
         image="/og-image.jpg"
     />

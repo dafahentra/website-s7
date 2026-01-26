@@ -20,9 +20,9 @@ const stores = [
 return (
 <>
     <SEO 
-    title="Our Store Location - Sector Seven Coffee"
-    description="Visit Sector Seven Coffee at Digital Lounge CIMB Niaga, UGM Yogyakarta. Open daily 07:30-17:00. Find directions and contact information."
-    keywords="sector seven location, coffee shop ugm, cimb niaga digital lounge, sector seven address, coffee shop yogyakarta location"
+    title="Our Store Location - SECTOR SEVEN"
+    description="Visit SECTOR SEVEN at Digital Lounge CIMB Niaga, FEB UGM Yogyakarta. Open daily 07:30-17:00. Find directions and contact information."
+    keywords="sector seven location, coffee shop ugm, cimb niaga digital lounge, sector seven address, coffee shop yogyakarta location, cimb niaga ugm"
     url="/store"
     image="/og-image.jpg"
     />

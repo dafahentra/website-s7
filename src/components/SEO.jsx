@@ -9,7 +9,7 @@ keywords,
 image,
 url,
 type = 'website',
-author = 'Sector Seven Coffee'
+author = 'SECTOR SEVEN'
 }) => {
 const siteUrl = 'https://sectorseven.netlify.app'; // GANTI DENGAN DOMAIN ASLI ANDA
 const fullUrl = url ? `${siteUrl}${url}` : siteUrl;
@@ -42,7 +42,7 @@ return (
     {type === 'article' && (
     <>
         <meta property="article:author" content={author} />
-        <meta property="article:publisher" content="Sector Seven Coffee" />
+        <meta property="article:publisher" content="SECTOR SEVEN" />
     </>
     )}
 </Helmet>

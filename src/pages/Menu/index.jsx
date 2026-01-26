@@ -48,8 +48,8 @@ const handleProductClick = useCallback((itemId) => {
 return (
     <>
     <SEO 
-        title="Our Menu - Sector Seven Coffee | Specialty Coffee & Drinks"
-        description="Explore our menu of specialty coffee drinks at Sector Seven Coffee. From espresso-based drinks to manual brew, signature beverages, and non-coffee options. Premium quality in every cup."
+        title="Our Menu - SECTOR SEVEN | Specialty Coffee & Matcha"
+        description="Explore our menu of hybrid specialty between coffee and matcha drinks at SECTOR SEVEN. From espresso-based drinks to flavoured ones, signature beverages, and non-coffee options. Premium quality in every cup."
         keywords="sector seven menu, coffee menu yogyakarta, espresso menu, manual brew coffee, specialty drinks, signature coffee, coffee prices yogyakarta, best coffee menu ugm"
         url="/menu"
         image="/og-image.jpg"

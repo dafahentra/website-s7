@@ -209,9 +209,9 @@ if (currentPage < totalPages) {
 return (
 <>
     <SEO 
-    title="News & Articles - Sector Seven Coffee"
-    description="Get the latest updates, coffee tips, and stories from Sector Seven Coffee. Discover brewing guides, coffee culture, and more."
-    keywords="sector seven news, coffee news yogyakarta, coffee articles, brewing guides, coffee culture, specialty coffee tips"
+    title="News & Articles - SECTOR SEVEN"
+    description="Get the latest updates and stories from SECTOR SEVEN. Discover brewing guides, matcha culture, and more."
+    keywords="sector seven news, coffee news yogyakarta, coffee articles, brewing guides, coffee culture, specialty coffee tips, matcha news yogyakarta, matcha articles"
     url="/news"
     image="/og-image.jpg"
     />

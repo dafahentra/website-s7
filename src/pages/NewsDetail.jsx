@@ -15,7 +15,7 @@ if (!article) {
 return (
     <>
     <SEO 
-        title="Article Not Found - Sector Seven Coffee"
+        title="Article Not Found - SECTOR SEVEN"
         description="The article you are looking for is not available."
         url={`/news/${slug}`}
     />
@@ -45,9 +45,9 @@ const relatedNews = latestNews.filter((news) => news.id !== article.id);
 return (
 <>
     <SEO 
-    title={`${article.tittle} - Sector Seven Coffee News`}
+    title={`${article.tittle} - SECTOR SEVEN News`}
     description={article.excerpt || article.description?.substring(0, 160)}
-    keywords={`${article.category}, ${article.tittle}, sector seven coffee news, coffee news yogyakarta`}
+    keywords={`${article.category}, ${article.tittle}, sector seven coffee news, coffee news yogyakarta, matcha news yogyakarta, matcha articles, coffee articles`}
     url={`/news/${article.slug}`}
     image={article.img}
     type="article"

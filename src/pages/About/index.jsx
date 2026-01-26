@@ -15,9 +15,9 @@ const About = () => {
 return (
 <>
     <SEO 
-    title="About Us - Sector Seven Coffee | Our Story & Values"
-    description="Discover the story behind Sector Seven Coffee. Learn about our passion for specialty coffee, commitment to quality, and our journey in bringing premium coffee experience to Yogyakarta."
-    keywords="sector seven about, coffee story yogyakarta, specialty coffee story, our values, sector seven team, coffee passion, premium coffee yogyakarta"
+    title="About Us - SECTOR SEVEN | Our Story & Values"
+    description="Discover the story behind SECTOR SEVEN. Learn about our passion for dual specialty, commitment to quality, and our journey in bringing best quality coffee and matcha experience to Yogyakarta."
+    keywords="sector seven about, coffee story yogyakarta, specialty coffee story, our values, sector seven team, coffee passion, premium coffee yogyakarta, matcha ceremonial yogyakarta, matcha jogja"
     url="/about"
     image="/og-image.jpg"
     />
