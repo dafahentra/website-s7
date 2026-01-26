@@ -17,23 +17,23 @@ const isTextarea = type === "textarea";
 const InputComponent = isTextarea ? "textarea" : "input";
 
 return (
-    <div>
+<div>
     <label className="block text-gray-700 font-medium mb-2 text-sm">
-        {label}
+    {label}
     </label>
     <InputComponent
-        type={!isTextarea ? type : undefined}
-        name={name}
-        value={value}
-        onChange={onChange}
-        required={required}
-        rows={isTextarea ? rows : undefined}
-        className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-100 transition-all ${
+    type={!isTextarea ? type : undefined}
+    name={name}
+    value={value}
+    onChange={onChange}
+    required={required}
+    rows={isTextarea ? rows : undefined}
+    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-100 transition-all ${
         isTextarea ? 'resize-none' : ''
-        }`}
-        placeholder={placeholder}
+    }`}
+    placeholder={placeholder}
     />
-    </div>
+</div>
 );
 });
 
@@ -41,15 +41,15 @@ FormInput.displayName = 'FormInput';
 
 const ContactForm = ({ formData, isSubmitting, onSubmit, onChange }) => {
 return (
-    <motion.div
+<motion.div
     initial={{ opacity: 0, x: 50 }}
     animate={{ opacity: 1, x: 0 }}
     transition={{ duration: 0.8 }}
-    className="bg-white rounded-3xl shadow-xl p-8 lg:p-12"
-    >
-    <form onSubmit={onSubmit} className="space-y-6">
-        {/* Name */}
-        <FormInput
+    className="bg-white rounded-3xl shadow-xl p-5 sm:p-8 lg:p-12"
+>
+    <form onSubmit={onSubmit} className="space-y-5 sm:space-y-6">
+    {/* Name */}
+    <FormInput
         label="Name"
         type="text"
         name="name"
@@ -57,10 +57,10 @@ return (
         onChange={onChange}
         required
         placeholder="Siti Intan"
-        />
+    />
 
-        {/* Email */}
-        <FormInput
+    {/* Email */}
+    <FormInput
         label="Email"
         type="email"
         name="email"
@@ -68,20 +68,20 @@ return (
         onChange={onChange}
         required
         placeholder="SitiIntan@example.com"
-        />
+    />
 
-        {/* Phone */}
-        <FormInput
+    {/* Phone */}
+    <FormInput
         label="Phone Number"
         type="tel"
         name="phone"
         value={formData.phone}
         onChange={onChange}
         placeholder="+62 812-3456-7890"
-        />
+    />
 
-        {/* Message */}
-        <FormInput
+    {/* Message */}
+    <FormInput
         label="Message"
         type="textarea"
         name="message"
@@ -90,22 +90,22 @@ return (
         required
         rows={4}
         placeholder="Keren Banget Lu Bang"
-        />
+    />
 
-        {/* Submit Button */}
-        <button
+    {/* Submit Button */}
+    <button
         type="submit"
         disabled={isSubmitting}
-        className={`w-full bg-[#1d3866] text-white py-4 rounded-lg font-bold text-lg transition-colors duration-300 shadow-lg hover:shadow-xl ${
-            isSubmitting 
+        className={`w-full bg-[#1d3866] text-white py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg transition-colors duration-300 shadow-lg hover:shadow-xl ${
+        isSubmitting 
             ? 'opacity-50 cursor-not-allowed' 
             : 'hover:bg-[#f07828]'
         }`}
-        >
+    >
         {isSubmitting ? 'SENDING...' : 'SEND'}
-        </button>
+    </button>
     </form>
-    </motion.div>
+</motion.div>
 );
 };
 
