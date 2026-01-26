@@ -13,7 +13,7 @@ const whatsappLink = getWhatsAppLink();
 
   // Scroll animations
 const { scrollY } = useScroll();
-const width = useTransform(scrollY, [0, 400], ["100%", "75%"]);
+const width = useTransform(scrollY, [0, 400], ["100%", "76%"]);
 const marginTop = useTransform(scrollY, [0, 400], ["0px", "24px"]);
 const borderRadius = useTransform(scrollY, [0, 400], ["0px", "50px"]);
 const backgroundColor = useTransform(scrollY, [0, 400], [
