@@ -1,5 +1,5 @@
 // ========================================
-// 3. News.jsx - OPTIMIZED (Add useMemo)
+// 3. News.jsx - OPTIMIZED (Button width matched with Story.jsx)
 // ========================================
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
@@ -134,7 +134,7 @@ const News = () => {
       <div className="flex justify-center px-4">
         <Link
           to="/news"
-          className="mt-4 bg-[#1d3866] px-8 py-3 md:py-4 rounded-full w-full md:w-[200px] text-white hover:border-[#1d3866] hover:bg-white hover:text-[#1d3866] transition-colors duration-300 text-sm md:text-md shadow-lg md:shadow-2xl shadow-[#1d3866] border-2 border-[#1d3866] text-center font-medium"
+          className="mt-4 bg-[#1d3866] px-8 py-4 rounded-full w-[200px] text-white hover:border-[#1d3866] hover:bg-white hover:text-[#1d3866] transition-colors duration-300 text-md shadow-lg md:shadow-2xl shadow-[#1d3866] border-2 border-[#1d3866] text-center font-medium"
         >
           Selengkapnya
         </Link>
