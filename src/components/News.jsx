@@ -47,9 +47,9 @@ const News = () => {
               <Link
                 to={`/news/${data.slug}`}
                 key={data.id}
-                className="w-[220px] rounded-lg overflow-hidden shadow-md bg-white transition-all duration-300 hover:shadow-lg flex-shrink-0"
+                className="w-[176px] rounded-lg overflow-hidden shadow-md bg-white transition-all duration-300 hover:shadow-lg flex-shrink-0"
               >
-                <div className="relative overflow-hidden h-32">
+                <div className="relative overflow-hidden h-24">
                   <img
                     className="object-cover h-full w-full"
                     src={data.img}
@@ -57,14 +57,14 @@ const News = () => {
                     loading="lazy"
                   />
                 </div>
-                <div className="p-3">
-                  <div className="text-sm font-semibold mb-1 capitalize text-gray-800 line-clamp-2">
+                <div className="p-2.5">
+                  <div className="text-xs font-semibold mb-1 capitalize text-gray-800 line-clamp-2">
                     {data.tittle.toLowerCase()}
                   </div>
-                  <p className="text-gray-500 text-xs mb-2 line-clamp-2">
+                  <p className="text-gray-500 text-[10px] mb-2 line-clamp-2">
                     {data.excerpt}
                   </p>
-                  <p className="text-gray-400 italic text-[10px]">
+                  <p className="text-gray-400 italic text-[9px]">
                     {new Date(data.date).toLocaleDateString("id-ID", {
                       day: "numeric",
                       month: "long",

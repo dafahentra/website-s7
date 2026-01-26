@@ -7,6 +7,7 @@ const TestimoniSlider = ({ testimonials }) => {
 const [currentIndex, setCurrentIndex] = useState(0);
 const [touchStart, setTouchStart] = useState(0);
 const [touchEnd, setTouchEnd] = useState(0);
+const [direction, setDirection] = useState(0); // 1 for next, -1 for prev
 const sliderRef = useRef(null);
 
 // Minimum swipe distance (in px) to trigger slide change
@@ -37,16 +38,19 @@ return () => window.removeEventListener('resize', handleResize);
 const totalPages = Math.ceil(testimonials.length / itemsPerPage);
 
 const goToSlide = (index) => {
+setDirection(index > currentIndex ? 1 : -1);
 setCurrentIndex(index);
 };
 
 const nextSlide = () => {
+setDirection(1);
 setCurrentIndex((prevIndex) => 
     prevIndex === totalPages - 1 ? 0 : prevIndex + 1
 );
 };
 
 const prevSlide = () => {
+setDirection(-1);
 setCurrentIndex((prevIndex) => 
     prevIndex === 0 ? totalPages - 1 : prevIndex - 1
 );
@@ -94,13 +98,17 @@ return (
     onTouchMove={onTouchMove}
     onTouchEnd={onTouchEnd}
     >
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" custom={direction}>
         <motion.div
         key={currentIndex}
-        initial={{ opacity: 0, x: 100 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -100 }}
-        transition={{ duration: 0.5 }}
+        custom={direction}
+        initial={{ x: direction > 0 ? 1000 : -1000 }}
+        animate={{ x: 0 }}
+        exit={{ x: direction > 0 ? -1000 : 1000 }}
+        transition={{ 
+            x: { type: "spring", stiffness: 300, damping: 30 },
+            duration: 0.5 
+        }}
         className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 place-items-center gap-8"
         >
         {getCurrentTestimonials().map((testi, index) => (

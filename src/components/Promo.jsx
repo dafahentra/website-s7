@@ -21,13 +21,13 @@ const Promo = () => {
         {/* Mobile: Horizontal Scroll */}
         <div className="md:hidden overflow-x-auto px-4 pb-4">
           <div className="flex gap-3 w-max">
-            <div className="rounded-xl w-[200px] overflow-hidden shadow-md flex-shrink-0">
+            <div className="rounded-xl w-[160px] overflow-hidden shadow-md flex-shrink-0">
               <img src={promo1} alt="promo1" className="w-full h-full object-cover" />
             </div>
-            <div className="rounded-xl w-[200px] overflow-hidden shadow-md flex-shrink-0">
+            <div className="rounded-xl w-[160px] overflow-hidden shadow-md flex-shrink-0">
               <img src={promo2} alt="promo2" className="w-full h-full object-cover" />
             </div>
-            <div className="rounded-xl w-[200px] overflow-hidden shadow-md flex-shrink-0">
+            <div className="rounded-xl w-[160px] overflow-hidden shadow-md flex-shrink-0">
               <img src={promo3} alt="promo3" className="w-full h-full object-cover" />
             </div>
           </div>
