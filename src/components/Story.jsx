@@ -1,44 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
+// ========================================
+// 1. Story.jsx - FIXED (Use Custom Hook)
+// ========================================
+import React from "react";
 import story from "../assets/story.png";
 import { Link } from "react-router-dom";
+import useIntersectionObserver from "../hooks/useIntersectionObserver";
 
 const Story = () => {
-  const [isHeaderVisible, setIsHeaderVisible] = useState(false);
-  const [isImageVisible, setIsImageVisible] = useState(false);
-  const [isTextVisible, setIsTextVisible] = useState(false);
-  
-  const headerRef = useRef(null);
-  const imageRef = useRef(null);
-  const textRef = useRef(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            if (entry.target === headerRef.current) {
-              setIsHeaderVisible(true);
-            } else if (entry.target === imageRef.current) {
-              setIsImageVisible(true);
-            } else if (entry.target === textRef.current) {
-              setIsTextVisible(true);
-            }
-          }
-        });
-      },
-      { threshold: 0.2 }
-    );
-
-    if (headerRef.current) observer.observe(headerRef.current);
-    if (imageRef.current) observer.observe(imageRef.current);
-    if (textRef.current) observer.observe(textRef.current);
-
-    return () => {
-      if (headerRef.current) observer.unobserve(headerRef.current);
-      if (imageRef.current) observer.unobserve(imageRef.current);
-      if (textRef.current) observer.unobserve(textRef.current);
-    };
-  }, []);
+  // ✅ FIXED: Gunakan custom hook yang sudah dibuat
+  const [headerRef, isHeaderVisible] = useIntersectionObserver({ threshold: 0.2 });
+  const [imageRef, isImageVisible] = useIntersectionObserver({ threshold: 0.2 });
+  const [textRef, isTextVisible] = useIntersectionObserver({ threshold: 0.2 });
 
   return (
     <div className="max-w-[1200px] my-10 mx-auto">
@@ -72,7 +44,6 @@ const Story = () => {
               Kami hadir untuk memberikan pengalaman rasa yang unik bagi para pecinta kopi dan matcha di lingkungan fakultas.
             </p>
             
-            {/* Wrapper div dengan flexbox untuk centering di mobile */}
             <div className="flex justify-center lg:justify-start">
               <Link to="/about">
                 <button className="mt-4 bg-[#1d3866] px-8 py-4 rounded-full w-[200px] text-white hover:border-[#1d3866] hover:bg-white hover:text-[#1d3866] transition-all duration-300 text-md shadow-2xl shadow-[#1d3866] border-2 border-[#1d3866]">

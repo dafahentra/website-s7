@@ -1,3 +1,6 @@
+// ========================================
+// 4. Promo.jsx - ADD MEMO
+// ========================================
 import React from "react";
 import promo1 from "../assets/promo1.jpg";
 import promo2 from "../assets/promo2.jpg";
@@ -22,13 +25,13 @@ const Promo = () => {
         <div className="md:hidden overflow-x-auto px-4 pb-4">
           <div className="flex gap-3 w-max">
             <div className="rounded-xl w-[160px] overflow-hidden shadow-md flex-shrink-0">
-              <img src={promo1} alt="promo1" className="w-full h-full object-cover" />
+              <img src={promo1} alt="promo1" className="w-full h-full object-cover" loading="lazy" />
             </div>
             <div className="rounded-xl w-[160px] overflow-hidden shadow-md flex-shrink-0">
-              <img src={promo2} alt="promo2" className="w-full h-full object-cover" />
+              <img src={promo2} alt="promo2" className="w-full h-full object-cover" loading="lazy" />
             </div>
             <div className="rounded-xl w-[160px] overflow-hidden shadow-md flex-shrink-0">
-              <img src={promo3} alt="promo3" className="w-full h-full object-cover" />
+              <img src={promo3} alt="promo3" className="w-full h-full object-cover" loading="lazy" />
             </div>
           </div>
         </div>
@@ -36,13 +39,13 @@ const Promo = () => {
         {/* Desktop: Grid Layout */}
         <div className="hidden md:grid lg:grid-cols-3 md:grid-cols-2 gap-8 place-items-center px-10 mx-4">
           <div className="rounded-3xl max-w-md overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <img src={promo1} alt="promo1" className="w-full h-full object-cover" />
+            <img src={promo1} alt="promo1" className="w-full h-full object-cover" loading="lazy" />
           </div>
           <div className="rounded-3xl max-w-md overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <img src={promo2} alt="promo2" className="w-full h-full object-cover" />
+            <img src={promo2} alt="promo2" className="w-full h-full object-cover" loading="lazy" />
           </div>
           <div className="rounded-3xl max-w-md overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <img src={promo3} alt="promo3" className="w-full h-full object-cover" />
+            <img src={promo3} alt="promo3" className="w-full h-full object-cover" loading="lazy" />
           </div>
         </div>
       </div>
@@ -50,4 +53,5 @@ const Promo = () => {
   );
 };
 
-export default Promo;
+// ✅ ADDED: React.memo
+export default React.memo(Promo);

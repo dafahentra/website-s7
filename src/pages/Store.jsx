@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import SEO from "../components/SEO";
 
 const Store = () => {
-const [selectedStore, setSelectedStore] = useState(null);
 
 // Data Store Locations
 const stores = [

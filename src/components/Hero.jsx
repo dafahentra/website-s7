@@ -94,12 +94,12 @@ const Hero = () => {
         <button
           onClick={scrollPrev}
           className="absolute left-2 lg:left-3 top-1/2 -translate-y-1/2 z-20 
-                     backdrop-blur-3xl bg-white/20 hover:bg-white/30
-                     border border-white/30 rounded-full 
-                     p-2 lg:p-2.5
-                     shadow-[0_8px_32px_0_rgba(31,38,135,0.37)]
-                     transition-all duration-300
-                     hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.5)]"
+                    backdrop-blur-3xl bg-white/20 hover:bg-white/30
+                    border border-white/30 rounded-full 
+                    p-2 lg:p-2.5
+                    shadow-[0_8px_32px_0_rgba(31,38,135,0.37)]
+                    transition-all duration-300
+                    hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.5)]"
           style={{
             backdropFilter: 'blur(40px) saturate(180%)',
             WebkitBackdropFilter: 'blur(40px) saturate(180%)',
@@ -113,12 +113,12 @@ const Hero = () => {
         <button
           onClick={scrollNext}
           className="absolute right-2 lg:right-3 top-1/2 -translate-y-1/2 z-20 
-                     backdrop-blur-3xl bg-white/20 hover:bg-white/30
-                     border border-white/30 rounded-full 
-                     p-2 lg:p-2.5
-                     shadow-[0_8px_32px_0_rgba(31,38,135,0.37)]
-                     transition-all duration-300
-                     hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.5)]"
+                    backdrop-blur-3xl bg-white/20 hover:bg-white/30
+                    border border-white/30 rounded-full 
+                    p-2 lg:p-2.5
+                    shadow-[0_8px_32px_0_rgba(31,38,135,0.37)]
+                    transition-all duration-300
+                    hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.5)]"
           style={{
             backdropFilter: 'blur(40px) saturate(180%)',
             WebkitBackdropFilter: 'blur(40px) saturate(180%)',

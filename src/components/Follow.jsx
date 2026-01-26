@@ -79,4 +79,5 @@ const Follow = () => {
   );
 };
 
-export default Follow;
+// ✅ ADDED: React.memo for optimization
+export default React.memo(Follow);

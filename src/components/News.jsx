@@ -1,8 +1,10 @@
-import React from "react";
+// ========================================
+// 3. News.jsx - OPTIMIZED (Add useMemo)
+// ========================================
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { newsData } from "../data/newsData";
 
-// Native SVG Arrow Right Icon (replaces lucide-react)
 const ArrowRight = ({ size = 16, className = "" }) => (
   <svg 
     width={size} 
@@ -21,10 +23,13 @@ const ArrowRight = ({ size = 16, className = "" }) => (
 );
 
 const News = () => {
-  // Ambil 4 berita terbaru saja
-  const latestNews = newsData
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 4);
+  // ✅ OPTIMIZED: Memoize computation
+  const latestNews = useMemo(() => 
+    newsData
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 4),
+    [] // Empty dependency karena newsData static
+  );
 
   return (
     <div className="max-w-[1200px] mx-auto my-20 md:my-40">
