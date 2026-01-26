@@ -1,10 +1,16 @@
 // components/Testimoni/TestimoniSlider.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import TestimoniCard from "./TestimoniCard";
 
 const TestimoniSlider = ({ testimonials }) => {
 const [currentIndex, setCurrentIndex] = useState(0);
+const [touchStart, setTouchStart] = useState(0);
+const [touchEnd, setTouchEnd] = useState(0);
+const sliderRef = useRef(null);
+
+// Minimum swipe distance (in px) to trigger slide change
+const minSwipeDistance = 50;
 
 // Fungsi untuk menghitung jumlah item yang ditampilkan berdasarkan ukuran layar
 const getItemsPerPage = () => {
@@ -34,6 +40,43 @@ const goToSlide = (index) => {
 setCurrentIndex(index);
 };
 
+const nextSlide = () => {
+setCurrentIndex((prevIndex) => 
+    prevIndex === totalPages - 1 ? 0 : prevIndex + 1
+);
+};
+
+const prevSlide = () => {
+setCurrentIndex((prevIndex) => 
+    prevIndex === 0 ? totalPages - 1 : prevIndex - 1
+);
+};
+
+// Touch event handlers
+const onTouchStart = (e) => {
+setTouchEnd(0); // Reset touchEnd
+setTouchStart(e.targetTouches[0].clientX);
+};
+
+const onTouchMove = (e) => {
+setTouchEnd(e.targetTouches[0].clientX);
+};
+
+const onTouchEnd = () => {
+if (!touchStart || !touchEnd) return;
+
+const distance = touchStart - touchEnd;
+const isLeftSwipe = distance > minSwipeDistance;
+const isRightSwipe = distance < -minSwipeDistance;
+
+if (isLeftSwipe) {
+    nextSlide();
+}
+if (isRightSwipe) {
+    prevSlide();
+}
+};
+
 // Get current testimonials to display
 const getCurrentTestimonials = () => {
 const start = currentIndex * itemsPerPage;
@@ -43,8 +86,14 @@ return testimonials.slice(start, end);
 
 return (
 <div className="relative mt-10 mx-4">
-    {/* Testimonials Grid with Animation */}
-    <div className="overflow-hidden">
+    {/* Testimonials Grid with Animation and Touch Support */}
+    <div 
+    ref={sliderRef}
+    className="overflow-hidden touch-pan-y"
+    onTouchStart={onTouchStart}
+    onTouchMove={onTouchMove}
+    onTouchEnd={onTouchEnd}
+    >
     <AnimatePresence mode="wait">
         <motion.div
         key={currentIndex}

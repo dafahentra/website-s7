@@ -11,10 +11,10 @@ import jasmine from "../../assets/jasmine.png";
 
 const Testimoni = () => {
 return (
-    <div className="max-w-[1200px] mx-auto my-20">
+<div className="max-w-[1200px] mx-auto my-20">
     <TestimoniHeader matchaImage={matcha} jasmineImage={jasmine} />
     <TestimoniSlider testimonials={testimonials} />
-    </div>
+</div>
 );
 };
 
