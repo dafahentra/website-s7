@@ -1,15 +1,21 @@
-// components/Navbar/NavbarDesktop.jsx
-import React from "react";
+// ========================================
+// 4. components/Navbar/NavbarDesktop.jsx - UPDATED
+// ========================================
+import React, { useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { FaWhatsapp } from "react-icons/fa";
 import { LuAlignRight } from "react-icons/lu";
 import logo from "../../assets/logo.png";
 import { menuItems, getWhatsAppLink, isActiveRoute } from "../../data/navbarData";
+import useAnalytics from "../../hooks/useAnalytics";
 
 const NavbarDesktop = ({ onMenuToggle }) => {
 const location = useLocation();
-const whatsappLink = getWhatsAppLink();
+const { trackWhatsAppOrder, trackNav } = useAnalytics();
+
+  // Memoize WhatsApp link
+const whatsappLink = useMemo(() => getWhatsAppLink(), []);
 
   // Scroll animations
 const { scrollY } = useScroll();
@@ -30,6 +36,16 @@ const border = useTransform(scrollY, [0, 400], [
 ]);
 const padding = useTransform(scrollY, [0, 400], ["1.5rem 2rem", "0.8rem 2rem"]);
 
+  // Handle WhatsApp Click with Analytics
+const handleWhatsAppClick = () => {
+    trackWhatsAppOrder('desktop');
+};
+
+  // Handle Navigation Click with Analytics
+const handleNavClick = (itemName) => {
+    trackNav(itemName);
+};
+
 return (
     <motion.nav
     style={{
@@ -44,7 +60,7 @@ return (
     className="pointer-events-auto backdrop-blur-md flex items-center justify-between max-w-[1400px]"
     >
       {/* Logo Section */}
-    <Link to="/" className="flex items-center">
+    <Link to="/" onClick={() => handleNavClick('Logo')}>
         <motion.img 
         src={logo} 
         alt="logo" 
@@ -60,6 +76,7 @@ return (
         <li key={item.path}>
             <Link
             to={item.path}
+            onClick={() => handleNavClick(item.name)}
             className={`cursor-pointer transition-colors duration-300 whitespace-nowrap ${
                 isActiveRoute(location.pathname, item.path)
                 ? "text-[#f39248]" 
@@ -71,12 +88,13 @@ return (
         </li>
         ))}
         
-        {/* Order Button - WhatsApp Direct Link */}
+        {/* Order Button - WhatsApp Direct Link with Analytics */}
         <li>
         <a
             href={whatsappLink}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={handleWhatsAppClick}
             className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-500 text-white px-6 py-3 rounded-full hover:from-[#1d3866] hover:to-green-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 whitespace-nowrap"
         >
             <FaWhatsapp className="text-xl" />
@@ -96,4 +114,4 @@ return (
 );
 };
 
-export default NavbarDesktop;
+export default React.memo(NavbarDesktop);

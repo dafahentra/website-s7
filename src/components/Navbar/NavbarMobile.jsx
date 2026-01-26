@@ -1,18 +1,31 @@
-// components/Navbar/NavbarMobile.jsx
-import React from "react";
+// ========================================
+// 5. components/Navbar/NavbarMobile.jsx - UPDATED
+// ========================================
+import React, { useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { IoMdClose } from "react-icons/io";
 import { FaWhatsapp } from "react-icons/fa";
 import logo from "../../assets/logo.png";
 import { menuItems, getWhatsAppLink, isActiveRoute } from "../../data/navbarData";
+import useAnalytics from "../../hooks/useAnalytics";
 
 const NavbarMobile = ({ isOpen, onClose }) => {
 const location = useLocation();
-const whatsappLink = getWhatsAppLink();
+const { trackWhatsAppOrder, trackNav } = useAnalytics();
 
-  // Close mobile menu saat navigasi
-const handleNavClick = () => {
+  // Memoize WhatsApp link
+const whatsappLink = useMemo(() => getWhatsAppLink(), []);
+
+  // Handle WhatsApp Click with Analytics
+const handleWhatsAppClick = () => {
+    trackWhatsAppOrder('mobile');
+    onClose();
+};
+
+  // Handle Navigation Click with Analytics
+const handleNavClick = (itemName) => {
+    trackNav(itemName);
     onClose();
 };
 
@@ -38,7 +51,7 @@ return (
         className="fixed top-0 right-0 w-full min-h-screen bg-[#ebe9e7] z-[40] flex flex-col items-center justify-center lg:hidden overflow-y-auto"
     >
         {/* Logo */}
-        <Link to="/" onClick={handleNavClick}>
+        <Link to="/" onClick={() => handleNavClick('Logo')}>
         <img src={logo} alt="logo" className="mb-10 w-24" />
         </Link>
 
@@ -48,7 +61,7 @@ return (
             <li key={item.path}>
             <Link
                 to={item.path}
-                onClick={handleNavClick}
+                onClick={() => handleNavClick(item.name)}
                 className={`${
                 isActiveRoute(location.pathname, item.path)
                     ? "text-[#f39248]" 
@@ -60,13 +73,13 @@ return (
             </li>
         ))}
         
-          {/* Order Button - Mobile */}
+          {/* Order Button - Mobile with Analytics */}
         <li className="pt-4">
             <a
             href={whatsappLink}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={handleNavClick}
+            onClick={handleWhatsAppClick}
             className="inline-flex items-center gap-3 bg-gradient-to-r from-green-600 to-green-500 text-white px-8 py-4 rounded-full hover:from-[#1d3866] hover:to-green-600 transition-all duration-300 shadow-xl text-lg font-bold"
             >
             <FaWhatsapp className="text-2xl" />
@@ -88,4 +101,4 @@ return (
 );
 };
 
-export default NavbarMobile;
+export default React.memo(NavbarMobile);
