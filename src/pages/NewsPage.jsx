@@ -28,7 +28,7 @@ return (
     className="group bg-white rounded-lg overflow-hidden shadow-md transition-all duration-500 hover:shadow-[0_0_30px_rgba(29,56,102,0.3)] block h-full"
     >
     {/* Image dengan loading lazy */}
-    <div className="relative h-64 overflow-hidden">
+    <div className="relative h-40 md:h-64 overflow-hidden">
         <img
         src={article.img}
         alt={article.tittle}
@@ -38,9 +38,9 @@ return (
     </div>
 
     {/* Content */}
-    <div className="p-6">
+    <div className="p-3 md:p-6">
         {/* Category & Date */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2 md:mb-3">
         <span className="inline-block bg-[#f39248]/10 text-[#f39248] px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 group-hover:bg-[#1d3866] group-hover:text-white">
             {article.category}
         </span>
@@ -50,24 +50,24 @@ return (
         </div>
 
         {/* Title */}
-        <h3 className="text-lg font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-[#1d3866] transition-colors">
+        <h3 className="text-sm md:text-lg font-bold text-gray-800 mb-2 md:mb-3 line-clamp-2 group-hover:text-[#1d3866] transition-colors">
         {article.tittle}
         </h3>
 
         {/* Excerpt */}
-        <p className="text-gray-600 text-sm line-clamp-3 mb-4">
+        <p className="text-gray-600 text-xs md:text-sm line-clamp-2 md:line-clamp-3 mb-3 md:mb-4">
         {article.excerpt}
         </p>
 
         {/* Location & Read More */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+        <div className="flex items-center justify-between pt-2 md:pt-4 border-t border-gray-100">
         <p className="text-xs text-gray-500">
             {authorFirstName}
         </p>
-        <div className="flex items-center text-[#1d3866] font-medium text-sm group-hover:gap-2 transition-all">
-            <span>Read More</span>
+        <div className="flex items-center text-[#1d3866] font-medium text-xs md:text-sm group-hover:gap-2 transition-all">
+            <span className="hidden md:inline">Read More</span>
             <ArrowRight
-            size={16}
+            size={14}
             className="group-hover:translate-x-1 transition-transform"
             />
         </div>
@@ -260,7 +260,7 @@ return (
         variants={containerVariants}
         initial="initial"
         animate="animate"
-        className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+        className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8"
         >
         {currentNews.map((article) => (
             <NewsCard key={article.id} article={article} />
