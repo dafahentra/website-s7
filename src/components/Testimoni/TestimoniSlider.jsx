@@ -106,8 +106,12 @@ return (
         animate={{ x: 0 }}
         exit={{ x: direction > 0 ? -1000 : 1000 }}
         transition={{ 
-            x: { type: "spring", stiffness: 300, damping: 30 },
-            duration: 0.5 
+            x: { 
+            type: "spring", 
+            stiffness: 150,  // Lebih rendah = lebih lambat (dari 300)
+            damping: 25      // Lebih tinggi = lebih smooth (dari 30)
+            },
+            duration: 0.8      // Lebih lama (dari 0.5)
         }}
         className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 place-items-center gap-8"
         >
