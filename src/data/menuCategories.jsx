@@ -13,8 +13,8 @@ export const menuCategories = [
     )
 },
 { 
-    id: "Flavoured Based", 
-    name: "Flavoured Based",
+    id: "Flavoured Lattes", 
+    name: "Flavoured Lattes",
     icon: (
     <svg className="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
         <path d="M3 19h18v2H3v-2M5 6v7c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4V6H5m2 0h10v1c0 .28-.11.53-.29.71-.19.19-.44.29-.71.29H8c-.28 0-.53-.11-.71-.29C7.11 7.53 7 7.28 7 7V6m0 3h10v4c0 1.11-.89 2-2 2H9c-1.11 0-2-.89-2-2V9m3-7c0-.55.45-1 1-1h2c.55 0 1 .45 1 1v2h-4V2z"/>
