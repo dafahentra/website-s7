@@ -49,7 +49,7 @@ return (
     <>
     <SEO 
         title="Menu - SECTOR SEVEN"
-        description="Explore our menu of hybrid specialty between coffee and matcha drinks at SECTOR SEVEN. From espresso-based drinks to flavoured ones, signature beverages, and non-coffee options. Premium quality in every cup."
+        description="Explore our menu of hybrid specialty between coffee & matcha drinks at SECTOR SEVEN. From espresso-based drinks to flavoured ones, signature beverages, and non-coffee options. Premium quality in every cup."
         keywords="sector seven menu, coffee menu yogyakarta, espresso menu, manual brew coffee, specialty drinks, signature coffee, coffee prices yogyakarta, best coffee menu ugm"
         url="/menu"
         image="/og-image.jpg"

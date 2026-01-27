@@ -16,7 +16,7 @@ return (
 <>
     <SEO 
     title="About - SECTOR SEVEN"
-    description="Discover the story behind SECTOR SEVEN. Learn about our passion for dual specialty, commitment to quality, and our journey in bringing best quality coffee and matcha experience to Yogyakarta."
+    description="Discover the story behind SECTOR SEVEN. Learn about our passion for dual specialty, commitment to quality, and our journey in bringing best quality coffee & matcha experience to Yogyakarta."
     keywords="sector seven about, coffee story yogyakarta, specialty coffee story, our values, sector seven team, coffee passion, premium coffee yogyakarta, matcha ceremonial yogyakarta, matcha jogja"
     url="/about"
     image="/og-image.jpg"
