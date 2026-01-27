@@ -91,7 +91,7 @@ const Contact = () => {
   const { trackWhatsAppOrder } = useAnalytics();
 
   return (
-    <div className="max-w-[1200px] mx-auto mt-20 mb-5">
+    <div className="max-w-[1200px] mx-auto mt-20 mb-16">
       <div className="flex lg:flex-row flex-col gap-4 mx-4 lg:items-start items-center">
         <div className="lg:w-1/3">
           <img src={logo} alt="logo" width={200} className="bg-cover" />
@@ -147,17 +147,17 @@ const Contact = () => {
       </div>
 
       {/* Social Media Links - Mobile only (below maps) */}
-      <div className="mx-4 mt-4 lg:hidden">
+      <div className="mx-4 mt-8 lg:hidden">
         <SocialMediaLinks className="justify-center" size={28} />
       </div>
 
-      <div className="mx-4 mt-6 flex lg:flex-row flex-col lg:space-y-0 lg:justify-between justify-start space-y-10 items-center">
+      <div className="mx-4 mt-12 pb-12 flex lg:flex-row flex-col lg:space-y-0 lg:justify-between justify-start space-y-10 items-center">
         <span className="text-[#1e4a3c] text-sm">
           © 2025 SECTOR SEVEN, All Rights Reserved
         </span>
         
         {/* Social Media Links - Desktop only (right side) */}
-        <div className="hidden lg:block">
+        <div className="hidden lg:flex lg:justify-end">
           <SocialMediaLinks size={28} />
         </div>
       </div>

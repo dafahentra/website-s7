@@ -102,7 +102,7 @@ const handleDragEnd = useCallback((e, { offset, velocity }) => {
 
 const containerClass = isMobile 
     ? "px-6 py-8 border-b border-gray-200"
-    : "px-12 pt-24 pb-8 border-b border-gray-200";
+    : "px-12 pt-32 pb-8 border-b border-gray-200";
 
 const imageSize = isMobile ? "w-64 h-64" : "w-72 h-72";
 const flexGap = isMobile ? 'gap-4' : 'gap-8';

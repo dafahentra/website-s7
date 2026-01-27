@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import SEO from "../components/SEO";
+import Contact from "../components/Contact";
 
 const Store = () => {
 
@@ -113,6 +114,7 @@ return (
         ))}
         </div>
     </div>
+    <Contact />
     </div>
 </>
 );

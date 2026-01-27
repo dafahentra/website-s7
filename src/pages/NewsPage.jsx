@@ -4,6 +4,7 @@ import { newsData } from "../data/newsData";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import SEO from "../components/SEO";
+import Contact from "../components/Contact";
 
 // Memoized NewsCard Component untuk menghindari re-render yang tidak perlu
 const NewsCard = memo(({ article }) => {
@@ -316,6 +317,7 @@ return (
         </motion.div>
         )}
     </div>
+    <Contact />
     </motion.div>
 </>
 );
