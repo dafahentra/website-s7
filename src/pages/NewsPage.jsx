@@ -211,7 +211,7 @@ return (
     <SEO 
     title="News - SECTOR SEVEN"
     description="Get the latest updates and stories from SECTOR SEVEN. Discover brewing guides, matcha culture, and more."
-    keywords="sector seven news, coffee news yogyakarta, coffee articles, brewing guides, coffee culture, specialty coffee tips, matcha news yogyakarta, matcha articles"
+    keywords="sector seven matcha,sector seven news, coffee news yogyakarta, coffee articles, brewing guides, coffee culture, specialty coffee tips, matcha news yogyakarta, matcha articles"
     url="/news"
     image="/og-image.jpg"
     />
