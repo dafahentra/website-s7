@@ -56,7 +56,7 @@ return (
         value={formData.name}
         onChange={onChange}
         required
-        placeholder="Siti Intan"
+        placeholder="John Doe"
     />
 
     {/* Email */}
@@ -67,7 +67,7 @@ return (
         value={formData.email}
         onChange={onChange}
         required
-        placeholder="SitiIntan@example.com"
+        placeholder="johndoe@example.com"
     />
 
     {/* Phone */}
@@ -77,7 +77,7 @@ return (
         name="phone"
         value={formData.phone}
         onChange={onChange}
-        placeholder="+62 812-3456-7890"
+        placeholder="+62 8xxxxxxxx"
     />
 
     {/* Message */}
@@ -89,7 +89,7 @@ return (
         onChange={onChange}
         required
         rows={4}
-        placeholder="Keren Banget Lu Bang"
+        placeholder="Write Your Message Here..."
     />
 
     {/* Submit Button */}
