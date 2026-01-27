@@ -11,7 +11,7 @@ url,
 type = 'website',
 author = 'SECTOR SEVEN'
 }) => {
-const siteUrl = 'https://sectorseven.netlify.app'; // GANTI DENGAN DOMAIN ASLI ANDA
+const siteUrl = 'https://sectorseven.space'; // GANTI DENGAN DOMAIN ASLI ANDA
 const fullUrl = url ? `${siteUrl}${url}` : siteUrl;
 const imageUrl = image ? (image.startsWith('http') ? image : `${siteUrl}${image}`) : `${siteUrl}/og-image.jpg`;
 

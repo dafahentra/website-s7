@@ -2,7 +2,7 @@
 import { newsData } from '../data/newsData';
 
 export const generateSitemap = () => {
-const baseUrl = 'https://sectorseven.netlify.app'; // Ganti dengan domain Anda
+const baseUrl = 'https://sectorseven.space'; // Ganti dengan domain Anda
 const today = new Date().toISOString().split('T')[0];
 
 const staticPages = [
