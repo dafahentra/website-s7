@@ -3,22 +3,29 @@ export const menuItems = {
 "Espresso Based": [
 {
     id: 1,
+    name: "Sectorize",
+    description: "Our signature iced blend. Bold espresso meets creamy milk and a sweet touch of condensed milk for a perfectly balanced finish.",
+    price: "20.000",
+    image: "https://images.unsplash.com/photo-1561882468-9110e03e0f78?w=600&h=600&fit=crop"
+},
+{
+    id: 1,
     name: "Americano",
-    description: "Satu shot espresso dengan susu steam dan berlapis foam tipis di atasnya tanpa gula",
+    description: "An Americano, rich espresso shots. Bold and robust cup.",
     price: "20.000",
     image: "https://images.unsplash.com/photo-1561882468-9110e03e0f78?w=600&h=600&fit=crop"
 },
 {
     id: 2,
     name: "Latte",
-    description: "Espresso dengan susu foam yang creamy dan rich",
+    description: "Our espresso flows through a channel of perfectly steamed milk.",
     price: "22.000",
     image: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=600&h=600&fit=crop"
 },
 {
     id: 3,
     name: "Cappucino",
-    description: "Classic espresso dengan hot water yang smooth",
+    description: "Balanced engine of espresso, steamed milk, and a dense cap of velvety foam.",
     price: "18.000",
     image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=600&fit=crop"
 }
@@ -27,65 +34,72 @@ export const menuItems = {
 {
     id: 7,
     name: "White Vanilla",
-    description: "Blended ice coffee dengan caramel sauce",
+    description: "The original Vanilla Latte, rich espresso, steamed milk, and timeless vanillla",
     price: "28.000",
     image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&h=600&fit=crop"
 },
 {
     id: 8,
     name: "Buttery",
-    description: "Chocolate blended dengan espresso dan whipped cream",
+    description: "A warm Butterscotch Latte, blend of rich espresso and buttery, melted butterscotch",
     price: "30.000",
     image: "https://images.unsplash.com/photo-1562843142-c4fe25b78c78?w=600&h=600&fit=crop"
 },
 {
     id: 89,
     name: "Hazelnutz",
-    description: "Chocolate blended dengan espresso dan whipped cream",
+    description: "A perfect Hazelnut Latte, bold espresso, creamy milk, and roasted hazelnut.",
     price: "30.000",
     image: "https://images.unsplash.com/photo-1562843142-c4fe25b78c78?w=600&h=600&fit=crop"
 },
 {
     id: 81,
     name: "Palmer",
-    description: "Chocolate blended dengan espresso dan whipped cream",
+    description: "A beauty of Palm Sugar, steamed milk, and marked with espresso",
     price: "30.000",
     image: "https://images.unsplash.com/photo-1562843142-c4fe25b78c78?w=600&h=600&fit=crop"
 },
 {
     id: 81,
     name: "Caramelted",
-    description: "Chocolate blended dengan espresso dan whipped cream",
+    description: "A suspended balance of sweet, Salted Caramel Latte, and a sharp sea salt, all unified with smooth espresso",
     price: "30.000",
     image: "https://images.unsplash.com/photo-1562843142-c4fe25b78c78?w=600&h=600&fit=crop"
 }
 ],
 "Matcha Series": [
 {
+    id: 23,
+    name: "Pure Matcha",
+    description: "The soft, caring, unexpected taste. A clean, focused charge of ceremonial Pure Matcha, whisked with pure water.",
+    price: "26.000",
+    image: "https://images.unsplash.com/photo-1556910110-a6c7c4c0e2d6?w=600&h=600&fit=crop"
+},
+{
     id: 9,
     name: "Green Flag",
-    description: "Premium matcha dari Jepang dengan susu yang creamy",
+    description: "Vibrant Matcha Latte, ceremonial matcha perfectly suspended in creamy steamed milk.",
     price: "26.000",
     image: "https://images.unsplash.com/photo-1556910110-a6c7c4c0e2d6?w=600&h=600&fit=crop"
 },
 {
     id: 10,
     name: "Red Flag",
-    description: "Fresh matcha dengan es batu yang menyegarkan",
+    description: "Sweet Strawberry purée rises to meet a creamy, earthy float of ceremonial matcha.",
     price: "24.000",
     image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&h=600&fit=crop"
 },
 {
     id: 21,
     name: "Dirty Matcha",
-    description: "Fresh matcha dengan es batu yang menyegarkan",
+    description: "A powerful, gritty fusion of Dirty Matcha and a shot of our signature espresso.",
     price: "24.000",
     image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&h=600&fit=crop"
 },
 {
     id: 22,
     name: "Sea Salt Matcha",
-    description: "Fresh matcha dengan es batu yang menyegarkan",
+    description: "Sea Salt matcha and milk, topped with a savory, salted cream foam",
     price: "24.000",
     image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&h=600&fit=crop"
 },
@@ -94,35 +108,33 @@ export const menuItems = {
 {
     id: 11,
     name: "Chocolate",
-    description: "Susu dengan hazelnut syrup yang creamy",
+    description: "A deep and decadent cup of chocolate and steamed milk.",
     price: "25.000",
     image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cda9?w=600&h=600&fit=crop"
 },
 {
     id: 12,
     name: "Red Velvet",
-    description: "Fresh milk dengan vanilla yang aromatic",
+    description: "A smooth, crimson-hued blend of vanilla, light cocoa, and a sweet finish.",
     price: "20.000",
     image: "https://images.unsplash.com/photo-1597318378921-d89f8d46c7a2?w=600&h=600&fit=crop"
 },
 ],
-"Pastry": [
+"BreadMade": [
 {
     id: 13,
     name: "Croissant",
-    description: "Butter croissant yang flaky dan lembut",
+    description: "Flaky, buttery, and meticulously layered, straight from the ovens.",
     price: "22.000",
     image: "https://images.unsplash.com/photo-1523677011781-c91d1bbe2f8d?w=600&h=600&fit=crop"
-}
-],
-"Sourdough": [
+},
 {
-    id: 15,
-    name: "Plain Sourdough",
-    description: "Sourdough bread klasik dengan tekstur kenyal",
-    price: "35.000",
-    image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600&h=600&fit=crop"
-}
+    id: 133,
+    name: "Sourdough",
+    description: "A hearty tangy slice of classic sourdough, served toasted with butter.",
+    price: "22.000",
+    image: "https://images.unsplash.com/photo-1523677011781-c91d1bbe2f8d?w=600&h=600&fit=crop"
+},
 ],
 "Instant": [
 {
