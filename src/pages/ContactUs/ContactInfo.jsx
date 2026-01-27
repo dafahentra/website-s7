@@ -69,7 +69,7 @@ return (
         <div className="relative z-10 flex-1 flex flex-col">
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4">Contact Information</h2>
         <p className="text-white/90 mb-8 sm:mb-10 lg:mb-12 leading-relaxed text-sm sm:text-base">
-            Should you have any question or concern, you can reach us by filling out the contact form, calling us, coming to our office, finding us on other social networks, or you can personal email us at :
+            Should you have any question or concern, you can reach us by filling out the contact form, calling us, finding us on other social networks, or you can personal email us at :
         </p>
 
           {/* Contact Details */}

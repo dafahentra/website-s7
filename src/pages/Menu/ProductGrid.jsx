@@ -23,7 +23,7 @@ const handleProductClick = useCallback((itemId) => {
 return (
     <div className={`${padding} max-w-7xl mx-auto`}>
     <h2 className={`${titleSize} font-bold text-[#1d3866] ${titleMargin}`}>
-        Semua Menu {activeCategory}
+        See All {activeCategory}
     </h2>
     
     <div className={`grid ${gridCols} ${gap}`}>

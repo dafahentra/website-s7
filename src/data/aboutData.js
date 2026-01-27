@@ -14,13 +14,13 @@ export const bodMembers = [
 },
 {
     name: "Dafa Hentra A",
-    position: "Finance & Legal Director",
+    position: "Finance Director",
     image: dapekImg,
     bio: "Indonesian Citizen, born in 1982. Expert in business development and strategic planning.",
 },
 {
     name: "Siti Intan N",
-    position: "Marketing & Brand Director",
+    position: "Marketing Director",
     image: intanImg,
     bio: "Indonesian Citizen, born in 1985. Specialist in corporate finance and investment.",
 },
