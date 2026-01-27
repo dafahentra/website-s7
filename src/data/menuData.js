@@ -10,7 +10,7 @@ export const menuItems = {
 },
 {
     id: 2,
-    name: "Caffe Latte",
+    name: "Latte",
     description: "Espresso dengan susu foam yang creamy dan rich",
     price: "22.000",
     image: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=600&h=600&fit=crop"
@@ -23,31 +23,38 @@ export const menuItems = {
     image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=600&fit=crop"
 }
 ],
-"Flavoured Based": [
+"Flavoured Lattes": [
 {
     id: 7,
-    name: "Hazelnut Latte",
+    name: "White Vanilla",
     description: "Blended ice coffee dengan caramel sauce",
     price: "28.000",
     image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&h=600&fit=crop"
 },
 {
     id: 8,
-    name: "Spanish Latte",
+    name: "Buttery",
     description: "Chocolate blended dengan espresso dan whipped cream",
     price: "30.000",
     image: "https://images.unsplash.com/photo-1562843142-c4fe25b78c78?w=600&h=600&fit=crop"
 },
 {
     id: 89,
-    name: "Palm Sugar Latte",
+    name: "Hazelnutz",
     description: "Chocolate blended dengan espresso dan whipped cream",
     price: "30.000",
     image: "https://images.unsplash.com/photo-1562843142-c4fe25b78c78?w=600&h=600&fit=crop"
 },
 {
     id: 81,
-    name: "Vanilla Latte",
+    name: "Palmer",
+    description: "Chocolate blended dengan espresso dan whipped cream",
+    price: "30.000",
+    image: "https://images.unsplash.com/photo-1562843142-c4fe25b78c78?w=600&h=600&fit=crop"
+},
+{
+    id: 81,
+    name: "Caramelted",
     description: "Chocolate blended dengan espresso dan whipped cream",
     price: "30.000",
     image: "https://images.unsplash.com/photo-1562843142-c4fe25b78c78?w=600&h=600&fit=crop"
@@ -56,21 +63,21 @@ export const menuItems = {
 "Matcha Series": [
 {
     id: 9,
-    name: "Pure Matcha",
+    name: "Green Flag",
     description: "Premium matcha dari Jepang dengan susu yang creamy",
     price: "26.000",
     image: "https://images.unsplash.com/photo-1556910110-a6c7c4c0e2d6?w=600&h=600&fit=crop"
 },
 {
     id: 10,
-    name: "Matcha Latte",
+    name: "Red Flag",
     description: "Fresh matcha dengan es batu yang menyegarkan",
     price: "24.000",
     image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&h=600&fit=crop"
 },
 {
     id: 21,
-    name: "Matcha Strawberry",
+    name: "Dirty Matcha",
     description: "Fresh matcha dengan es batu yang menyegarkan",
     price: "24.000",
     image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&h=600&fit=crop"
@@ -86,7 +93,7 @@ export const menuItems = {
 "Milk Series": [
 {
     id: 11,
-    name: "Dark Chocolate",
+    name: "Chocolate",
     description: "Susu dengan hazelnut syrup yang creamy",
     price: "25.000",
     image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cda9?w=600&h=600&fit=crop"
@@ -106,14 +113,7 @@ export const menuItems = {
     description: "Butter croissant yang flaky dan lembut",
     price: "22.000",
     image: "https://images.unsplash.com/photo-1523677011781-c91d1bbe2f8d?w=600&h=600&fit=crop"
-},
-{
-    id: 14,
-    name: "Chocolate Muffin",
-    description: "Muffin cokelat dengan choco chips",
-    price: "26.000",
-    image: "https://images.unsplash.com/photo-1546173159-315724a31696?w=600&h=600&fit=crop"
-},
+}
 ],
 "Sourdough": [
 {
@@ -122,14 +122,7 @@ export const menuItems = {
     description: "Sourdough bread klasik dengan tekstur kenyal",
     price: "35.000",
     image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600&h=600&fit=crop"
-},
-{
-    id: 16,
-    name: "Sourdough Toast",
-    description: "Sourdough panggang dengan butter",
-    price: "25.000",
-    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&h=600&fit=crop"
-},
+}
 ],
 "Instant": [
 {
