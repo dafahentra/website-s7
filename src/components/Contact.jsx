@@ -42,7 +42,7 @@ const SOCIAL_MEDIA_CONFIG = [
   {
     id: "tiktok",
     name: "TikTok",
-    url: "https://tiktok.com/@sectorseven.yk",
+    url: "https://www.tiktok.com/@sectorseven.id?_r=1&_t=ZS-93PsAy0pkzY",
     icon: TikTokIcon,
     color: "#000000"
   },
