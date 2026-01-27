@@ -9,21 +9,21 @@ export const menuItems = {
     image: "https://images.unsplash.com/photo-1561882468-9110e03e0f78?w=600&h=600&fit=crop"
 },
 {
-    id: 1,
+    id: 2,
     name: "Americano",
     description: "An Americano, rich espresso shots. Bold and robust cup.",
     price: "20.000",
     image: "https://images.unsplash.com/photo-1561882468-9110e03e0f78?w=600&h=600&fit=crop"
 },
 {
-    id: 2,
+    id: 3,
     name: "Latte",
     description: "Our espresso flows through a channel of perfectly steamed milk.",
     price: "22.000",
     image: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=600&h=600&fit=crop"
 },
 {
-    id: 3,
+    id: 4,
     name: "Cappucino",
     description: "Balanced engine of espresso, steamed milk, and a dense cap of velvety foam.",
     price: "18.000",
@@ -32,35 +32,35 @@ export const menuItems = {
 ],
 "Flavoured Lattes": [
 {
-    id: 7,
+    id: 5,
     name: "White Vanilla",
     description: "The original Vanilla Latte, rich espresso, steamed milk, and timeless vanillla",
     price: "28.000",
     image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&h=600&fit=crop"
 },
 {
-    id: 8,
+    id: 6,
     name: "Buttery",
     description: "A warm Butterscotch Latte, blend of rich espresso and buttery, melted butterscotch",
     price: "30.000",
     image: "https://images.unsplash.com/photo-1562843142-c4fe25b78c78?w=600&h=600&fit=crop"
 },
 {
-    id: 89,
+    id: 7,
     name: "Hazelnutz",
     description: "A perfect Hazelnut Latte, bold espresso, creamy milk, and roasted hazelnut.",
     price: "30.000",
     image: "https://images.unsplash.com/photo-1562843142-c4fe25b78c78?w=600&h=600&fit=crop"
 },
 {
-    id: 81,
+    id: 8,
     name: "Palmer",
     description: "A beauty of Palm Sugar, steamed milk, and marked with espresso",
     price: "30.000",
     image: "https://images.unsplash.com/photo-1562843142-c4fe25b78c78?w=600&h=600&fit=crop"
 },
 {
-    id: 81,
+    id: 9,
     name: "Caramelted",
     description: "A suspended balance of sweet, Salted Caramel Latte, and a sharp sea salt, all unified with smooth espresso",
     price: "30.000",
@@ -69,35 +69,35 @@ export const menuItems = {
 ],
 "Matcha Series": [
 {
-    id: 23,
+    id: 10,
     name: "Pure Matcha",
     description: "The soft, caring, unexpected taste. A clean, focused charge of ceremonial Pure Matcha, whisked with pure water.",
     price: "26.000",
     image: "https://images.unsplash.com/photo-1556910110-a6c7c4c0e2d6?w=600&h=600&fit=crop"
 },
 {
-    id: 9,
+    id: 11,
     name: "Green Flag",
     description: "Vibrant Matcha Latte, ceremonial matcha perfectly suspended in creamy steamed milk.",
     price: "26.000",
     image: "https://images.unsplash.com/photo-1556910110-a6c7c4c0e2d6?w=600&h=600&fit=crop"
 },
 {
-    id: 10,
+    id: 12,
     name: "Red Flag",
     description: "Sweet Strawberry purée rises to meet a creamy, earthy float of ceremonial matcha.",
     price: "24.000",
     image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&h=600&fit=crop"
 },
 {
-    id: 21,
+    id: 13,
     name: "Dirty Matcha",
     description: "A powerful, gritty fusion of Dirty Matcha and a shot of our signature espresso.",
     price: "24.000",
     image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&h=600&fit=crop"
 },
 {
-    id: 22,
+    id: 14,
     name: "Sea Salt Matcha",
     description: "Sea Salt matcha and milk, topped with a savory, salted cream foam",
     price: "24.000",
@@ -106,14 +106,14 @@ export const menuItems = {
 ],
 "Milk Series": [
 {
-    id: 11,
+    id: 15,
     name: "Chocolate",
     description: "A deep and decadent cup of chocolate and steamed milk.",
     price: "25.000",
     image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cda9?w=600&h=600&fit=crop"
 },
 {
-    id: 12,
+    id: 16,
     name: "Red Velvet",
     description: "A smooth, crimson-hued blend of vanilla, light cocoa, and a sweet finish.",
     price: "20.000",
@@ -122,14 +122,14 @@ export const menuItems = {
 ],
 "BreadMade": [
 {
-    id: 13,
+    id: 17,
     name: "Croissant",
     description: "Flaky, buttery, and meticulously layered, straight from the ovens.",
     price: "22.000",
     image: "https://images.unsplash.com/photo-1523677011781-c91d1bbe2f8d?w=600&h=600&fit=crop"
 },
 {
-    id: 133,
+    id: 18,
     name: "Sourdough",
     description: "A hearty tangy slice of classic sourdough, served toasted with butter.",
     price: "22.000",
@@ -138,14 +138,14 @@ export const menuItems = {
 ],
 "Instant": [
 {
-    id: 17,
+    id: 19,
     name: "Kopi Instan Sachet",
     description: "Kopi instan premium siap seduh (10 sachet)",
     price: "45.000",
     image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&h=600&fit=crop"
 },
 {
-    id: 18,
+    id: 20,
     name: "Matcha Instant",
     description: "Matcha instant powder (100gr)",
     price: "55.000",
