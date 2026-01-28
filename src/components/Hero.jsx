@@ -13,8 +13,8 @@ const Hero = () => {
   const slides = [
     {
       id: 1,
-      title: "Your Soul",
-      subtitle: "Your Sector",
+      title: "Your Sector",
+      subtitle: "Your Soul",
       description: "Dibuat dari biji kopi Indonesia pilihan untuk pengalaman minum kopi terbaik setiap hari",
       image: coffee,
       alt: "coffee"
