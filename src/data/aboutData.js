@@ -32,7 +32,7 @@ export const bodMembers = [
 },
 {
     name: "Devon Del Frey",
-    position: "Business Development Director",
+    position: "Business Development",
     image: deponImg,
     bio: "Indonesian Citizen, born in 1975. Expertise in sustainable business practices and ESG.",
 },

@@ -35,7 +35,7 @@ const SOCIAL_MEDIA_CONFIG = [
   {
     id: "linkedin",
     name: "LinkedIn",
-    url: "https://linkedin.com/company/sectorseven",
+    url: "https://linkedin.com/company/sector-seven-id",
     icon: LinkedInIcon,
     color: "#0077b5"
   },
