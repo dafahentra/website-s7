@@ -64,7 +64,7 @@ const BoardOfDirectors = ({ members }) => {
 return (
 <div className="py-20 bg-white">
     <div className="max-w-[1200px] mx-auto px-4">
-    <h2 className="text-4xl md:text-6xl font-bold text-[#2c5530] mb-12 md:mb-16 text-center">
+    <h2 className="text-4xl md:text-6xl font-bold text-[#1d3866] mb-12 md:mb-16 text-center">
         Board of Directors
     </h2>
 
