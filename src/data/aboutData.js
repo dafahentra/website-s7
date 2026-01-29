@@ -44,8 +44,8 @@ export const milestones = [
     title: "Launched First Store",
     description: "SECTOR SEVEN membuka toko pertamanya di CIMB Niaga Digital Lounge dengan fokus pada matcha berkualitas tinggi.",
     details: [
-    "Berhasil membuka toko pertama di CIMB Digital Lounge FEB UGM Yogyakarta",
-    "Memperkenalkan konsep duality antara matcha premium dan kopi berkualitas dengan sentuhan lokal"
+    "Opened first store at CIMB Digital Lounge, FEB UGM Yogyakarta",
+    "Introduced coffee-matcha duality with premium local Indonesian ingredients throughout menu"
     ],
     image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&h=400&fit=crop"
 }

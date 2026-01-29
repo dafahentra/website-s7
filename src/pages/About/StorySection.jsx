@@ -16,13 +16,12 @@ return (
         Your Sector,<br />Your Soul
         </h2>
         <p className="text-lg text-gray-700 leading-relaxed mb-6">
-        Di tengah kesibukan dunia modern, mudah untuk kehilangan fokus pada hal-hal yang benar-benar penting.
-        Sector Seven hadir sebagai tempat pelarian di mana Anda dapat memperlambat tempo dan menikmati
-        secangkir minuman berkualitas tinggi.
+        Your campus life moves at an impossible pace. Assignments stack up. Meetings overlap. Sleep becomes optional. 
+        To survive this, you need real fuel. We keep you sharp. Sector Seven delivers exactly what you need when you need it.
         </p>
         <p className="text-lg text-gray-700 leading-relaxed">
-        Filosofi kami tercermin dalam setiap cangkir yang kami sajikan - menginspirasi orang untuk
-        merangkul hal-hal esensial dalam hidup di tengah gaya hidup yang sibuk, satu cangkir pada satu waktu.
+        Yet constant speed burns you out. When adrenaline becomes anxiety, we restore balance. 
+        Calm energy. Clear focus. No crash. Sector Seven holds space for both hustle and healing.
         </p>
     </motion.div>
 

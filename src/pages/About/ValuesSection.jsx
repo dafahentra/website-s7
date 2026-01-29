@@ -1,9 +1,9 @@
-// pages/About/ValuesSection.jsx - FIXED VERSION
+// pages/About/ValuesSection.jsx - Updated with Option 4 Values
 import React from "react";
 import useIntersectionObserver from "../../hooks/useIntersectionObserver";
 
 const ValueCard = ({ icon, title, description, colorClasses, delay }) => {
-const [cardRef, isVisible] = useIntersectionObserver({ threshold: 0.2 });
+  const [cardRef, isVisible] = useIntersectionObserver({ threshold: 0.2 });
 
 return (
     <div
@@ -13,7 +13,6 @@ return (
     }`}
     style={{ transitionDelay: isVisible ? `${delay}ms` : '0ms' }}
     >
-      {/* FIXED: Gunakan colorClasses langsung tanpa template literal */}
     <div className={`w-40 h-40 mx-auto mb-6 rounded-full border-4 flex items-center justify-center ${colorClasses.border}`}>
         {icon}
     </div>
@@ -26,15 +25,14 @@ return (
 const ValuesSection = () => {
 const values = [
     {
-      // FIXED: Berikan class lengkap yang bisa di-purge Tailwind
     colorClasses: {
         border: "border-[#6b8e4e]",
         text: "text-[#6b8e4e]"
     },
-    title: "We do the right thing...",
+    title: "We Keep It Real",
     description: (
         <>
-        Kami <span className="font-bold">terbuka, jujur</span> dan <span className="font-bold">menghormati</span>. Kami <span className="font-bold">melakukan apa yang kami katakan dan mengatakan apa yang kami lakukan</span>.
+        Transparent about what we use. Honest about what we can do. <span className="font-bold">No fluff. No pretense. Just truth.</span>
         </>
     ),
     icon: (
@@ -49,10 +47,10 @@ const values = [
         border: "border-[#f39248]",
         text: "text-[#f39248]"
     },
-    title: "We are in it together...",
+    title: "We Lift Each Other",
     description: (
         <>
-        Kami semua bagian dari <span className="font-bold">keluarga Sector Seven</span>. Kami <span className="font-bold">saling mendukung</span> dan <span className="font-bold">menyertakan</span> semua orang.
+        Students grow here. Farmers earn fairly. Baristas learn skills. <span className="font-bold">Everyone wins when we work together as family.</span>
         </>
     ),
     icon: (
@@ -67,10 +65,10 @@ const values = [
         border: "border-[#9b4d96]",
         text: "text-[#9b4d96]"
     },
-    title: "We give a damn...",
+    title: "We Put Heart In",
     description: (
         <>
-        Kami <span className="font-bold">peduli</span> tentang apa yang kami lakukan dan <span className="font-bold">bangga</span> dengan cara kami melakukannya. Kami <span className="font-bold">bersemangat</span> dan <span className="font-bold">membuat perbedaan</span>.
+        Quality ingredients. Careful preparation. Genuine hospitality. <span className="font-bold">We care about what we make and who we serve deeply.</span>
         </>
     ),
     icon: (
@@ -85,16 +83,15 @@ const values = [
         border: "border-[#5dade2]",
         text: "text-[#5dade2]"
     },
-    title: "We get it done...",
+    title: "We Show Up Daily",
     description: (
         <>
-        Kami menggunakan <span className="font-bold">talenta unik</span> kami untuk menemukan <span className="font-bold">solusi</span> dan <span className="font-bold">mencapai tujuan bersama</span>. Kami merayakan kesuksesan.
+        Consistent quality. Reliable service. Steady presence. <span className="font-bold">We do not just talk about excellence. We practice it every day.</span>
         </>
     ),
     icon: (
         <svg className="w-20 h-20 text-[#5dade2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
     ),
     delay: 400
@@ -106,7 +103,7 @@ return (
     <div className="max-w-[1200px] mx-auto px-4">
         <h2 className="text-6xl font-bold text-[#1d3866] mb-6 text-center">Our Values</h2>
         <p className="text-center text-gray-600 mb-16 max-w-3xl mx-auto text-lg">
-        Nilai-nilai ini adalah bahasa umum kami yang benar-benar menangkap semangat bagaimana kami selalu melakukan hal-hal di bisnis kami.
+        These values are the common language that truly captures the spirit of how we always do things.
         </p>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">

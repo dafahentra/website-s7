@@ -39,15 +39,14 @@ const Story = () => {
             }`}
           >
             <p className="text-2xl text-black text-justify mb-4 align-top mt-8">
-              Didirikan pada tahun 2026, SECTOR SEVEN bermula dari usaha rintisan yang
-              bercita-cita menggabungkan matcha arawa ciwidey. <br /> <br /> 
-              Kami hadir untuk memberikan pengalaman rasa yang unik bagi para pecinta kopi dan matcha di lingkungan fakultas.
+              We saw a need. Campus life is fast. You need a pause. A space to breathe. So we built this. Sector Seven was born. <br /> <br /> 
+              Quality for everyone. That was our goal. Bold espresso blends. Pure ceremonial matcha. Crafted in precision. Perfect fuel for your ambition.
             </p>
             
             <div className="flex justify-center lg:justify-start">
               <Link to="/about">
                 <button className="mt-4 bg-[#1d3866] px-8 py-4 rounded-full w-[200px] text-white hover:border-[#1d3866] hover:bg-white hover:text-[#1d3866] transition-all duration-300 text-md shadow-2xl shadow-[#1d3866] border-2 border-[#1d3866]">
-                  Selengkapnya
+                  See More
                 </button>
               </Link>
             </div>

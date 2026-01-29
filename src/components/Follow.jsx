@@ -22,7 +22,7 @@ const Follow = () => {
     <div className="max-w-[1200px] mx-auto py-20">
       <div className="flex justify-center items-center flex-col mb-12">
         <h1 className="text-2xl font-semibold text-[#f39248] mb-6">
-          Follow kami!
+          See what's brewing online!
         </h1>
         <span className="text-4xl font-bold text-[#1d3866] mb-6">
           @sectorseven.yk
