@@ -2,7 +2,7 @@
 
 export const contactInfo = {
 phone: "0895-3671-63744",
-email: "sectorsevenyk@gmail.com",
+email: "partnerships@sectorseven.space",
 address: {
 line1: "CIMB Niaga Digital Lounge FEB UGM",
 line2: "Jl. Sosial Humaniora, Karang Malang, Caturtunggal",
