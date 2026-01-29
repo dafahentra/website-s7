@@ -19,8 +19,8 @@ const Hero = () => {
     },
     {
       id: 2,
-      title: "Defining Taste",
-      subtitle: "",
+      title: "Our Signature",
+      subtitle: "Craft",
       description: "Bold blends. Calming greens. A curated menu crafted without compromise for your day",
       image: foreStore,
       alt: "Signature"
