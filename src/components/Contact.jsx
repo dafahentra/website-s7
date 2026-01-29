@@ -124,7 +124,7 @@ const Contact = () => {
             className="flex gap-2 items-center hover:opacity-80 transition-opacity"
           >
             <WhatsAppIcon size={25} />
-            <span className="text-[#1e4a3c] text-sm">0895 3671 63744</span>
+            <span className="text-[#1e4a3c] text-sm">0851 1104 2497</span>
           </button>
         </div>
         

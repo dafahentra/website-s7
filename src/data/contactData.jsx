@@ -1,7 +1,7 @@
 // src/data/contactData.js
 
 export const contactInfo = {
-phone: "0895-3671-63744",
+phone: "0851-1104-2497",
 email: "internalteam@sectorseven.space",
 address: {
 line1: "CIMB Niaga Digital Lounge FEB UGM",
