@@ -15,17 +15,17 @@ const Hero = () => {
       id: 1,
       title: "Your Sector",
       subtitle: "Your Soul",
-      description: "Dibuat dari biji kopi Indonesia pilihan untuk pengalaman minum kopi terbaik setiap hari",
+      description: "More than just a drink. The daily fuel to power your ambitions and soul.",
       image: coffee,
-      alt: "coffee"
+      alt: "Tagline"
     },
     {
       id: 2,
-      title: "The 1st Fore Coffee Store That Embrace Sustainability",
+      title: "Defining Taste",
       subtitle: "",
-      description: "Dibuat dari 450kg plastik daur ulang, berlokasi di Kuningan City, Jakarta",
+      description: "Bold blends. Calming greens. A curated menu crafted without compromise for your day",
       image: foreStore,
-      alt: "fore store"
+      alt: "Signature"
     }
   ];
 
