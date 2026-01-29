@@ -26,13 +26,13 @@ export const bodMembers = [
 },
 {
     name: "Salsabilla Syafa K",
-    position: "Chief Operational Officer",
+    position: "Chief Operating Officer",
     image: abeyImg,
     bio: "Indonesian Citizen, born in 1980. Expert in retail operations and market expansion.",
 },
 {
     name: "Devon Del Frey",
-    position: "Business Development",
+    position: "Chief Business Officer",
     image: deponImg,
     bio: "Indonesian Citizen, born in 1975. Expertise in sustainable business practices and ESG.",
 },
