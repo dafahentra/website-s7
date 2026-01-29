@@ -1,9 +1,8 @@
-// ========================================
-// 4. ProductGrid.jsx - OPTIMIZED
-// ========================================
+// pages/Menu/ProductGrid.jsx - REFACTORED WITH DESIGN SYSTEM
 import React, { useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import ProductCard from "./ProductCard";
+import { TYPOGRAPHY, SPACING } from "../../styles/designSystem";
 
 const ProductGrid = React.memo(({ items, activeCategory, onProductClick, isMobile = false }) => {
 const gridCols = isMobile 
@@ -11,7 +10,7 @@ const gridCols = isMobile
     : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
 
 const padding = isMobile ? "px-6 py-8" : "px-12 py-10";
-const titleSize = isMobile ? "text-xl" : "text-2xl";
+const titleSize = isMobile ? TYPOGRAPHY.subheading.lg : TYPOGRAPHY.subheading.tablet;
 const titleMargin = isMobile ? "mb-6" : "mb-8";
 const gap = isMobile ? "gap-4" : "gap-6";
 
@@ -22,7 +21,7 @@ const handleProductClick = useCallback((itemId) => {
 
 return (
     <div className={`${padding} max-w-7xl mx-auto`}>
-    <h2 className={`${titleSize} font-bold text-[#1d3866] ${titleMargin}`}>
+    <h2 className={`${titleSize} ${TYPOGRAPHY.weight.bold} text-brand-navy ${titleMargin}`}>
         See All {activeCategory}
     </h2>
     

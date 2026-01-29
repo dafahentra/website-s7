@@ -1,10 +1,9 @@
-// ========================================
-// 5. ProductSlider.jsx - OPTIMIZED
-// ========================================
+// pages/Menu/ProductSlider.jsx - REFACTORED WITH DESIGN SYSTEM
 import React, { useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { TYPOGRAPHY, RADIUS, TRANSITIONS } from "../../styles/designSystem";
 
-// Memoized Navigation Button
+// Memoized Navigation Button with Design System
 const NavButton = React.memo(({ onClick, direction, isMobile }) => {
 const size = isMobile ? 'w-10 h-10' : 'w-12 h-12';
 const iconSize = isMobile ? 'w-4 h-4' : 'w-5 h-5';
@@ -13,9 +12,9 @@ const pathD = direction === 'prev' ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7";
 return (
     <button
     onClick={onClick}
-    className={`${size} rounded-full border-2 border-[#f07828] flex items-center justify-center transition-all group flex-shrink-0 active:scale-95 [@media(hover:hover)]:hover:bg-[#f07828] [@media(hover:hover)]:hover:text-white`}
+    className={`${size} ${RADIUS.circle} border-2 border-brand-orange flex items-center justify-center ${TRANSITIONS.fast} group flex-shrink-0 active:scale-95 [@media(hover:hover)]:hover:bg-brand-orange [@media(hover:hover)]:hover:text-white`}
     >
-    <svg className={`${iconSize} text-[#f07828] [@media(hover:hover)]:group-hover:text-white`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg className={`${iconSize} text-brand-orange [@media(hover:hover)]:group-hover:text-white`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={pathD} />
     </svg>
     </button>
@@ -24,12 +23,12 @@ return (
 
 NavButton.displayName = 'NavButton';
 
-// Memoized Product Info
+// Memoized Product Info with Design System
 const ProductInfo = React.memo(({ currentItem, activeCategory, isMobile }) => {
-const categorySize = isMobile ? "text-sm" : "text-lg";
-const nameSize = isMobile ? "text-2xl" : "text-3xl";
-const priceSize = isMobile ? "text-xl" : "text-2xl";
-const descSize = isMobile ? "text-sm" : "text-sm leading-relaxed";
+const categorySize = isMobile ? TYPOGRAPHY.body.small : TYPOGRAPHY.body.default;
+const nameSize = isMobile ? TYPOGRAPHY.subheading.tablet : TYPOGRAPHY.subheading.desktop;
+const priceSize = isMobile ? TYPOGRAPHY.subheading.lg : TYPOGRAPHY.subheading.tablet;
+const descSize = isMobile ? `${TYPOGRAPHY.body.small}` : `${TYPOGRAPHY.body.small} leading-relaxed`;
 
 return (
     <motion.div
@@ -39,16 +38,16 @@ return (
     exit={{ opacity: 0, y: -20 }}
     transition={{ duration: 0.3 }}
     >
-    <h2 className={`${categorySize} font-semibold text-[#f07828] uppercase tracking-wider ${isMobile ? 'mb-2' : 'mb-3'}`}>
+    <h2 className={`${categorySize} ${TYPOGRAPHY.weight.semibold} text-brand-orange uppercase tracking-wider ${isMobile ? 'mb-2' : 'mb-3'}`}>
         {activeCategory}
     </h2>
-    <h3 className={`${nameSize} font-bold text-[#1d3866] mb-3`}>
+    <h3 className={`${nameSize} ${TYPOGRAPHY.weight.bold} text-brand-navy mb-3`}>
         {currentItem.name}
     </h3>
     <p className={`text-gray-600 ${descSize} ${isMobile ? 'mb-3' : 'mb-4 min-h-[60px]'}`}>
         {currentItem.description}
     </p>
-    <div className={`${priceSize} font-bold text-gray-900 mb-4`}>
+    <div className={`${priceSize} ${TYPOGRAPHY.weight.bold} text-gray-900 mb-4`}>
         Rp{currentItem.price}
     </div>
     </motion.div>
@@ -58,15 +57,15 @@ return (
 ProductInfo.displayName = 'ProductInfo';
 
 const ProductSlider = React.memo(({ 
-items, 
-currentIndex, 
-activeCategory, 
-direction,
-onNext, 
-onPrev,
-onIndexChange,
-onDirectionChange,
-isMobile = false 
+    items, 
+    currentIndex, 
+    activeCategory, 
+    direction,
+    onNext, 
+    onPrev,
+    onIndexChange,
+    onDirectionChange,
+    isMobile = false 
 }) => {
 const currentItem = items[currentIndex] || items[0];
 
@@ -173,9 +172,45 @@ return (
                     onDirectionChange(index > currentIndex ? 1 : -1);
                     onIndexChange(index);
                     }}
-                    className={`h-2 rounded-full transition-all duration-300 ${
+                    className={`h-2 ${RADIUS.circle} ${TRANSITIONS.fast} ${
                     index === currentIndex
-                        ? "bg-[#f07828] w-8"
+                        ? "bg-brand-orange w-8"
+                        : "bg-gray-300 w-2 [@media(hover:hover)]:hover:bg-gray-400"
+                    }`}
+                    />
+                ))}
+                </div>
+            )}
+            </div>
+        )}
+        </div>
+
+      {/* Product Info - Mobile */}
+        {isMobile && (
+        <div className="text-center mt-6">
+            <AnimatePresence mode="wait">
+            {currentItem && (
+                <ProductInfo 
+                currentItem={currentItem} 
+                activeCategory={activeCategory} 
+                isMobile={true}
+                />
+            )}
+            </AnimatePresence>
+
+          {/* Dots Indicator - Mobile */}
+            {items.length > 1 && (
+            <div className="flex justify-center gap-2">
+                {items.map((_, index) => (
+                <button
+                    key={index}
+                    onClick={() => {
+                    onDirectionChange(index > currentIndex ? 1 : -1);
+                    onIndexChange(index);
+                    }}
+                    className={`h-2 ${RADIUS.circle} ${TRANSITIONS.fast} ${
+                    index === currentIndex
+                        ? "bg-brand-orange w-8"
                         : "bg-gray-300 w-2 [@media(hover:hover)]:hover:bg-gray-400"
                     }`}
                 />
@@ -185,43 +220,7 @@ return (
         </div>
         )}
     </div>
-
-      {/* Product Info - Mobile */}
-    {isMobile && (
-        <div className="text-center mt-6">
-        <AnimatePresence mode="wait">
-            {currentItem && (
-            <ProductInfo 
-                currentItem={currentItem} 
-                activeCategory={activeCategory} 
-                isMobile={true}
-            />
-            )}
-        </AnimatePresence>
-
-          {/* Dots Indicator - Mobile */}
-        {items.length > 1 && (
-            <div className="flex justify-center gap-2">
-            {items.map((_, index) => (
-                <button
-                key={index}
-                onClick={() => {
-                    onDirectionChange(index > currentIndex ? 1 : -1);
-                    onIndexChange(index);
-                }}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                    index === currentIndex
-                    ? "bg-[#f07828] w-8"
-                    : "bg-gray-300 w-2 [@media(hover:hover)]:hover:bg-gray-400"
-                }`}
-                />
-            ))}
-            </div>
-        )}
-        </div>
-    )}
-    </div>
-);
+    );
 });
 
 ProductSlider.displayName = 'ProductSlider';

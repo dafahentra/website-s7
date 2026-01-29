@@ -1,41 +1,40 @@
-// ========================================
-// 3. CategoryIconBar.jsx - OPTIMIZED
-// ========================================
+// pages/Menu/CategoryIconBar.jsx - REFACTORED WITH DESIGN SYSTEM
 import React from "react";
+import { TRANSITIONS } from "../../styles/designSystem";
 
-// Memoized Icon Button
+// Memoized Icon Button with Design System
 const IconButton = React.memo(({ category, isActive, onClick }) => (
-<button
+  <button
     onClick={onClick}
-    className={`flex flex-col items-center gap-2 transition-all duration-300 flex-shrink-0 ${
-    isActive ? "opacity-100" : "opacity-40"
+    className={`flex flex-col items-center gap-2 ${TRANSITIONS.fast} flex-shrink-0 ${
+      isActive ? "opacity-100" : "opacity-40"
     }`}
->
-    <div className={isActive ? "text-[#f07828]" : "text-gray-400"}>
-    {category.icon}
+  >
+    <div className={isActive ? "text-brand-orange" : "text-gray-400"}>
+      {category.icon}
     </div>
-</button>
+  </button>
 ));
 
 IconButton.displayName = 'IconButton';
 
 const CategoryIconBar = React.memo(({ categories, activeCategory, onCategoryChange }) => {
-return (
+  return (
     <div className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10 pt-24">
-    <div className="px-4 py-6">
+      <div className="px-4 py-6">
         <div className="flex justify-center items-center gap-6">
-        {categories.map((category) => (
+          {categories.map((category) => (
             <IconButton
-            key={category.id}
-            category={category}
-            isActive={activeCategory === category.id}
-            onClick={() => onCategoryChange(category.id)}
+              key={category.id}
+              category={category}
+              isActive={activeCategory === category.id}
+              onClick={() => onCategoryChange(category.id)}
             />
-        ))}
+          ))}
         </div>
+      </div>
     </div>
-    </div>
-);
+  );
 });
 
 CategoryIconBar.displayName = 'CategoryIconBar';

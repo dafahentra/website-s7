@@ -1,9 +1,8 @@
-// ========================================
-// 3. News.jsx - OPTIMIZED (Button width matched with Story.jsx)
-// ========================================
+// components/News.jsx - REFACTORED WITH DESIGN SYSTEM
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { newsData } from "../data/newsData";
+import { TYPOGRAPHY, RADIUS, SHADOWS, TRANSITIONS } from "../styles/designSystem";
 
 const ArrowRight = ({ size = 16, className = "" }) => (
   <svg 
@@ -23,22 +22,21 @@ const ArrowRight = ({ size = 16, className = "" }) => (
 );
 
 const News = () => {
-  // ✅ OPTIMIZED: Memoize computation
   const latestNews = useMemo(() => 
     newsData
       .sort((a, b) => new Date(b.date) - new Date(a.date))
       .slice(0, 4),
-    [] // Empty dependency karena newsData static
+    []
   );
 
   return (
     <div className="max-w-[1200px] mx-auto my-20 md:my-40">
       {/* Header Section */}
       <div className="flex flex-col justify-between md:flex-row md:items-center relative mx-4 md:text-left text-center mb-8 md:mb-0">
-        <h1 className="text-4xl md:text-6xl text-[#1d3866] mb-4 font-bold">
+        <h1 className={`${TYPOGRAPHY.heading.tablet} md:${TYPOGRAPHY.heading.responsive} text-brand-navy mb-4 ${TYPOGRAPHY.weight.bold}`}>
           Sector News
         </h1>
-        <p className="text-lg md:text-2xl text-[#f39248] text-wrap tracking-tight">
+        <p className={`${TYPOGRAPHY.body.default} md:${TYPOGRAPHY.subheading.tablet} text-brand-orange text-wrap tracking-tight`}>
           Dapatkan berita terbaru dan informasi <br className="hidden md:block" /> menarik dari kami!
         </p>
       </div>
@@ -52,7 +50,7 @@ const News = () => {
               <Link
                 to={`/news/${data.slug}`}
                 key={data.id}
-                className="w-[176px] rounded-lg overflow-hidden shadow-md bg-white transition-all duration-300 hover:shadow-lg flex-shrink-0"
+                className={`w-[176px] ${RADIUS.card.default} overflow-hidden ${SHADOWS.card.small} bg-white ${TRANSITIONS.fast} hover:shadow-card-lg flex-shrink-0`}
               >
                 <div className="relative overflow-hidden h-24">
                   <img
@@ -63,10 +61,10 @@ const News = () => {
                   />
                 </div>
                 <div className="p-2.5">
-                  <div className="text-xs font-semibold mb-1 capitalize text-gray-800 line-clamp-2">
+                  <div className={`${TYPOGRAPHY.body.small} ${TYPOGRAPHY.weight.semibold} mb-1 capitalize text-gray-800 line-clamp-2`}>
                     {data.tittle.toLowerCase()}
                   </div>
-                  <p className="text-gray-500 text-[10px] mb-2 line-clamp-2">
+                  <p className={`text-gray-500 ${TYPOGRAPHY.body.small} mb-2 line-clamp-2`} style={{ fontSize: '10px' }}>
                     {data.excerpt}
                   </p>
                   <p className="text-gray-400 italic text-[9px]">
@@ -88,7 +86,7 @@ const News = () => {
             <Link
               to={`/news/${data.slug}`}
               key={data.id}
-              className="max-w-sm rounded-2xl overflow-hidden shadow-lg bg-white transition-all duration-500 hover:shadow-[0_0_30px_rgba(243,146,72,0.3)] h-full group"
+              className={`max-w-sm ${RADIUS.card.responsive} overflow-hidden ${SHADOWS.card.responsive} bg-white transition-all duration-500 hover:shadow-[0_0_30px_rgba(243,146,72,0.3)] h-full group`}
             >
               <div className="relative overflow-hidden h-52">
                 <img
@@ -98,26 +96,26 @@ const News = () => {
                   loading="lazy"
                 />
                 <div className="absolute top-4 right-4">
-                  <span className="bg-[#f39248] text-white px-3 py-1 rounded-full text-xs font-medium">
+                  <span className={`bg-brand-orange text-white px-3 py-1 ${RADIUS.circle} ${TYPOGRAPHY.body.small} ${TYPOGRAPHY.weight.medium}`}>
                     {data.category}
                   </span>
                 </div>
               </div>
               <div className="px-6 py-4">
-                <div className="text-xl font-semibold mb-2 capitalize text-gray-700 line-clamp-2">
+                <div className={`${TYPOGRAPHY.subheading.lg} ${TYPOGRAPHY.weight.semibold} mb-2 capitalize text-gray-700 line-clamp-2`}>
                   {data.tittle.toLowerCase()}
                 </div>
-                <p className="text-gray-500 mt-4 text-sm line-clamp-3">
+                <p className={`text-gray-500 mt-4 ${TYPOGRAPHY.body.small} line-clamp-3`}>
                   {data.excerpt}
                 </p>
-                <div className="flex items-center text-[#f39248] mt-4 font-medium group-hover:gap-2 transition-all">
-                  <span className="text-sm">Baca Selengkapnya</span>
+                <div className={`flex items-center text-brand-orange mt-4 ${TYPOGRAPHY.weight.medium} ${TRANSITIONS.fast} group-hover:gap-2`}>
+                  <span className={TYPOGRAPHY.body.small}>Baca Selengkapnya</span>
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
               <hr />
               <div className="px-6 pt-2 pb-4">
-                <p className="text-gray-500 italic tracking-wide text-sm">
+                <p className={`text-gray-500 italic tracking-wide ${TYPOGRAPHY.body.small}`}>
                   {new Date(data.date).toLocaleDateString("id-ID", {
                     day: "numeric",
                     month: "long",
@@ -134,7 +132,7 @@ const News = () => {
       <div className="flex justify-center px-4">
         <Link
           to="/news"
-          className="mt-4 bg-[#1d3866] px-8 py-4 rounded-full w-[200px] text-white hover:border-[#1d3866] hover:bg-white hover:text-[#1d3866] transition-colors duration-300 text-md shadow-lg md:shadow-2xl shadow-[#1d3866] border-2 border-[#1d3866] text-center font-medium"
+          className={`mt-4 bg-brand-navy px-8 py-4 ${RADIUS.circle} w-[200px] text-white hover:border-brand-navy hover:bg-white hover:text-brand-navy ${TRANSITIONS.hover.color} ${TYPOGRAPHY.body.regular} shadow-card-lg md:${SHADOWS.image.responsive} border-2 border-brand-navy text-center ${TYPOGRAPHY.weight.medium}`}
         >
           Selengkapnya
         </Link>

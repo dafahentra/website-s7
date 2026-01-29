@@ -1,6 +1,4 @@
-// ========================================
-// 6. index.jsx - OPTIMIZED
-// ========================================
+// pages/Menu/index.jsx - REFACTORED WITH DESIGN SYSTEM
 import React, { useState, useCallback, useMemo } from "react";
 import SEO from "../../components/SEO";
 import CategorySidebar from "./CategorySidebar";
@@ -15,8 +13,8 @@ const [activeCategory, setActiveCategory] = useState("Espresso Based");
 const [currentIndex, setCurrentIndex] = useState(0);
 const [direction, setDirection] = useState(0);
 
-  // Memoize current items untuk menghindari re-computation
-const currentItems = useMemo(
+  // Memoize current items
+    const currentItems = useMemo(
     () => menuItems[activeCategory] || [],
     [activeCategory]
 );
@@ -41,21 +39,21 @@ const handlePrev = useCallback(() => {
 const handleProductClick = useCallback((itemId) => {
     const itemIndex = currentItems.findIndex(i => i.id === itemId);
     setCurrentIndex(itemIndex);
-    // Gunakan instant scroll untuk performa lebih baik
+    // Instant scroll for better performance
     window.scrollTo({ top: 0, behavior: 'auto' });
 }, [currentItems]);
 
 return (
     <>
-    <SEO 
+        <SEO 
         title="Menu - SECTOR SEVEN"
         description="Explore our menu of hybrid specialty between coffee & matcha drinks at SECTOR SEVEN. From espresso-based drinks to flavoured ones, signature beverages, and non-coffee options. Premium quality in every cup."
         keywords="sector seven menu, coffee menu yogyakarta, espresso menu, manual brew coffee, specialty drinks, signature coffee, coffee prices yogyakarta, best coffee menu ugm"
         url="/menu"
         image="/og-image.jpg"
-    />
+        />
 
-    <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white">
         {/* Desktop Layout */}
         <div className="hidden lg:flex">
         <CategorySidebar 

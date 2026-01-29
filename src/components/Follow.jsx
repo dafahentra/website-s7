@@ -1,9 +1,10 @@
+// components/Follow.jsx - REFACTORED WITH DESIGN SYSTEM
 import React from "react";
 import instagram from "../assets/instagram.png";
 import post1 from "../assets/post 1.jpg";
 import post2 from "../assets/post 2.jpg";
+import { TYPOGRAPHY, RADIUS, TRANSITIONS } from "../styles/designSystem";
 
-// Ganti URL ini dengan link post Instagram yang sebenarnya dari @sectorseven.yk
 const instagramPosts = [
   {
     id: 1,
@@ -21,24 +22,24 @@ const Follow = () => {
   return (
     <div className="max-w-[1200px] mx-auto py-20">
       <div className="flex justify-center items-center flex-col mb-12">
-        <h1 className="text-2xl font-semibold text-[#f39248] mb-6">
+        <h1 className={`${TYPOGRAPHY.subheading.tablet} ${TYPOGRAPHY.weight.semibold} text-brand-orange mb-6`}>
           See what's brewing online!
         </h1>
-        <span className="text-4xl font-bold text-[#1d3866] mb-6">
+        <span className={`${TYPOGRAPHY.heading.tablet} ${TYPOGRAPHY.weight.bold} text-brand-navy mb-6`}>
           @sectorseven.yk
         </span>
         <a
           href="https://www.instagram.com/sectorseven.yk/"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex text-[#1d3866] hover:bg-[#1d3866] hover:text-white transition-colors duration-300 border-2 border-[#1d3866] py-1 px-2 rounded-full w-44 font-bold text-lg items-center justify-center group"
+          className={`flex text-brand-navy hover:bg-brand-navy hover:text-white ${TRANSITIONS.hover.color} border-2 border-brand-navy py-1 px-2 ${RADIUS.circle} w-44 ${TYPOGRAPHY.weight.bold} ${TYPOGRAPHY.body.default} items-center justify-center group`}
         >
           <img src={instagram} alt="instagram" width={40} />
           <span>Follow</span>
         </a>
       </div>
 
-      {/* Instagram Feed Grid - persis seperti Instagram */}
+      {/* Instagram Feed Grid */}
       <div className="grid grid-cols-3 gap-1 mx-4">
         {instagramPosts.map((post) => (
           <a
@@ -57,14 +58,14 @@ const Follow = () => {
               loading="lazy"
             />
             
-            {/* White overlay dengan animasi hover */}
-            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+            {/* White overlay with hover animation */}
+            <div className={`absolute inset-0 bg-white opacity-0 group-hover:opacity-30 ${TRANSITIONS.fast}`}></div>
 
-            {/* Instagram Icon - muncul saat hover */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-              <div className="bg-white/95 backdrop-blur-sm rounded-full p-4 transform scale-0 group-hover:scale-100 transition-transform duration-300">
+            {/* Instagram Icon - appears on hover */}
+            <div className={`absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 ${TRANSITIONS.fast}`}>
+              <div className={`bg-white/95 backdrop-blur-sm ${RADIUS.circle} p-4 transform scale-0 group-hover:scale-100 ${TRANSITIONS.fast}`}>
                 <svg 
-                  className="w-10 h-10 text-[#1d3866]" 
+                  className="w-10 h-10 text-brand-navy" 
                   fill="currentColor" 
                   viewBox="0 0 24 24"
                 >
@@ -79,5 +80,4 @@ const Follow = () => {
   );
 };
 
-// ✅ ADDED: React.memo for optimization
 export default React.memo(Follow);

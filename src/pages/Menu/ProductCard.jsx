@@ -1,17 +1,16 @@
-// ========================================
-// 1. ProductCard.jsx - OPTIMIZED
-// ========================================
+// pages/Menu/ProductCard.jsx - REFACTORED WITH DESIGN SYSTEM
 import React from "react";
 import { motion } from "framer-motion";
+import { TYPOGRAPHY, RADIUS, SHADOWS, TRANSITIONS } from "../../styles/designSystem";
 
 const ProductCard = React.memo(({ item, onClick, isMobile = false }) => {
-const titleSize = isMobile ? "text-base" : "text-xl";
-const priceSize = isMobile ? "text-lg" : "text-2xl";
-const padding = isMobile ? "p-3" : "p-5";
+  // Typography sizes
+const titleSize = isMobile ? TYPOGRAPHY.body.regular : TYPOGRAPHY.subheading.lg;
+const priceSize = isMobile ? TYPOGRAPHY.body.default : TYPOGRAPHY.subheading.tablet;
 
-  // FIXED: Tailwind class harus lengkap, tidak bisa dynamic
-const roundedClass = isMobile ? "rounded-xl" : "rounded-2xl";
-const mbClass = isMobile ? "mb-1" : "mb-2";
+  // Spacing
+const padding = isMobile ? "p-3" : "p-5";
+const titleMargin = isMobile ? "mb-1" : "mb-2";
 
 return (
     <motion.div
@@ -19,7 +18,11 @@ return (
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.3 }}
     onClick={onClick}
-    className={`bg-white ${roundedClass} overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-transparent ${isMobile ? 'active:border-[#f07828]' : 'hover:border-[#f07828]'}`}
+    className={`bg-white ${RADIUS.card.responsive} overflow-hidden ${SHADOWS.card.small} ${TRANSITIONS.fast} cursor-pointer border-2 border-transparent ${
+        isMobile 
+        ? 'active:border-brand-orange hover:shadow-card-lg' 
+        : 'hover:border-brand-orange hover:shadow-card-lg'
+    }`}
     >
     <div className="aspect-square overflow-hidden">
         <img
@@ -30,10 +33,10 @@ return (
         />
     </div>
     <div className={padding}>
-        <h3 className={`${titleSize} font-bold text-[#1d3866] ${mbClass}`}>
+        <h3 className={`${titleSize} ${TYPOGRAPHY.weight.bold} text-brand-navy ${titleMargin}`}>
         {item.name}
         </h3>
-        <p className={`text-[#f07828] ${priceSize} font-bold`}>
+        <p className={`text-brand-orange ${priceSize} ${TYPOGRAPHY.weight.bold}`}>
         Rp{item.price}
         </p>
     </div>
