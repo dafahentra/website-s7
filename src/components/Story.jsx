@@ -38,7 +38,7 @@ const Story = () => {
           >
             <p className={`${TYPOGRAPHY.body.large} text-black text-justify mb-4 align-top mt-8`}>
               We saw a need. Campus life is fast. You need a pause. A space to breathe. So we built this. Sector Seven was born. <br /> <br /> 
-              Quality for everyone. That was our goal. Bold espresso blends. Pure ceremonial matcha. Crafted in precision. Perfect fuel for your ambition.
+              We ensure quality for everyone. That was our goal. Bold espresso blends. Pure ceremonial matcha. Crafted in precision. Perfect fuel for your ambition.
             </p>
             
             <div className="flex justify-center lg:justify-start">
