@@ -55,7 +55,7 @@ const MemberCard = ({ member, delay, isMobile = false }) => {
         />
       </div>
       <Card shadow padding={`${padding} ${paddingTop}`} className="relative">
-        <h3 className={`${nameSize} ${TYPOGRAPHY.weight.bold} text-brand-green ${namePadding}`}>
+        <h3 className={`${nameSize} ${TYPOGRAPHY.weight.bold} text-brand-navy ${namePadding}`}>
           {member.name}
         </h3>
         <p className={`${positionSize} text-gray-600 ${TYPOGRAPHY.weight.medium}`}>

@@ -45,7 +45,7 @@ const HeroSection = () => {
           <div className="max-w-3xl ml-12 text-white">
             <p className="text-body-lg md:text-body-xl mb-4 tracking-wider">About Sector Seven</p>
             <h1 className="text-hero-mobile lg:text-hero font-bold mb-6">Our Story</h1>
-            <p className="text-subheading-md lg:text-subheading-xl font-light">
+            <p className="text-body-md lg:text-body-xl font-light">
               Get to know about us, stores, environment, and people behind it!
             </p>
           </div>

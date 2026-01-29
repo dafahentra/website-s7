@@ -36,7 +36,7 @@ const Story = () => {
               isTextVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'
             }`}
           >
-            <p className={`${TYPOGRAPHY.subheading.tablet} text-black text-justify mb-4 align-top mt-8`}>
+            <p className={`${TYPOGRAPHY.body.large} text-black text-justify mb-4 align-top mt-8`}>
               We saw a need. Campus life is fast. You need a pause. A space to breathe. So we built this. Sector Seven was born. <br /> <br /> 
               Quality for everyone. That was our goal. Bold espresso blends. Pure ceremonial matcha. Crafted in precision. Perfect fuel for your ambition.
             </p>

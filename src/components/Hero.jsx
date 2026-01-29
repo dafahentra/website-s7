@@ -56,7 +56,7 @@ const Hero = () => {
                 className="flex-[0_0_100%] min-w-0 flex items-center lg:flex-row flex-col lg:min-h-[500px] min-h-[400px] px-12 lg:px-20"
               >
                 <div className="lg:text-left text-center lg:w-1/2 px-4 py-8">
-                  <h1 className={`${slide.subtitle ? 'lg:text-heading-lg text-subheading-desktop' : 'lg:text-heading-md text-subheading-tablet'} text-brand-navy mb-4 ${TYPOGRAPHY.weight.bold}`}>
+                  <h1 className={`${TYPOGRAPHY.hero.responsive} text-brand-navy mb-4 ${TYPOGRAPHY.weight.bold}`}>
                     {slide.title}
                     {slide.subtitle && (
                       <>
@@ -64,7 +64,7 @@ const Hero = () => {
                       </>
                     )}
                   </h1>
-                  <p className={`lg:${TYPOGRAPHY.subheading.lg} ${TYPOGRAPHY.body.regular} text-brand-orange`}>
+                  <p className={`${TYPOGRAPHY.body.responsive} text-brand-orange`}>
                     {slide.description}
                   </p>
                 </div>
