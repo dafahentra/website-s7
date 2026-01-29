@@ -3,7 +3,7 @@ export const menuItems = {
 "Espresso Based": [
 {
     id: 1,
-    name: "Sectorize",
+    name: "Sectorized",
     description: "Our signature iced blend. Bold espresso meets creamy milk and a sweet touch of condensed milk for a perfectly balanced finish.",
     price: "20.000",
     image: "https://images.unsplash.com/photo-1561882468-9110e03e0f78?w=600&h=600&fit=crop"
