@@ -28,7 +28,6 @@ return (
     <ValuesSection />
     <TestimonialSlider testimonials={customerTestimonials} />
     <BoardOfDirectors members={bodMembers} />
-    <News />
     <MilestoneSection milestones={milestones} />
     <Contact />
     </div>

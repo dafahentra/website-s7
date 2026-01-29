@@ -7,7 +7,7 @@ export const menuItems = [
 { name: "About", path: "/about" },
 { name: "Menu", path: "/menu" },
 { name: "Store", path: "/store" },
-{ name: "News", path: "/news" },
+// { name: "News", path: "/news" }, //
 { name: "Contact", path: "/contact-us" },
 ];
 
