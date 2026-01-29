@@ -78,7 +78,7 @@ const ContactForm = ({ formData, isSubmitting, onSubmit, onChange }) => {
           name="phone"
           value={formData.phone}
           onChange={onChange}
-          placeholder="+62 8xxxxxxxx"
+          placeholder="+62"
         />
 
         {/* Message */}
