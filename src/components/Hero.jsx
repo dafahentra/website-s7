@@ -21,14 +21,6 @@ const Hero = () => {
     },
     {
       id: 2,
-      title: "Fore Grind Master 2023",
-      subtitle: "",
-      description: "Kompetisi tahunan bergengsi untuk barista Fore Coffee di seluruh Indonesia",
-      image: foreMaster,
-      alt: "fore master"
-    },
-    {
-      id: 3,
       title: "The 1st Fore Coffee Store That Embrace Sustainability",
       subtitle: "",
       description: "Dibuat dari 450kg plastik daur ulang, berlokasi di Kuningan City, Jakarta",
