@@ -21,8 +21,6 @@ return (
     
     <Hero />
     <Story />
-    <Promo />
-    <Testimoni />
     <Follow />
     <Contact />
     </>

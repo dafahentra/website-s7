@@ -1,4 +1,5 @@
 // pages/About/index.jsx
+// <TestimonialSlider testimonials={customerTestimonials} />
 import React from "react";
 import SEO from "../../components/SEO";
 import HeroSection from "./HeroSection";
@@ -26,7 +27,6 @@ return (
     <HeroSection />
     <StorySection />
     <ValuesSection />
-    <TestimonialSlider testimonials={customerTestimonials} />
     <BoardOfDirectors members={bodMembers} />
     <MilestoneSection milestones={milestones} />
     <Contact />
