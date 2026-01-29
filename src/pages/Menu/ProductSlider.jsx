@@ -42,7 +42,7 @@ return (
     <h2 className={`${categorySize} font-semibold text-[#f07828] uppercase tracking-wider ${isMobile ? 'mb-2' : 'mb-3'}`}>
         {activeCategory}
     </h2>
-    <h3 className={`${nameSize} font-bold text-[#f07828] mb-3`}>
+    <h3 className={`${nameSize} font-bold text-[#1d3866] mb-3`}>
         {currentItem.name}
     </h3>
     <p className={`text-gray-600 ${descSize} ${isMobile ? 'mb-3' : 'mb-4 min-h-[60px]'}`}>

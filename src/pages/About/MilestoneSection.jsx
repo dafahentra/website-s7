@@ -23,10 +23,10 @@ return (
             transition={{ duration: 0.6, delay: index * 0.1 }}
             className="mb-20 last:mb-8 relative"
         >
-            <div className="absolute left-[-70px] top-1/2 -translate-y-1/2 w-2 h-32 bg-[#1d3866] rounded-full z-10"></div>
+            <div className="absolute left-[-70px] top-1/2 -translate-y-1/2 w-2 h-32 bg-[#f39248] rounded-full z-10"></div>
 
             <div className="absolute left-[-200px] top-1/2 -translate-y-1/2 text-right pr-4">
-            <div className="text-4xl font-bold text-[#1d3866]">{milestone.year}</div>
+            <div className="text-4xl font-bold text-[#f39248]">{milestone.year}</div>
             </div>
 
             <div className="grid grid-cols-[360px,1fr] gap-10 items-start">
@@ -35,7 +35,7 @@ return (
             </div>
 
             <div className="pt-2">
-                <h3 className="text-2xl font-bold text-[#1d3866] mb-6">{milestone.title}</h3>
+                <h3 className="text-2xl font-bold text-[#f39248] mb-6">{milestone.title}</h3>
                 <div className="space-y-4">
                 {milestone.details.map((detail, idx) => (
                     <p key={idx} className="text-gray-700 leading-relaxed text-lg">
