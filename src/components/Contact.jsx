@@ -71,7 +71,7 @@ const SocialMediaLinks = ({ className = "", size = 28 }) => {
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => handleSocialClick(id, url)}
-          className={`text-brand-footer-green ${TRANSITIONS.hover.opacity} ${
+          className={`text-brand-footer-navy ${TRANSITIONS.hover.opacity} ${
             deviceType === 'mobile' 
               ? 'active:opacity-70' 
               : 'hover:opacity-70'
@@ -96,7 +96,7 @@ const Contact = () => {
           <img src={logo} alt="logo" width={200} className="bg-cover" />
         </div>
         <div className="lg:w-1/3 text-wrap">
-          <h3 className={`mb-2 text-brand-footer-green ${TYPOGRAPHY.weight.bold}`}>Our Store</h3>
+          <h3 className={`mb-2 text-brand-footer-navy ${TYPOGRAPHY.weight.bold}`}>Our Store</h3>
           <div className="flex gap-2 mb-2 items-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -110,12 +110,12 @@ const Contact = () => {
                 clipRule="evenodd"
               />
             </svg>
-            <span className={`text-brand-footer-green ${TYPOGRAPHY.body.small}`}>
+            <span className={`text-brand-footer-navy ${TYPOGRAPHY.body.small}`}>
               CIMB Niaga Digital Lounge FEB UGM
             </span>
           </div>
           <div className="flex gap-2 mb-2 ml-8">
-            <p className={`text-brand-footer-green ${TYPOGRAPHY.body.small}`}>
+            <p className={`text-brand-footer-navy ${TYPOGRAPHY.body.small}`}>
               Jl. Sosio Humaniora, Karang Malang, Caturtunggal, 
               Kec. Depok, Kabupaten Sleman, Daerah Istimewa Yogyakarta
             </p>
@@ -125,7 +125,7 @@ const Contact = () => {
             className={`flex gap-2 items-center ${TRANSITIONS.hover.opacity}`}
           >
             <WhatsAppIcon size={25} />
-            <span className={`text-brand-footer-green ${TYPOGRAPHY.body.small}`}>
+            <span className={`text-brand-footer-navy ${TYPOGRAPHY.body.small}`}>
               0851 1104 2497
             </span>
           </button>
@@ -133,7 +133,7 @@ const Contact = () => {
         
         {/* Google Maps Embed */}
         <div className="lg:w-1/3 w-full">
-          <h3 className={`mb-2 text-brand-footer-green ${TYPOGRAPHY.weight.bold}`}>
+          <h3 className={`mb-2 text-brand-footer-navy ${TYPOGRAPHY.weight.bold}`}>
             Find Us At Maps
           </h3>
           <div className={`${RADIUS.card.default} overflow-hidden shadow-card-lg border border-gray-200`}>
@@ -157,7 +157,7 @@ const Contact = () => {
       </div>
 
       <div className="mx-4 mt-12 pb-12 flex lg:flex-row flex-col lg:space-y-0 lg:justify-between justify-start space-y-10 items-center">
-        <span className={`text-brand-footer-green ${TYPOGRAPHY.body.small}`}>
+        <span className={`text-brand-footer-navy ${TYPOGRAPHY.body.small}`}>
           © 2025 SECTOR SEVEN, All Rights Reserved
         </span>
         
