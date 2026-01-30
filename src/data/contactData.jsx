@@ -42,7 +42,7 @@ icon: (
 
 // FormSubmit Configuration
 export const formSubmitConfig = {
-endpoint: "https://formsubmit.co/b1cd44a3d9e997b93e9641f8f8b8c207",
+endpoint: "https://formsubmit.co/8439db258e7a608a9dc25451a4f1a3e3",
 subject: "📧 Pesan Baru dari Website Fore Coffee",
 captcha: false,
 template: "table"
