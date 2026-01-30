@@ -24,6 +24,7 @@
     "react-flickity-component": "^4.0.7",
     "react-helmet-async": "^2.0.4",
     "react-icons": "^5.2.1",
+    "react-phone-input-2": "^2.15.1",
     "react-responsive-carousel": "^3.2.23",
     "react-router-dom": "^7.13.0",
     "smooth-scrollbar-react": "^2.4.1"
