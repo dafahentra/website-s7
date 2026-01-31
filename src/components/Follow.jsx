@@ -1,4 +1,4 @@
-// components/Follow.jsx - REFACTORED WITH DESIGN SYSTEM
+// components/Follow.jsx - REFACTORED WITH BETTER MOBILE RESPONSIVENESS
 import React from "react";
 import instagram from "../assets/instagram.png";
 import post1 from "../assets/post 1.jpg";
@@ -20,21 +20,30 @@ const instagramPosts = [
 
 const Follow = () => {
   return (
-    <div className="max-w-[1200px] mx-auto py-20">
-      <div className="flex justify-center items-center flex-col mb-12">
-        <h1 className={`${TYPOGRAPHY.subheading.tablet} ${TYPOGRAPHY.weight.semibold} text-brand-orange mb-6`}>
+    <div className="max-w-[1200px] mx-auto py-12 sm:py-16 lg:py-20">
+      <div className="flex justify-center items-center flex-col mb-8 sm:mb-10 lg:mb-12 px-4">
+        {/* Tagline */}
+        <h1 className={`${TYPOGRAPHY.subheading.mobile} sm:${TYPOGRAPHY.subheading.tablet} ${TYPOGRAPHY.weight.semibold} text-brand-orange mb-3 sm:mb-4 lg:mb-6 text-center`}>
           See what's brewing online!
         </h1>
-        <span className={`${TYPOGRAPHY.subheading.tablet} ${TYPOGRAPHY.weight.bold} text-brand-navy mb-6`}>
+        
+        {/* Instagram Handle - Responsive sizing */}
+        <span className={`${TYPOGRAPHY.subheading.tablet} sm:${TYPOGRAPHY.heading.mobile} md:${TYPOGRAPHY.heading.tablet} ${TYPOGRAPHY.weight.bold} text-brand-navy mb-4 sm:mb-5 lg:mb-6 text-center`}>
           @sectorseven.yk
         </span>
+        
+        {/* Follow Button */}
         <a
           href="https://www.instagram.com/sectorseven.yk/"
           target="_blank"
           rel="noopener noreferrer"
-          className={`flex text-brand-navy hover:bg-brand-navy hover:text-white ${TRANSITIONS.hover.color} border-2 border-brand-navy py-1 px-2 ${RADIUS.circle} w-44 ${TYPOGRAPHY.weight.bold} ${TYPOGRAPHY.body.default} items-center justify-center group`}
+          className={`flex text-brand-navy hover:bg-brand-navy hover:text-white ${TRANSITIONS.hover.color} border-2 border-brand-navy py-2 px-4 sm:py-2.5 sm:px-5 ${RADIUS.circle} w-36 sm:w-40 lg:w-44 ${TYPOGRAPHY.weight.bold} ${TYPOGRAPHY.body.small} sm:${TYPOGRAPHY.body.regular} lg:${TYPOGRAPHY.body.default} items-center justify-center gap-1 sm:gap-2 group`}
         >
-          <img src={instagram} alt="instagram" width={40} />
+          <img 
+            src={instagram} 
+            alt="instagram" 
+            className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10"
+          />
           <span>Follow</span>
         </a>
       </div>
@@ -63,9 +72,9 @@ const Follow = () => {
 
             {/* Instagram Icon - appears on hover */}
             <div className={`absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 ${TRANSITIONS.fast}`}>
-              <div className={`bg-white/95 backdrop-blur-sm ${RADIUS.circle} p-4 transform scale-0 group-hover:scale-100 ${TRANSITIONS.fast}`}>
+              <div className={`bg-white/95 backdrop-blur-sm ${RADIUS.circle} p-3 sm:p-4 transform scale-0 group-hover:scale-100 ${TRANSITIONS.fast}`}>
                 <svg 
-                  className="w-10 h-10 text-brand-navy" 
+                  className="w-8 h-8 sm:w-10 sm:h-10 text-brand-navy" 
                   fill="currentColor" 
                   viewBox="0 0 24 24"
                 >
