@@ -42,7 +42,7 @@ icon: (
 
 // FormSubmit Configuration
 export const formSubmitConfig = {
-endpoint: "https://formsubmit.co/8439db258e7a608a9dc25451a4f1a3e3",
+endpoint: "https://formsubmit.co/c965ba286caff0dfc8011665bb1f691e ",
 subject: "📧 Pesan Baru dari Website Sector Seven",
 captcha: false,
 template: "table"
