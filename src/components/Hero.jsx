@@ -21,7 +21,7 @@ const Hero = () => {
       id: 2,
       title: "Signature",
       subtitle: "Craft",
-      description: "Bold blends. Calming greens. A curated menu crafted without compromise for your day",
+      description: "Bold blends. Calming greens. A curated menu crafted without compromise",
       image: foreStore,
       alt: "Signature"
     }
