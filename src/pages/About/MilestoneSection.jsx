@@ -8,7 +8,7 @@ const MilestoneSection = ({ milestones }) => {
 const [showAllMilestones, setShowAllMilestones] = useState(false);
 
 return (
-    <div className="bg-brand-cream py-section-sm md:py-section-md lg:py-section mb-element-sm md:mb-element-md lg:mb-element">
+    <div className="bg-white py-section-sm md:py-section-md lg:py-section mb-element-sm md:mb-element-md lg:mb-element">
     <div className="max-w-[1200px] mx-auto px-4">
         <Heading as="h2" variant="page" color="navy" center>
         Our Milestones
@@ -81,7 +81,7 @@ return (
             </div>
 
             <div>
-                <h3 className={`${TYPOGRAPHY.subheading.tablet} ${TYPOGRAPHY.weight.bold} text-brand-orange mb-4 text-center bg-brand-cream relative z-20 inline-block px-6 left-1/2 -translate-x-1/2`}>
+                <h3 className={`${TYPOGRAPHY.subheading.tablet} ${TYPOGRAPHY.weight.bold} text-brand-orange mb-4 text-center bg-white relative z-20 inline-block px-6 left-1/2 -translate-x-1/2`}>
                 {milestone.title}
                 </h3>
                 <div className={`space-y-3 bg-white p-6 ${RADIUS.card.responsive} shadow-card`}>
