@@ -18,8 +18,7 @@ message:
     "Halo Sector Seven! Saya ingin order \n\n" +
     "Nama: \n" +
     "Pesanan: \n" +
-    "Waktu pengambilan: \n" +
-    "Lokasi: "
+    "Waktu pengambilan: \n"
 };
 
 // Generate WhatsApp Link
