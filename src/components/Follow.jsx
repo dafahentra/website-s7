@@ -25,7 +25,7 @@ const Follow = () => {
         <h1 className={`${TYPOGRAPHY.subheading.tablet} ${TYPOGRAPHY.weight.semibold} text-brand-orange mb-6`}>
           See what's brewing online!
         </h1>
-        <span className={`${TYPOGRAPHY.heading.tablet} ${TYPOGRAPHY.weight.bold} text-brand-navy mb-6`}>
+        <span className={`${TYPOGRAPHY.subheading.tablet} ${TYPOGRAPHY.weight.bold} text-brand-navy mb-6`}>
           @sectorseven.yk
         </span>
         <a
