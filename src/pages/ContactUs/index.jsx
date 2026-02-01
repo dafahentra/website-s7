@@ -1,4 +1,4 @@
-// pages/ContactUs/index.jsx - REFACTORED WITH DESIGN SYSTEM
+// pages/ContactUs/index.jsx - SIMPLE VERSION (NO EXTRA PHONE HANDLER NEEDED)
 import React, { lazy, Suspense } from "react";
 import SEO from "../../components/SEO";
 import { useContactForm } from "../../hooks/useContactForm";

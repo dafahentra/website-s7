@@ -1,99 +1,95 @@
-// hooks/useContactForm.js
-import { useState } from "react";
-import { formSubmitConfig } from "../data/contactData";
+// hooks/useContactForm.js - SIMPLE VERSION
+import { useState } from 'react';
 
 export const useContactForm = () => {
 const [formData, setFormData] = useState({
-name: "",
-email: "",
-phone: "",
-message: ""
+    name: '',
+    email: '',
+    phone: '',
+    message: ''
 });
+
 const [isSubmitting, setIsSubmitting] = useState(false);
 const [showNotification, setShowNotification] = useState(false);
 const [notificationType, setNotificationType] = useState('success');
 
+  // Handle all input changes (including phone)
 const handleChange = (e) => {
-setFormData({
-    ...formData,
-    [e.target.name]: e.target.value
-});
+    const { name, value } = e.target;
+    setFormData(prev => ({
+        ...prev,
+        [name]: value
+    }));
 };
 
-const resetForm = () => {
-setFormData({
-    name: "",
-    email: "",
-    phone: "",
-    message: ""
-});
-};
-
-const showSuccessNotification = () => {
-setNotificationType('success');
-setShowNotification(true);
-setTimeout(() => {
-    setShowNotification(false);
-}, 5000);
-};
-
-const showErrorNotification = () => {
-setNotificationType('error');
-setShowNotification(true);
-setTimeout(() => {
-    setShowNotification(false);
-}, 5000);
-};
-
-const hideNotification = () => {
-setShowNotification(false);
-};
-
+  // Handle form submission
 const handleSubmit = async (e) => {
-e.preventDefault();
-setIsSubmitting(true);
+    e.preventDefault();
+    setIsSubmitting(true);
 
-try {
-    // Prepare form data
-    const formDataToSend = new FormData();
-    formDataToSend.append('name', formData.name);
-    formDataToSend.append('email', formData.email);
-    formDataToSend.append('phone', formData.phone || 'Not provided');
-    formDataToSend.append('message', formData.message);
-    formDataToSend.append('_subject', formSubmitConfig.subject);
-    formDataToSend.append('_captcha', formSubmitConfig.captcha);
-    formDataToSend.append('_template', formSubmitConfig.template);
-
-    // Submit to FormSubmit
-    const response = await fetch(formSubmitConfig.endpoint, {
-    method: 'POST',
-    body: formDataToSend,
-    headers: {
+    try {
+    const response = await fetch('https://formsubmit.co/dapahentra@gmail.com', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
         'Accept': 'application/json'
-    }
+        },
+        body: JSON.stringify({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message,
+        _subject: '📧 Pesan Baru dari Website Sector Seven',
+        _captcha: 'false',
+        _template: 'table'
+        })
     });
 
     if (response.ok) {
-    showSuccessNotification();
-    resetForm();
+        setNotificationType('success');
+        setShowNotification(true);
+        
+        // Reset form
+        setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        message: ''
+        });
+
+        // Auto hide notification after 5 seconds
+        setTimeout(() => {
+        setShowNotification(false);
+        }, 5000);
     } else {
-    throw new Error('Failed to send');
+        throw new Error('Submission failed');
     }
-} catch (error) {
-    console.error('Error:', error);
-    showErrorNotification();
-} finally {
+    } catch (error) {
+    console.error('Error submitting form:', error);
+    setNotificationType('error');
+    setShowNotification(true);
+
+      // Auto hide error notification after 5 seconds
+    setTimeout(() => {
+        setShowNotification(false);
+    }, 5000);
+    } finally {
     setIsSubmitting(false);
-}
+    }
+};
+
+  // Manual hide notification
+const hideNotification = () => {
+    setShowNotification(false);
 };
 
 return {
-formData,
-isSubmitting,
-showNotification,
-notificationType,
-handleChange,
-handleSubmit,
-hideNotification
+    formData,
+    isSubmitting,
+    showNotification,
+    notificationType,
+    handleChange,
+    handleSubmit,
+    hideNotification
 };
 };

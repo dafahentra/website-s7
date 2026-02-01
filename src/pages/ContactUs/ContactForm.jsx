@@ -1,4 +1,4 @@
-// components/ContactUs/ContactForm.jsx - REFACTORED WITH DESIGN SYSTEM
+// components/ContactUs/ContactForm.jsx - SIMPLE NUMBER ONLY WITH AUTO-FORMAT
 import React, { memo } from "react";
 import { motion } from "framer-motion";
 import { TYPOGRAPHY, RADIUS, SHADOWS, TRANSITIONS } from "../../styles/designSystem";
@@ -40,6 +40,57 @@ const FormInput = memo(({
 
 FormInput.displayName = 'FormInput';
 
+// Simple Phone Input - Number Only (No Dash)
+const PhoneInput = memo(({ label, name, value, onChange, required = false, placeholder }) => {
+  const handlePhoneChange = (e) => {
+    const input = e.target.value;
+    
+    // Remove all non-numeric characters except + at start
+    let cleaned = input.replace(/[^\d+]/g, '');
+    
+    // Only allow + at the beginning
+    if (cleaned.indexOf('+') > 0) {
+      cleaned = cleaned.replace(/\+/g, '');
+    }
+    
+    // If there's a +, make sure it's only at the start
+    if (cleaned.startsWith('+')) {
+      const numbers = cleaned.slice(1).replace(/\+/g, '');
+      cleaned = '+' + numbers;
+    }
+    
+    // Create synthetic event with cleaned value
+    const syntheticEvent = {
+      target: {
+        name: name,
+        value: cleaned
+      }
+    };
+    
+    onChange(syntheticEvent);
+  };
+
+  return (
+    <div>
+      <label className={`block text-gray-700 ${TYPOGRAPHY.weight.medium} mb-2 ${TYPOGRAPHY.body.small}`}>
+        {label}
+      </label>
+      <input
+        type="tel"
+        name={name}
+        value={value}
+        onChange={handlePhoneChange}
+        required={required}
+        className={`w-full px-4 py-3 border border-gray-300 ${RADIUS.card.default} focus:border-brand-orange focus:outline-none focus:ring-2 focus:ring-brand-orange/20 ${TRANSITIONS.fast}`}
+        placeholder={placeholder}
+        inputMode="numeric"
+      />
+    </div>
+  );
+});
+
+PhoneInput.displayName = 'PhoneInput';
+
 const ContactForm = ({ formData, isSubmitting, onSubmit, onChange }) => {
   return (
     <motion.div
@@ -71,14 +122,13 @@ const ContactForm = ({ formData, isSubmitting, onSubmit, onChange }) => {
           placeholder="johndoe@example.com"
         />
 
-        {/* Phone */}
-        <FormInput
+        {/* Phone - Simple Number Only (No Dash) */}
+        <PhoneInput
           label="Phone Number"
-          type="tel"
           name="phone"
           value={formData.phone}
           onChange={onChange}
-          placeholder="+62"
+          placeholder="62"
         />
 
         {/* Message */}
