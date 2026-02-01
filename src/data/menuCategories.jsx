@@ -40,21 +40,21 @@ export const menuCategories = [
     )
 },
 { 
-    id: "BreadMade", 
-    name: "BreadMade",
+    id: "Pastry", 
+    name: "Pastry",
+    icon: (
+    <svg className="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 4c-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8m0 14c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6m0-10c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4m0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2"/>
+    </svg>
+    )
+},
+{ 
+    id: "Sourdough", 
+    name: "Sourdough",
     icon: (
     <svg className="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 6c-2.5 0-4.5.67-5.95 1.74C4.53 8.81 3.5 10.27 3.5 12v6c0 1.1.9 2 2 2h13c1.1 0 2-.9 2-2v-6c0-1.73-1.03-3.19-2.55-4.26C16.5 6.67 14.5 6 12 6m0 2c2.05 0 3.8.56 5.16 1.47C18.53 10.38 19.5 11.59 19.5 13v.5h-15V13c0-1.41.97-2.62 2.34-3.53C8.2 8.56 9.95 8 12 8m-6.5 7.5h13v2h-13v-2z"/>
     </svg>
     )
-},
-{ 
-    id: "Instant", 
-    name: "Instant",
-    icon: (
-    <svg className="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M9 2v2h1v3c-1.7.6-3 2.2-3 4v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-9c0-1.8-1.3-3.4-3-4V4h1V2H9m2 4h2v2.3c1.1.3 2 1.3 2 2.7v3h-6v-3c0-1.4.9-2.4 2-2.7V6z"/>
-    </svg>
-    )
-},
+}
 ];
