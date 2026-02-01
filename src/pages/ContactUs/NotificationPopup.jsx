@@ -10,42 +10,44 @@ const NotificationPopup = ({ show, type, onClose }) => {
   return (
     <AnimatePresence>
       {show && (
-        <motion.div
-          initial={{ opacity: 0, y: -50, x: '-50%' }}
-          animate={{ opacity: 1, y: 0, x: '-50%' }}
-          exit={{ opacity: 0, y: -50, x: '-50%' }}
-          className="fixed top-8 left-1/2 z-50 max-w-md w-full mx-4"
-        >
-          <div className={`${RADIUS.card.responsive} ${SHADOWS.image.responsive} p-6 flex items-center gap-4 ${
-            isSuccess 
-              ? 'bg-brand-green text-white' 
-              : 'bg-red-600 text-white'
-          }`}>
-            {isSuccess ? (
-              <CheckCircle className="w-8 h-8 flex-shrink-0" />
-            ) : (
-              <XCircle className="w-8 h-8 flex-shrink-0" />
-            )}
-            <div className="flex-1">
-              <h3 className={`${TYPOGRAPHY.weight.bold} ${TYPOGRAPHY.body.default} mb-1`}>
-                {isSuccess ? 'Pesan Terkirim!' : 'Gagal Mengirim'}
-              </h3>
-              <p className={`${TYPOGRAPHY.body.small} opacity-90`}>
-                {isSuccess 
-                  ? 'Terima kasih telah menghubungi kami. Kami akan segera merespons pesan Anda.'
-                  : 'Terjadi kesalahan. Silakan coba lagi atau hubungi kami melalui email/telepon.'
-                }
-              </p>
+        <div className="fixed top-8 left-0 right-0 z-50 flex justify-center px-4">
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className="w-full max-w-md"
+          >
+            <div className={`${RADIUS.card.responsive} ${SHADOWS.image.responsive} p-6 flex items-center gap-4 ${
+              isSuccess 
+                ? 'bg-brand-green text-white' 
+                : 'bg-red-600 text-white'
+            }`}>
+              {isSuccess ? (
+                <CheckCircle className="w-8 h-8 flex-shrink-0" />
+              ) : (
+                <XCircle className="w-8 h-8 flex-shrink-0" />
+              )}
+              <div className="flex-1">
+                <h3 className={`${TYPOGRAPHY.weight.bold} ${TYPOGRAPHY.body.default} mb-1`}>
+                  {isSuccess ? 'Pesan Terkirim!' : 'Gagal Mengirim'}
+                </h3>
+                <p className={`${TYPOGRAPHY.body.small} opacity-90`}>
+                  {isSuccess 
+                    ? 'Terima kasih telah menghubungi kami. Kami akan segera merespons pesan Anda.'
+                    : 'Terjadi kesalahan. Silakan coba lagi atau hubungi kami melalui email/telepon.'
+                  }
+                </p>
+              </div>
+              <button
+                onClick={onClose}
+                className={`text-white hover:bg-white/20 ${RADIUS.circle} p-2 ${TRANSITIONS.hover.color}`}
+                aria-label="Close notification"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
             </div>
-            <button
-              onClick={onClose}
-              className={`text-white hover:bg-white/20 ${RADIUS.circle} p-2 ${TRANSITIONS.hover.color}`}
-              aria-label="Close notification"
-            >
-              <XCircle className="w-5 h-5" />
-            </button>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       )}
     </AnimatePresence>
   );
