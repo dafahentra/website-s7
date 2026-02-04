@@ -1,12 +1,23 @@
 // src/data/menuData.js
 
-import Americano from "../assets/americano.png";
-import Sectorize from "../assets/sectorize.png";
-import Wizzie from "../assets/wizz-berr.png";
-import Palmer from "../assets/kopi-palmer.png";
-import Usutcha from "../assets/usutcha.png";
-import matchaStro from "../assets/matcha-stro.png";
-import choco from "../assets/choco.png"
+import Usutcha from "../assets/Usutcha.png";
+import Sectorize from "../assets/Sectorize.png";
+import MatchaLatte from "../assets/MatchaLatte.png";
+import MatchaStraw from "../assets/MatchaStraw.png";
+import DirtyMatcha from "../assets/DirtyMatcha.png";
+import SeaSalt from "../assets/SeaSalt.png";
+import Americano from "../assets/Americano.png";
+import Cappucino from "../assets/Cappucino.png";
+import Latte from "../assets/Latte.png";
+import Abericano from "../assets/Abericano.png";
+import Vanilla from "../assets/Vanilla.png";
+import Hazelnuts from "../assets/Hazelnuts.png";
+import Butterscotch from "../assets/Butterscotch.png";
+import Wizzie from "../assets/Wizzie.png";
+import Palm from "../assets/Palm.png";
+import Caramelted from "../assets/Caramelted.png";
+import Choco from "../assets/Choco.png";
+import Reveluv from "../assets/Reveluv.png";
 
 
 export const menuItems = {
@@ -30,21 +41,21 @@ export const menuItems = {
     name: "Abericano",
     description: "An Americano, rich espresso shots. Bold and robust cup.",
     price: "22.000",
-    image: "https://images.unsplash.com/photo-1561882468-9110e03e0f78?w=600&h=600&fit=crop"
+    image: Abericano
 },
 {
     id: 4,
     name: "Latte",
     description: "Our espresso flows through a channel of perfectly steamed milk.",
     price: "22.000",
-    image: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=600&h=600&fit=crop"
+    image: Latte
 },
 {
     id: 5,
     name: "Cappucino",
     description: "Balanced engine of espresso, steamed milk, and a dense cap of velvety foam.",
     price: "22.000",
-    image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=600&fit=crop"
+    image: Cappucino
 }
 ],
 "Flavoured Lattes": [
@@ -53,35 +64,35 @@ export const menuItems = {
     name: "White Vanilla",
     description: "The original Vanilla Latte, rich espresso, steamed milk, and timeless vanillla",
     price: "25.000",
-    image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&h=600&fit=crop"
+    image: Vanilla
 },
 {
     id: 7,
     name: "Buttery",
     description: "A warm Butterscotch Latte, blend of rich espresso and buttery, melted butterscotch",
     price: "25.000",
-    image: "https://images.unsplash.com/photo-1562843142-c4fe25b78c78?w=600&h=600&fit=crop"
+    image: Butterscotch
 },
 {
     id: 8,
     name: "Hazelnutz",
     description: "A perfect Hazelnut Latte, bold espresso, creamy milk, and roasted hazelnut.",
     price: "25.000",
-    image: "https://images.unsplash.com/photo-1562843142-c4fe25b78c78?w=600&h=600&fit=crop"
+    image: Hazelnuts
 },
 {
     id: 9,
     name: "Palmer",
     description: "A beauty of Palm Sugar, steamed milk, and marked with espresso",
     price: "25.000",
-    image: Palmer
+    image: Palm
 },
 {
     id: 10,
     name: "Caramelted",
     description: "A suspended balance of sweet, Salted Caramel Latte, and a sharp sea salt, all unified with smooth espresso",
     price: "25.000",
-    image: "https://images.unsplash.com/photo-1562843142-c4fe25b78c78?w=600&h=600&fit=crop"
+    image: Caramelted
 }
 ],
 "Matcha Series": [
@@ -97,28 +108,28 @@ export const menuItems = {
     name: "Green Flag",
     description: "Vibrant Matcha Latte, ceremonial matcha perfectly suspended in creamy steamed milk.",
     price: "25.000",
-    image: "https://images.unsplash.com/photo-1556910110-a6c7c4c0e2d6?w=600&h=600&fit=crop"
+    image: MatchaLatte
 },
 {
     id: 13,
     name: "Red Flag",
     description: "Sweet Strawberry purée rises to meet a creamy, earthy float of ceremonial matcha.",
     price: "27.000",
-    image: matchaStro
+    image: MatchaStraw
 },
 {
     id: 14,
     name: "Dirty Matcha",
     description: "A powerful, gritty fusion of Dirty Matcha and a shot of our signature espresso.",
     price: "25.000",
-    image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&h=600&fit=crop"
+    image: DirtyMatcha
 },
 {
     id: 15,
     name: "Sea Salt Matcha",
     description: "Sea Salt matcha and milk, topped with a savory, salted cream foam",
     price: "27.000",
-    image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&h=600&fit=crop"
+    image: SeaSalt
 },
 ],
 "Milk Series": [
@@ -127,14 +138,14 @@ export const menuItems = {
     name: "Chocolate",
     description: "A deep and decadent cup of chocolate and steamed milk.",
     price: "25.000",
-    image: choco
+    image: Choco
 },
 {
     id: 17,
     name: "Red Velvet",
     description: "A smooth, crimson-hued blend of vanilla, light cocoa, and a sweet finish.",
     price: "25.000",
-    image: "https://images.unsplash.com/photo-1597318378921-d89f8d46c7a2?w=600&h=600&fit=crop"
+    image: Reveluv
 },
 {
     id: 18,
