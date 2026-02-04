@@ -2,6 +2,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { TYPOGRAPHY, RADIUS, SHADOWS } from "../../styles/designSystem";
+import YourSector from "../../assets/YourSector.png";
 
 const StorySection = () => {
   return (
@@ -35,7 +36,7 @@ const StorySection = () => {
           className="relative"
         >
           <img
-            src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&h=600&fit=crop"
+            src={YourSector}
             alt="Story"
             className={`${RADIUS.image.responsive} ${SHADOWS.image.responsive}`}
           />
