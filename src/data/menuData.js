@@ -1,4 +1,14 @@
 // src/data/menuData.js
+
+import Americano from "../assets/americano.png";
+import Sectorize from "../assets/sectorize.png";
+import Wizzie from "../assets/wizz-berr.png";
+import Palmer from "../assets/kopi-palmer.png";
+import Usutcha from "../assets/usutcha.png";
+import matchaStro from "../assets/matcha-stro.png";
+import choco from "../assets/choco.png"
+
+
 export const menuItems = {
 "Espresso Based": [
 {
@@ -6,14 +16,14 @@ export const menuItems = {
     name: "Sectorize",
     description: "Our signature iced blend. Bold espresso meets creamy milk and a sweet touch of condensed milk for a perfectly balanced finish.",
     price: "22.000",
-    image: "https://images.unsplash.com/photo-1561882468-9110e03e0f78?w=600&h=600&fit=crop"
+    image: Sectorize
 },
 {
     id: 2,
     name: "Americano",
     description: "An Americano, rich espresso shots. Bold and robust cup.",
     price: "20.000",
-    image: "https://images.unsplash.com/photo-1561882468-9110e03e0f78?w=600&h=600&fit=crop"
+    image: Americano
 },
 {
     id: 3,
@@ -64,7 +74,7 @@ export const menuItems = {
     name: "Palmer",
     description: "A beauty of Palm Sugar, steamed milk, and marked with espresso",
     price: "25.000",
-    image: "https://images.unsplash.com/photo-1562843142-c4fe25b78c78?w=600&h=600&fit=crop"
+    image: Palmer
 },
 {
     id: 10,
@@ -77,10 +87,10 @@ export const menuItems = {
 "Matcha Series": [
 {
     id: 11,
-    name: "Pure Matcha",
+    name: "Usutcha",
     description: "The soft, caring, unexpected taste. A clean, focused charge of ceremonial Pure Matcha, whisked with pure water.",
     price: "22.000",
-    image: "https://images.unsplash.com/photo-1556910110-a6c7c4c0e2d6?w=600&h=600&fit=crop"
+    image: Usutcha
 },
 {
     id: 12,
@@ -94,7 +104,7 @@ export const menuItems = {
     name: "Red Flag",
     description: "Sweet Strawberry purée rises to meet a creamy, earthy float of ceremonial matcha.",
     price: "27.000",
-    image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&h=600&fit=crop"
+    image: matchaStro
 },
 {
     id: 14,
@@ -117,7 +127,7 @@ export const menuItems = {
     name: "Chocolate",
     description: "A deep and decadent cup of chocolate and steamed milk.",
     price: "25.000",
-    image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cda9?w=600&h=600&fit=crop"
+    image: choco
 },
 {
     id: 17,
@@ -131,7 +141,7 @@ export const menuItems = {
     name: "Wizzie Berry",
     description: "A smooth, crimson-hued blend of vanilla, light cocoa, and a sweet finish.",
     price: "25.000",
-    image: "https://images.unsplash.com/photo-1597318378921-d89f8d46c7a2?w=600&h=600&fit=crop"
+    image: Wizzie
 },
 ],
 "Pastry": [

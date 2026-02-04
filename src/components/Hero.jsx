@@ -3,7 +3,7 @@ import React, { useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import coffee from "../assets/coffee.png";
-import foreStore from "../assets/fore-store.png";
+import signature from "../assets/signature-craft.png";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { TYPOGRAPHY, RADIUS } from "../styles/designSystem";
 
@@ -22,7 +22,7 @@ const Hero = () => {
       title: "Signature",
       subtitle: "Craft",
       description: "Bold blends. Calming greens. A curated menu crafted without compromise",
-      image: foreStore,
+      image: signature,
       alt: "Signature"
     }
   ];
