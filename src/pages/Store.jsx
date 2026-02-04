@@ -5,6 +5,7 @@ import SEO from "../components/SEO";
 import Contact from "../components/Contact";
 import { Heading } from "../components/ui";
 import { TYPOGRAPHY, RADIUS, SHADOWS, TRANSITIONS } from "../styles/designSystem";
+import CIMBStore from "../assets/CIMBStore.jpg";
 
 const Store = () => {
   // Data Store Locations
@@ -15,7 +16,7 @@ const Store = () => {
       address: "Jl. Sosio Humaniora, Karang Malang, Caturtunggal, Kec. Depok, Kabupaten Sleman, Daerah Istimewa Yogyakarta 55281",
       hours: "07:30 - 17:00",
       phone: "+62 274 1234570",
-      image: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=400&h=300&fit=crop",
+      image: CIMBStore,
       mapUrl: "https://maps.app.goo.gl/L3eQo8ZSP4pf2n6z7"
     }
   ];
