@@ -14,7 +14,7 @@ const StorySection = () => {
           transition={{ duration: 0.8 }}
         >
           <p className={`${TYPOGRAPHY.body.regular} md:${TYPOGRAPHY.body.default} lg:${TYPOGRAPHY.body.large} text-brand-orange mb-4 tracking-wider uppercase font-semibold`}>
-            Our Story
+            About Us
           </p>
           <h2 className={`${TYPOGRAPHY.heading.responsive} ${TYPOGRAPHY.weight.bold} text-brand-navy mb-8 leading-tight`}>
             Your Sector,<br />Your Soul

@@ -19,7 +19,7 @@ const Story = () => {
             isHeaderVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'
           }`}
         >
-          Our Story
+          About Us
         </h1>
         <div className="grid lg:grid-cols-2 gap-8 place-items-center">
           <div
