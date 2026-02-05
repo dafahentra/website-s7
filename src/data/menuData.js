@@ -173,7 +173,7 @@ export const menuItems = {
 {
     id: 20,
     name: "Cinnamon Roll",
-    description: "A golden spiral of soft, pillowy dough, generously laced with aromatic cinnamon and finished with a sweet, lingering glaze",
+    description: "A spiral of soft, pillowy dough, generously laced with aromatic cinnamon and finished with a sweet, lingering glaze",
     price: "23.000",
     image: Cinnamon
 },
