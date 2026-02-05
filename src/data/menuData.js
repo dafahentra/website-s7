@@ -32,35 +32,35 @@ export const menuItems = {
 {
     id: 1,
     name: "Sectorize",
-    description: "Our signature iced blend. Bold espresso meets creamy milk and a sweet touch of condensed milk for a perfectly balanced finish.",
+    description: "Our signature iced blend. Bold espresso meets creamy milk and a sweet touch of condensed milk for a perfectly balanced finish",
     price: "22.000",
     image: Sectorize
 },
 {
     id: 2,
     name: "Americano",
-    description: "An Americano, rich espresso shots. Bold and robust cup.",
+    description: "An Americano, rich espresso shots. Bold and robust cup",
     price: "20.000",
     image: Americano
 },
 {
     id: 3,
     name: "Abericano",
-    description: "An Americano mixed with strawberry jam. A vibrant and fruity twist on a classic.",
+    description: "An Americano mixed with strawberry jam. A vibrant and fruity twist on a classic",
     price: "22.000",
     image: Abericano
 },
 {
     id: 4,
     name: "Latte",
-    description: "Our espresso flows through a channel of perfectly steamed milk.",
+    description: "Our espresso flows through a channel of perfectly steamed milk",
     price: "22.000",
     image: Latte
 },
 {
     id: 5,
     name: "Cappucino",
-    description: "Balanced engine of espresso, steamed milk, and a dense cap of velvety foam.",
+    description: "Balanced engine of espresso, steamed milk, and a dense cap of velvety foam",
     price: "22.000",
     image: Cappucino
 }
@@ -83,7 +83,7 @@ export const menuItems = {
 {
     id: 8,
     name: "Hazelnutz",
-    description: "A perfect Hazelnut Latte, bold espresso, creamy milk, and roasted hazelnut.",
+    description: "A perfect Hazelnut Latte, bold espresso, creamy milk, and roasted hazelnut",
     price: "25.000",
     image: Hazelnuts
 },
@@ -106,28 +106,28 @@ export const menuItems = {
 {
     id: 11,
     name: "Usutcha",
-    description: "The soft, caring, unexpected taste. A clean, focused charge of ceremonial Pure Matcha, whisked with pure water.",
+    description: "The soft, caring, unexpected taste. A clean, focused charge of ceremonial Pure Matcha, whisked with pure water",
     price: "22.000",
     image: Usutcha
 },
 {
     id: 12,
     name: "Green Flag",
-    description: "Vibrant Matcha Latte, ceremonial matcha perfectly suspended in creamy steamed milk.",
+    description: "Vibrant Matcha Latte, ceremonial matcha perfectly suspended in creamy steamed milk",
     price: "27.000",
     image: MatchaLatte
 },
 {
     id: 13,
     name: "Red Flag",
-    description: "Sweet Strawberry purée rises to meet a creamy, earthy float of ceremonial matcha.",
+    description: "Sweet Strawberry purée rises to meet a creamy, earthy float of ceremonial matcha",
     price: "27.000",
     image: MatchaStraw
 },
 {
     id: 14,
     name: "Dirty Matcha",
-    description: "A powerful, gritty fusion of Dirty Matcha and a shot of our signature espresso.",
+    description: "A powerful, gritty fusion of Dirty Matcha and a shot of our signature espresso",
     price: "27.000",
     image: DirtyMatcha
 },
@@ -143,14 +143,14 @@ export const menuItems = {
 {
     id: 16,
     name: "Chocolate",
-    description: "A deep and decadent cup of chocolate and steamed milk.",
+    description: "A deep and decadent cup of chocolate and steamed milk",
     price: "25.000",
     image: Choco
 },
 {
     id: 17,
     name: "Red Velvet",
-    description: "A smooth, crimson-hued blend of vanilla, light cocoa, and a sweet finish.",
+    description: "A smooth, crimson-hued blend of vanilla, light cocoa, and a sweet finish",
     price: "25.000",
     image: Reveluv
 },
@@ -166,21 +166,21 @@ export const menuItems = {
 {
     id: 19,
     name: "Croissant Almond",
-    description: "Flaky, buttery, and meticulously layered, straight from the ovens.",
+    description: "Golden, meticulously layered pastry with a rich buttery aroma, finished with the nutty crunch of roasted almonds",
     price: "24.000",
     image: Kwasong
 },
 {
     id: 20,
     name: "Cinnamon Roll",
-    description: "A hearty tangy slice of classic sourdough, served toasted with butter.",
+    description: "A golden spiral of soft, pillowy dough, generously laced with aromatic cinnamon and finished with a sweet, lingering glaze",
     price: "23.000",
     image: Cinnamon
 },
 {
     id: 21,
     name: "Apple Danish",
-    description: "A hearty tangy slice of classic sourdough, served toasted with butter.",
+    description: "Crispy, buttery pastry layers embracing a sweet apple compote, offering a perfect balance of tartness and warmth in every bite",
     price: "23.000",
     image: Apple
 },
@@ -189,21 +189,21 @@ export const menuItems = {
 {
     id: 22,
     name: "Plain",
-    description: "Kopi instan premium siap seduh (10 sachet)",
+    description: "The foundation of craft. A rustic, crusty exterior with a light, airy center, boasting that signature tangy soul of slow-fermented sourdough",
     price: "20.000",
     image: Plain
 },
 {
     id: 23,
     name: "Double Choco",
-    description: "Matcha instant powder (100gr)",
+    description: "A bold, dark twist on tradition. Our signature sourdough infused with rich cocoa and loaded with melting chocolate chunks for a deep, bittersweet indulgence",
     price: "24.000",
     image: Double
 },
 {
     id: 24,
     name: "Blueberry Cream Cheese",
-    description: "Matcha instant powder (100gr)",
+    description: "A harmonious blend of tangy sourdough, bursting with succulent blueberries and a velvety heart of rich, smooth cream cheese",
     price: "24.000",
     image: Blueberry
 }
