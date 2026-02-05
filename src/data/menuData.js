@@ -19,6 +19,12 @@ import Caramelted from "../assets/Caramelted.png";
 import Choco from "../assets/Choco.png";
 import Reveluv from "../assets/Reveluv.png";
 import NotAvail from "../assets/NotAvail.png";
+import Kwasong from "../assets/Kwasong.png";
+import Cinnamon from "../assets/Cinnamon.png";
+import Apple from "../assets/Apple.png";
+import Plain from "../assets/Plain.png";
+import Double from "../assets/Double.png";
+import Blueberry from "../assets/Blueberry.png"
 
 
 export const menuItems = {
@@ -162,21 +168,21 @@ export const menuItems = {
     name: "Croissant Almond",
     description: "Flaky, buttery, and meticulously layered, straight from the ovens.",
     price: "24.000",
-    image: NotAvail
+    image: Kwasong
 },
 {
     id: 20,
     name: "Cinnamon Roll",
     description: "A hearty tangy slice of classic sourdough, served toasted with butter.",
     price: "23.000",
-    image: NotAvail
+    image: Cinnamon
 },
 {
     id: 21,
     name: "Apple Danish",
     description: "A hearty tangy slice of classic sourdough, served toasted with butter.",
     price: "23.000",
-    image: NotAvail
+    image: Apple
 },
 ],
 "Sourdough": [
@@ -185,21 +191,21 @@ export const menuItems = {
     name: "Plain",
     description: "Kopi instan premium siap seduh (10 sachet)",
     price: "20.000",
-    image: NotAvail
+    image: Plain
 },
 {
     id: 23,
     name: "Double Choco",
     description: "Matcha instant powder (100gr)",
     price: "24.000",
-    image: NotAvail
+    image: Double
 },
 {
     id: 24,
     name: "Blueberry Cream Cheese",
     description: "Matcha instant powder (100gr)",
     price: "24.000",
-    image: NotAvail
+    image: Blueberry
 }
 ]
 };
