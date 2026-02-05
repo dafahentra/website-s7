@@ -114,7 +114,7 @@ export const menuItems = {
     id: 12,
     name: "Green Flag",
     description: "Vibrant Matcha Latte, ceremonial matcha perfectly suspended in creamy steamed milk.",
-    price: "25.000",
+    price: "27.000",
     image: MatchaLatte
 },
 {
@@ -128,7 +128,7 @@ export const menuItems = {
     id: 14,
     name: "Dirty Matcha",
     description: "A powerful, gritty fusion of Dirty Matcha and a shot of our signature espresso.",
-    price: "25.000",
+    price: "27.000",
     image: DirtyMatcha
 },
 {
