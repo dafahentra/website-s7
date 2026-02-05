@@ -29,12 +29,12 @@ const NotificationPopup = ({ show, type, onClose }) => {
               )}
               <div className="flex-1">
                 <h3 className={`${TYPOGRAPHY.weight.bold} ${TYPOGRAPHY.body.default} mb-1`}>
-                  {isSuccess ? 'Pesan Terkirim!' : 'Gagal Mengirim'}
+                  {isSuccess ? 'Message Sent!' : 'Failed to Send'}
                 </h3>
                 <p className={`${TYPOGRAPHY.body.small} opacity-90`}>
                   {isSuccess 
-                    ? 'Terima kasih telah menghubungi kami. Kami akan segera merespons pesan Anda.'
-                    : 'Terjadi kesalahan. Silakan coba lagi atau hubungi kami melalui email/telepon.'
+                    ? 'Thank you for contacting us. We will respond to your message promptly'
+                    : 'An error occurred. Please try again or contact us via email/phone'
                   }
                 </p>
               </div>
