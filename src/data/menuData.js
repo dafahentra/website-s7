@@ -166,7 +166,7 @@ export const menuItems = {
 {
     id: 19,
     name: "Croissant Almond",
-    description: "Golden, meticulously layered pastry with a rich buttery aroma, finished with the nutty crunch of roasted almonds",
+    description: "Meticulously layered pastry with a rich buttery aroma, finished with the nutty crunch of roasted almonds",
     price: "24.000",
     image: Kwasong
 },
@@ -180,7 +180,7 @@ export const menuItems = {
 {
     id: 21,
     name: "Apple Danish",
-    description: "Crispy, buttery pastry layers embracing a sweet apple compote, offering a perfect balance of tartness and warmth in every bite",
+    description: "Buttery pastry layers embracing a sweet apple compote, offering a perfect balance of tartness and warmth in every bite",
     price: "23.000",
     image: Apple
 },
@@ -189,14 +189,14 @@ export const menuItems = {
 {
     id: 22,
     name: "Plain",
-    description: "The foundation of craft. A rustic, crusty exterior with a light, airy center, boasting that signature tangy soul of slow-fermented sourdough",
+    description: "A rustic, crusty exterior with a light, airy center, boasting that signature tangy soul of slow-fermented sourdough",
     price: "20.000",
     image: Plain
 },
 {
     id: 23,
     name: "Double Choco",
-    description: "A bold, dark twist on tradition. Our signature sourdough infused with rich cocoa and loaded with melting chocolate chunks for a deep, bittersweet indulgence",
+    description: "A bold, dark twist on tradition with rich cocoa and loaded with melting chocolate chunks for a deep, bittersweet indulgence",
     price: "24.000",
     image: Double
 },
