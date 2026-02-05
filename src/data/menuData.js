@@ -32,7 +32,7 @@ export const menuItems = {
 {
     id: 1,
     name: "Sectorize",
-    description: "Our signature iced blend. Bold espresso meets creamy milk and a sweet touch of condensed milk for a perfectly balanced finish",
+    description: "Bold espresso with creamy milk and subtle sweetness",
     price: "22.000",
     image: Sectorize
 },
@@ -105,15 +105,15 @@ export const menuItems = {
 "Matcha Series": [
 {
     id: 11,
-    name: "Usutcha",
-    description: "The soft, caring, unexpected taste. A clean, focused charge of ceremonial Pure Matcha, whisked with pure water",
+    name: "Pure Matcha",
+    description: "A clean charge of pure matcha with a soft, rounded finish",
     price: "22.000",
     image: Usutcha
 },
 {
     id: 12,
     name: "Green Flag",
-    description: "Vibrant Matcha Latte, ceremonial matcha perfectly suspended in creamy steamed milk",
+    description: "Vibrant matcha latte with pure matcha suspended in creamy milk",
     price: "27.000",
     image: MatchaLatte
 },
@@ -134,7 +134,7 @@ export const menuItems = {
 {
     id: 15,
     name: "Sea Salt Matcha",
-    description: "Sea Salt matcha and milk, topped with a savory, salted cream foam",
+    description: "Pure matcha and milk, finished with a savory salted cream foam",
     price: "27.000",
     image: SeaSalt
 },
@@ -143,21 +143,21 @@ export const menuItems = {
 {
     id: 16,
     name: "Chocolate",
-    description: "A deep and decadent cup of chocolate and steamed milk",
+    description: "A deep and decadent cup of chocolate and  milk",
     price: "25.000",
     image: Choco
 },
 {
     id: 17,
     name: "Red Velvet",
-    description: "A smooth, crimson-hued blend of vanilla, light cocoa, and a sweet finish",
+    description: "Crimson-hued red velvet, bold by design",
     price: "25.000",
     image: Reveluv
 },
 {
     id: 18,
     name: "Wizzie Berry",
-    description: "A strawberry milkshake made with milk and strawberry syrup, smooth and refreshingly sweet",
+    description: "Milk and strawberry syrup blended into a strawberry milkshake",
     price: "25.000",
     image: Wizzie
 },
