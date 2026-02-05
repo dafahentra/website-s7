@@ -46,7 +46,7 @@ export const menuItems = {
 {
     id: 3,
     name: "Abericano",
-    description: "An Americano, rich espresso shots. Bold and robust cup.",
+    description: "An Americano mixed with strawberry jam. A vibrant and fruity twist on a classic.",
     price: "22.000",
     image: Abericano
 },
@@ -157,7 +157,7 @@ export const menuItems = {
 {
     id: 18,
     name: "Wizzie Berry",
-    description: "A smooth, crimson-hued blend of vanilla, light cocoa, and a sweet finish.",
+    description: "A strawberry milkshake made with milk and strawberry syrup, smooth and refreshingly sweet",
     price: "25.000",
     image: Wizzie
 },
