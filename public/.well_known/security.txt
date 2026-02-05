@@ -1,0 +1,36 @@
+Contact: mailto:internalteam@sectorseven.space
+Preferred-Languages: id, en
+Canonical: https://sectorseven.space/.well-known/security.txt
+```
+
+## File 6: Buat `public/og-image.jpg`
+
+Pastikan Anda punya file `og-image.jpg` di folder `public/` dengan ukuran 1200x630px untuk preview di social media.
+
+## Struktur Folder Final:
+```
+porto2/
+├── node_modules/
+├── public/
+│   ├── .well-known/
+│   │   └── security.txt (optional)
+│   ├── logo.png
+│   ├── og-image.jpg (PENTING!)
+│   ├── robots.txt
+│   └── sitemap.xml (auto-generated saat build)
+├── scripts/
+│   └── generate-sitemap.js
+├── src/
+│   ├── components/
+│   ├── data/
+│   │   └── newsData.js
+│   ├── pages/
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
+├── dist/
+├── index.html
+├── netlify.toml
+├── package.json
+├── vite.config.js
+└── _redirect (HAPUS FILE INI!)

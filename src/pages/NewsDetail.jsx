@@ -1,6 +1,7 @@
 // pages/NewsDetail.jsx - REFACTORED WITH DESIGN SYSTEM
 import React from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { getNewsBySlug, getLatestNews } from "../data/newsData";
 import { ArrowLeft, Calendar, User, Tag } from "lucide-react";
 import SEO from "../components/SEO";
@@ -44,6 +45,38 @@ const NewsDetail = () => {
   // Filter artikel terkait (exclude artikel saat ini)
   const relatedNews = latestNews.filter((news) => news.id !== article.id);
 
+  // Article Structured Data untuk Google Rich Results
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": article.tittle,
+    "description": article.excerpt || article.description?.substring(0, 160),
+    "image": {
+      "@type": "ImageObject",
+      "url": `https://sectorseven.space${article.img}`,
+      "width": 1200,
+      "height": 630
+    },
+    "datePublished": article.date,
+    "dateModified": article.date,
+    "author": {
+      "@type": "Person",
+      "name": article.author
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "SECTOR SEVEN",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://sectorseven.space/logo.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://sectorseven.space/news/${article.slug}`
+    }
+  };
+
   return (
     <>
       <SEO 
@@ -55,6 +88,13 @@ const NewsDetail = () => {
         type="article"
         author={article.author}
       />
+
+      {/* Article Structured Data */}
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(articleSchema)}
+        </script>
+      </Helmet>
 
       <div className="bg-gray-50 pt-20">
         {/* Header dengan gambar */}
