@@ -33,35 +33,35 @@ export const menuItems = {
     id: 1,
     name: "Sectorize",
     description: "Bold espresso with creamy milk and subtle sweetness",
-    price: "22.000",
+    price: "23.000",
     image: Sectorize
 },
 {
     id: 2,
     name: "Americano",
     description: "An Americano, rich espresso shots. Bold and robust cup",
-    price: "20.000",
+    price: "19.000",
     image: Americano
 },
 {
     id: 3,
     name: "Abericano",
     description: "An Americano mixed with strawberry jam. A vibrant and fruity twist on a classic",
-    price: "22.000",
+    price: "23.000",
     image: Abericano
 },
 {
     id: 4,
     name: "Latte",
     description: "Our espresso flows through a channel of perfectly steamed milk",
-    price: "22.000",
+    price: "23.000",
     image: Latte
 },
 {
     id: 5,
     name: "Cappucino",
     description: "Balanced engine of espresso, steamed milk, and a dense cap of velvety foam",
-    price: "22.000",
+    price: "23.000",
     image: Cappucino
 }
 ],
@@ -107,7 +107,7 @@ export const menuItems = {
     id: 11,
     name: "Pure Matcha",
     description: "A clean charge of pure matcha with a soft, rounded finish",
-    price: "22.000",
+    price: "23.000",
     image: Usutcha
 },
 {
