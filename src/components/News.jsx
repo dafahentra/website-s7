@@ -2,7 +2,7 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { newsData } from "../data/newsData";
-import { TYPOGRAPHY, RADIUS, SHADOWS, TRANSITIONS } from "../styles/designSystem";
+import { TYPOGRAPHY, RADIUS, SHADOWS, TRANSITIONS, SPACING } from "../styles/designSystem";
 
 const ArrowRight = ({ size = 16, className = "" }) => (
   <svg 
@@ -30,9 +30,9 @@ const News = () => {
   );
 
   return (
-    <div className="max-w-[1200px] mx-auto my-20 md:my-40">
+    <div className={`${SPACING.container.maxWidth} mx-auto my-20 md:my-40`}>
       {/* Header Section */}
-      <div className="flex flex-col justify-between md:flex-row md:items-center relative mx-4 md:text-left text-center mb-8 md:mb-0">
+      <div className={`flex flex-col justify-between md:flex-row md:items-center relative ${SPACING.container.padding} md:text-left text-center mb-8 md:mb-0`}>
         <h1 className={`${TYPOGRAPHY.heading.tablet} md:${TYPOGRAPHY.heading.responsive} text-brand-navy mb-4 ${TYPOGRAPHY.weight.bold}`}>
           Sector News
         </h1>
@@ -44,44 +44,46 @@ const News = () => {
       {/* News Grid - Desktop, Horizontal Scroll - Mobile */}
       <div className="my-12 md:my-20">
         {/* Mobile: Horizontal Scroll */}
-        <div className="md:hidden overflow-x-auto px-4 pb-4 -mx-4">
-          <div className={`flex gap-3 ${latestNews.length < 3 ? 'justify-center' : 'w-max'}`}>
-            {latestNews.map((data) => (
-              <Link
-                to={`/news/${data.slug}`}
-                key={data.id}
-                className={`w-[176px] ${RADIUS.card.default} overflow-hidden ${SHADOWS.card.small} bg-white ${TRANSITIONS.fast} hover:shadow-card-lg flex-shrink-0`}
-              >
-                <div className="relative overflow-hidden h-24">
-                  <img
-                    className="object-cover h-full w-full"
-                    src={data.img}
-                    alt={data.tittle}
-                    loading="lazy"
-                  />
-                </div>
-                <div className="p-2.5">
-                  <div className={`${TYPOGRAPHY.body.small} ${TYPOGRAPHY.weight.semibold} mb-1 capitalize text-gray-800 line-clamp-2`}>
-                    {data.tittle.toLowerCase()}
+        <div className={`md:hidden ${SPACING.container.padding} pb-4`}>
+          <div className="overflow-x-auto">
+            <div className={`flex gap-3 ${latestNews.length < 3 ? 'justify-center' : ''}`}>
+              {latestNews.map((data) => (
+                <Link
+                  to={`/news/${data.slug}`}
+                  key={data.id}
+                  className={`w-[176px] ${RADIUS.card.default} overflow-hidden ${SHADOWS.card.small} bg-white ${TRANSITIONS.fast} hover:shadow-card-lg flex-shrink-0`}
+                >
+                  <div className="relative overflow-hidden h-24">
+                    <img
+                      className="object-cover h-full w-full"
+                      src={data.img}
+                      alt={data.tittle}
+                      loading="lazy"
+                    />
                   </div>
-                  <p className={`text-gray-500 ${TYPOGRAPHY.body.small} mb-2 line-clamp-2`} style={{ fontSize: '10px' }}>
-                    {data.excerpt}
-                  </p>
-                  <p className="text-gray-400 italic text-[9px]">
-                    {new Date(data.date).toLocaleDateString("id-ID", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </p>
-                </div>
-              </Link>
-            ))}
+                  <div className="p-2.5">
+                    <div className={`${TYPOGRAPHY.body.small} ${TYPOGRAPHY.weight.semibold} mb-1 capitalize text-gray-800 line-clamp-2`}>
+                      {data.tittle.toLowerCase()}
+                    </div>
+                    <p className={`text-gray-500 ${TYPOGRAPHY.body.small} mb-2 line-clamp-2`} style={{ fontSize: '10px' }}>
+                      {data.excerpt}
+                    </p>
+                    <p className="text-gray-400 italic text-[9px]">
+                      {new Date(data.date).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Desktop: Grid Layout */}
-        <div className="hidden md:grid lg:grid-cols-4 md:grid-cols-3 place-items-center gap-4 mx-4">
+        <div className={`hidden md:grid lg:grid-cols-4 md:grid-cols-3 place-items-center gap-4 ${SPACING.container.padding}`}>
           {latestNews.map((data) => (
             <Link
               to={`/news/${data.slug}`}
@@ -129,7 +131,7 @@ const News = () => {
       </div>
 
       {/* Button "Selengkapnya" */}
-      <div className="flex justify-center px-4">
+      <div className={`flex justify-center ${SPACING.container.padding}`}>
         <Link
           to="/news"
           className={`mt-4 bg-brand-navy px-8 py-4 ${RADIUS.circle} w-[200px] text-white hover:border-brand-navy hover:bg-white hover:text-brand-navy ${TRANSITIONS.hover.color} ${TYPOGRAPHY.body.regular} shadow-card-lg md:${SHADOWS.image.responsive} border-2 border-brand-navy text-center ${TYPOGRAPHY.weight.medium}`}

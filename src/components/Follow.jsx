@@ -3,7 +3,7 @@ import React from "react";
 import instagram from "../assets/instagram.png";
 import post1 from "../assets/post 1.jpg";
 import post2 from "../assets/post 2.jpg";
-import { TYPOGRAPHY, RADIUS, TRANSITIONS } from "../styles/designSystem";
+import { TYPOGRAPHY, RADIUS, TRANSITIONS, SPACING } from "../styles/designSystem";
 
 const instagramPosts = [
   {
@@ -20,8 +20,8 @@ const instagramPosts = [
 
 const Follow = () => {
   return (
-    <div className="max-w-[1200px] mx-auto py-12 sm:py-16 lg:py-20">
-      <div className="flex justify-center items-center flex-col mb-8 sm:mb-10 lg:mb-12 px-4">
+    <div className={`${SPACING.container.maxWidth} mx-auto py-12 sm:py-16 lg:py-20`}>
+      <div className={`flex justify-center items-center flex-col mb-8 sm:mb-10 lg:mb-12 ${SPACING.container.padding}`}>
         {/* Tagline */}
         <h1 className={`${TYPOGRAPHY.subheading.mobile} sm:${TYPOGRAPHY.subheading.tablet} ${TYPOGRAPHY.weight.semibold} text-brand-orange mb-3 sm:mb-4 lg:mb-6 text-center`}>
           See what's brewing online!
@@ -49,7 +49,7 @@ const Follow = () => {
       </div>
 
       {/* Instagram Feed Grid */}
-      <div className="grid grid-cols-3 md:grid-cols-4 gap-1 mx-4 max-w-4xl md:mx-auto">
+      <div className={`grid grid-cols-3 md:grid-cols-4 gap-1 ${SPACING.container.padding}`}>
         {instagramPosts.map((post) => (
           <a
             key={post.id}

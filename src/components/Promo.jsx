@@ -3,7 +3,7 @@ import React from "react";
 import promo1 from "../assets/promo1.jpg";
 import promo2 from "../assets/promo2.jpg";
 import promo3 from "../assets/promo3.jpg";
-import { TYPOGRAPHY, RADIUS, SHADOWS, TRANSITIONS } from "../styles/designSystem";
+import { TYPOGRAPHY, RADIUS, SHADOWS, SPACING } from "../styles/designSystem";
 
 const Promo = () => {
   // Daftar promo dengan Line Coupon masing-masing
@@ -56,9 +56,9 @@ const Promo = () => {
   );
 
   return (
-    <div className={`max-w-[1200px] mx-auto my-20 bg-center bg-cover bg-promo ${RADIUS.image.responsive}`}>
+    <div className={`${SPACING.container.maxWidth} mx-auto my-20 bg-center bg-cover bg-promo ${RADIUS.image.responsive}`}>
       {/* Header Section */}
-      <div className="flex items-center flex-col py-12 md:py-16 mx-4 text-center">
+      <div className={`flex items-center flex-col py-12 md:py-16 ${SPACING.container.padding} text-center`}>
         <h1 className={`${TYPOGRAPHY.heading.tablet} md:${TYPOGRAPHY.heading.responsive} text-brand-navy ${TYPOGRAPHY.weight.semibold}`}>
           Discover Our Promo
         </h1>
@@ -70,7 +70,7 @@ const Promo = () => {
       {/* Promo Cards - Horizontal Scroll untuk Mobile dan Desktop */}
       <div className="pb-12 md:pb-20">
         {/* Mobile Layout - Horizontal Scroll - Centered */}
-        <div className="md:hidden px-4 pb-4">
+        <div className={`md:hidden ${SPACING.container.padding} pb-4`}>
           <div className="overflow-x-auto">
             <div className="flex gap-3 pb-2 justify-center">
               {promos.map((promo) => (
@@ -85,7 +85,7 @@ const Promo = () => {
         </div>
 
         {/* Desktop Layout - Horizontal Scroll - Centered */}
-        <div className="hidden md:block mx-4">
+        <div className={`hidden md:block ${SPACING.container.padding}`}>
           <div className="overflow-x-auto">
             <div className="flex gap-6 pb-4 justify-center">
               {promos.map((promo) => (

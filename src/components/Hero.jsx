@@ -5,7 +5,7 @@ import Autoplay from "embla-carousel-autoplay";
 import coffee from "../assets/coffee.png";
 import signature from "../assets/signature-craft.png";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { TYPOGRAPHY, RADIUS } from "../styles/designSystem";
+import { TYPOGRAPHY, RADIUS, SPACING } from "../styles/designSystem";
 
 const Hero = () => {
   const slides = [
@@ -45,8 +45,8 @@ const Hero = () => {
   }, [emblaApi]);
 
   return (
-    <div className="max-w-[1200px] pt-32 pb-20 lg:pt-40 lg:pb-32 mx-auto relative z-0">
-      <div className="flex gap-8 mx-4 relative">
+    <div className={`${SPACING.container.maxWidth} pt-32 pb-20 lg:pt-40 lg:pb-32 mx-auto relative z-0`}>
+      <div className={`flex gap-8 ${SPACING.container.padding} relative`}>
         {/* Embla Carousel Container */}
         <div className={`overflow-hidden ${RADIUS.card.default} w-full`} ref={emblaRef}>
           <div className="flex">

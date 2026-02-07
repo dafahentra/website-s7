@@ -3,7 +3,7 @@ import React from "react";
 import story from "../assets/story.png";
 import { Link } from "react-router-dom";
 import useIntersectionObserver from "../hooks/useIntersectionObserver";
-import { TYPOGRAPHY, RADIUS, TRANSITIONS, SHADOWS } from "../styles/designSystem";
+import { TYPOGRAPHY, RADIUS, TRANSITIONS, SHADOWS, SPACING } from "../styles/designSystem";
 
 const Story = () => {
   const [headerRef, isHeaderVisible] = useIntersectionObserver({ threshold: 0.2 });
@@ -11,8 +11,8 @@ const Story = () => {
   const [textRef, isTextVisible] = useIntersectionObserver({ threshold: 0.2 });
 
   return (
-    <div className="max-w-[1200px] my-10 mx-auto">
-      <div className="mx-4">
+    <div className={`${SPACING.container.maxWidth} my-10 mx-auto`}>
+      <div className={SPACING.container.padding}>
         <h1
           ref={headerRef}
           className={`${TYPOGRAPHY.heading.responsive} text-brand-navy mb-4 ${TYPOGRAPHY.weight.bold} md:text-left text-center ${TRANSITIONS.slow} ${

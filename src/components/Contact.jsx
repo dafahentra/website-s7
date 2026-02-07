@@ -2,7 +2,7 @@
 import React from "react";
 import logo from "../assets/logo.png";
 import { useAnalytics } from "../hooks/useAnalytics";
-import { TYPOGRAPHY, RADIUS, TRANSITIONS } from "../styles/designSystem";
+import { TYPOGRAPHY, RADIUS, TRANSITIONS, SPACING } from "../styles/designSystem";
 
 // Social Media Icons (unchanged)
 const WhatsAppIcon = ({ size = 25 }) => (
@@ -90,8 +90,8 @@ const Contact = () => {
   const { trackWhatsAppOrder } = useAnalytics();
 
   return (
-    <div className="max-w-[1200px] mx-auto mt-20 mb-16">
-      <div className="flex lg:flex-row flex-col gap-4 mx-4 lg:items-start items-center">
+    <div className={`${SPACING.container.maxWidth} mx-auto mt-20 mb-16`}>
+      <div className={`flex lg:flex-row flex-col gap-4 ${SPACING.container.padding} lg:items-start items-center`}>
         <div className="lg:w-1/3">
           <img src={logo} alt="logo" width={200} className="bg-cover" />
         </div>
@@ -152,11 +152,11 @@ const Contact = () => {
       </div>
 
       {/* Social Media Links - Mobile only (below maps) */}
-      <div className="mx-4 mt-8 lg:hidden">
+      <div className={`${SPACING.container.padding} mt-8 lg:hidden`}>
         <SocialMediaLinks className="justify-center" size={28} />
       </div>
 
-      <div className="mx-4 mt-12 pb-12 flex lg:flex-row flex-col lg:space-y-0 lg:justify-between justify-start space-y-10 items-center">
+      <div className={`${SPACING.container.padding} mt-12 pb-12 flex lg:flex-row flex-col lg:space-y-0 lg:justify-between justify-start space-y-10 items-center`}>
         <span className={`text-brand-footer-navy ${TYPOGRAPHY.body.small}`}>
           © 2025 SECTOR SEVEN, All Rights Reserved
         </span>
