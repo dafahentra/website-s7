@@ -37,7 +37,7 @@ const Follow = () => {
           href="https://www.instagram.com/sectorseven.yk/"
           target="_blank"
           rel="noopener noreferrer"
-          className={`flex text-brand-navy hover:bg-brand-navy hover:text-white ${TRANSITIONS.hover.color} border-2 border-brand-navy py-2 px-4 sm:py-2.5 sm:px-5 ${RADIUS.circle} w-36 sm:w-40 lg:w-44 ${TYPOGRAPHY.weight.bold} ${TYPOGRAPHY.body.small} sm:${TYPOGRAPHY.body.regular} lg:${TYPOGRAPHY.body.default} items-center justify-center gap-1 sm:gap-2 group`}
+          className={`flex text-brand-navy md:hover:bg-brand-navy md:hover:text-white md:${TRANSITIONS.hover.color} border-2 border-brand-navy py-2 px-4 sm:py-2.5 sm:px-5 ${RADIUS.circle} w-36 sm:w-40 lg:w-44 ${TYPOGRAPHY.weight.bold} ${TYPOGRAPHY.body.small} sm:${TYPOGRAPHY.body.regular} lg:${TYPOGRAPHY.body.default} items-center justify-center gap-1 sm:gap-2 group`}
         >
           <img 
             src={instagram} 
@@ -49,7 +49,7 @@ const Follow = () => {
       </div>
 
       {/* Instagram Feed Grid */}
-      <div className="grid grid-cols-3 gap-1 mx-4">
+      <div className="grid grid-cols-3 md:grid-cols-4 gap-1 mx-4 max-w-4xl md:mx-auto">
         {instagramPosts.map((post) => (
           <a
             key={post.id}
@@ -63,16 +63,16 @@ const Follow = () => {
             <img
               src={post.imageUrl}
               alt="Instagram post"
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              className="w-full h-full object-cover md:transition-transform md:duration-500 md:group-hover:scale-110"
               loading="lazy"
             />
             
-            {/* White overlay with hover animation */}
-            <div className={`absolute inset-0 bg-white opacity-0 group-hover:opacity-30 ${TRANSITIONS.fast}`}></div>
+            {/* White overlay with hover animation - Desktop only */}
+            <div className={`absolute inset-0 bg-white opacity-0 md:group-hover:opacity-30 md:${TRANSITIONS.fast}`}></div>
 
-            {/* Instagram Icon - appears on hover */}
-            <div className={`absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 ${TRANSITIONS.fast}`}>
-              <div className={`bg-white/95 backdrop-blur-sm ${RADIUS.circle} p-3 sm:p-4 transform scale-0 group-hover:scale-100 ${TRANSITIONS.fast}`}>
+            {/* Instagram Icon - appears on hover - Desktop only */}
+            <div className={`absolute inset-0 flex items-center justify-center opacity-0 md:group-hover:opacity-100 md:${TRANSITIONS.fast}`}>
+              <div className={`bg-white/95 backdrop-blur-sm ${RADIUS.circle} p-3 sm:p-4 transform scale-0 md:group-hover:scale-100 md:${TRANSITIONS.fast}`}>
                 <svg 
                   className="w-8 h-8 sm:w-10 sm:h-10 text-brand-navy" 
                   fill="currentColor" 
