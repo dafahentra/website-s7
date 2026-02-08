@@ -12,7 +12,7 @@ const Promo = () => {
       id: 1, 
       image: promo1, 
       alt: "promo1",
-      lineCoupon: "https://wa.me/6281256720013?text=Halo%2C%20saya%20tertarik%20dengan%20Promo%201",
+      lineCoupon: "https://lin.ee/Ey3cVyt",
     },
   ];
 
