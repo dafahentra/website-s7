@@ -3,16 +3,22 @@ import React from "react";
 import instagram from "../assets/instagram.png";
 import post1 from "../assets/post 1.jpg";
 import post2 from "../assets/post 2.jpg";
+import post3 from "../assets/post 3.jpg";
 import { TYPOGRAPHY, RADIUS, TRANSITIONS, SPACING } from "../styles/designSystem";
 
 const instagramPosts = [
   {
-    id: 1,
+    id: 3,
+    postUrl: "https://www.instagram.com/p/DUfwNf0E2fR/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==",
+    imageUrl: post3
+  },
+  {
+    id: 2,
     postUrl: "https://www.instagram.com/reel/DTmfu_Xk2os/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==",
     imageUrl: post2
   },
   {
-    id: 2,
+    id: 1,
     postUrl: "https://www.instagram.com/p/DTkGm_Pkxvk/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==",
     imageUrl: post1
   },
