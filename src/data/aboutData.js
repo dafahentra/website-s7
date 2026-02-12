@@ -1,9 +1,10 @@
 // src/data/aboutData.js
 import dapekImg from "../assets/Dapek.jpg";
-import clerImg from "../assets/Cler.jpg"
-import abeyImg from "../assets/Abey.jpg"
-import intanImg from "../assets/Intan.jpg"
-import deponImg from "../assets/Depon.jpg"
+import clerImg from "../assets/Cler.jpg";
+import abeyImg from "../assets/Abey.jpg";
+import intanImg from "../assets/Intan.jpg";
+import deponImg from "../assets/Depon.jpg";
+import Milestone1 from "../assets/Milestone1.jpg"
 
 export const bodMembers = [
 {
@@ -47,7 +48,7 @@ export const milestones = [
     "Opened first store at CIMB Digital Lounge, FEB UGM Yogyakarta",
     "Introduced coffee-matcha duality with premium local Indonesian ingredients throughout menu"
     ],
-    image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&h=400&fit=crop"
+    image: Milestone1
 }
 ];
 

@@ -1,6 +1,7 @@
 // pages/About/index.jsx
 // <TestimonialSlider testimonials={customerTestimonials} />
 // <BoardOfDirectors members={bodMembers} /> //
+// <HeroSection /> //
 import React from "react";
 import SEO from "../../components/SEO";
 import HeroSection from "./HeroSection";
@@ -25,7 +26,6 @@ return (
     />
     
     <div className="pt-32 min-h-screen bg-gradient-to-b from-white to-gray-50">
-    <HeroSection />
     <StorySection />
     <ValuesSection />
     <MilestoneSection milestones={milestones} />
