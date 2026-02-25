@@ -21,10 +21,10 @@ import urllib.request
 import urllib.error
 
 # ── Credentials ───────────────────────────────────────────────────────────────
-MOKA_CLIENT_ID  = "d01822723dc890ba8a4b84d318920f236a694d75fdcea7ad079718bc7f55d730S"
+MOKA_CLIENT_ID  = "d01822723dc890ba8a4b84d318920f236a694d75fdcea7ad079718bc7f55d730"
 MOKA_SECRET     = "a40de2db135e2a2cf73cd0c7af5be979ec2530d4878e5129c9bfdd32bc724887"
 MOKA_OUTLET_ID  = "1143725"
-REDIRECT_URI    = "https://sectorseven.space"   # ← ganti jika beda di Moka Dashboard
+REDIRECT_URI    = "https://sectorseven.space/callback"
 
 # ── Konstanta ─────────────────────────────────────────────────────────────────
 MOKA_BASE       = "https://api.mokapos.com"
