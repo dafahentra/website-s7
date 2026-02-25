@@ -1,16 +1,22 @@
 // src/hooks/useMokaData.js
-// Production  → fetch dari /.netlify/functions/moka-items (live Moka data)
-// Development → import dari src/data/mokaMap.json (hasil generate moka-test-data.py)
+// Production + netlify dev → fetch dari /.netlify/functions/moka-items (live Moka data)
+// Local offline dev        → import dari src/data/mokaMap.json
 //
-// Cara setup dev:
-//   1. python3 moka-test-data.py
-//   2. mv mokaMap.json src/data/mokaMap.json
-//   3. npm run dev  → variants & modifiers langsung ada
+// Mode ditentukan oleh env var VITE_USE_LOCAL_MOKA:
+//   VITE_USE_LOCAL_MOKA=true  → pakai mokaMap.json (offline, tanpa Netlify)
+//   (tidak di-set)            → selalu fetch dari /.netlify/functions/moka-items
+//
+// Cara setup:
+//   netlify dev               → langsung jalan, pakai live Moka data ✓
+//   npm run dev (tanpa token) → buat .env.local → VITE_USE_LOCAL_MOKA=true
+//                               lalu: python3 moka-test-data.py
+//                                     mv mokaMap.json src/data/mokaMap.json
 
 import { useState, useEffect } from "react";
 import { menuItems as localMenu } from "../data/menuData";
 
-const IS_DEV = import.meta.env.DEV;
+// Hanya pakai file lokal jika VITE_USE_LOCAL_MOKA=true secara eksplisit
+const USE_LOCAL = import.meta.env.VITE_USE_LOCAL_MOKA === "true";
 
 // Module-level cache — survives re-renders & route changes
 let _cachedMap    = null;
@@ -30,18 +36,22 @@ function buildMapFromMokaItems(mokaItems) {
 }
 
 async function loadMap() {
-  if (IS_DEV) {
-    // Dev: pakai file lokal supaya tidak perlu Netlify Functions
+  if (USE_LOCAL) {
+    // Offline dev: pakai file lokal (VITE_USE_LOCAL_MOKA=true)
+    // Path dibuat dinamis agar Vite tidak mencoba resolve saat build
     try {
-      const raw = await import("../data/mokaMap.json");
+      const jsonPath   = ["../data/", "mokaMap.json"].join("");
+      const raw        = await import(/* @vite-ignore */ jsonPath);
       const mokaMapRaw = raw.default ?? raw;
-      // Keys di JSON adalah string, convert ke number
-      const map = {};
+      const map        = {};
       Object.entries(mokaMapRaw).forEach(([id, mokaItem]) => {
         map[Number(id)] = mokaItem;
       });
       const n = Object.keys(map).length;
-      console.log(`%c[Moka] Dev: loaded ${n} items from mokaMap.json ✓`, "color:#22c55e;font-weight:bold");
+      console.log(
+        `%c[Moka] Local: loaded ${n} items dari mokaMap.json ✓`,
+        "color:#f59e0b;font-weight:bold"
+      );
       return map;
     } catch {
       console.warn(
@@ -52,14 +62,22 @@ async function loadMap() {
     }
   }
 
-  // Production: fetch live dari Netlify Function
+  // Production & netlify dev: fetch dari Netlify Function
+  const mode = import.meta.env.DEV ? "netlify dev" : "production";
+  console.log(`%c[Moka] Fetching live data (${mode})…`, "color:#3b82f6;font-weight:bold");
+
   const res = await fetch("/.netlify/functions/moka-items");
   if (!res.ok) {
     const e = await res.json().catch(() => ({}));
     throw new Error(e?.error || `moka-items error ${res.status}`);
   }
   const data = await res.json();
-  return buildMapFromMokaItems(data.items ?? []);
+  const map  = buildMapFromMokaItems(data.items ?? []);
+  console.log(
+    `%c[Moka] Live: loaded ${Object.keys(map).length} items dari Moka ✓`,
+    "color:#22c55e;font-weight:bold"
+  );
+  return map;
 }
 
 export function useMokaData() {
