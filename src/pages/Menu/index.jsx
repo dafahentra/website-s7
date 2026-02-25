@@ -56,7 +56,8 @@ const Menu = () => {
   const [cartOpen, setCartOpen]             = useState(false);
   const [pendingItem, setPendingItem]       = useState(null); // triggers modal
 
-  const { mokaMap }   = useMokaData();
+  // ── Destructure loading & error agar modal tahu status fetch ──────────────
+  const { mokaMap, loading: mokaLoading, error: mokaError } = useMokaData();
   const { checkout, submitting } = useMokaCheckout();
 
   const currentItems = useMemo(() => menuItems[activeCategory] || [], [activeCategory]);
@@ -216,6 +217,8 @@ const Menu = () => {
           <AddToCartModal
             item={pendingItem}
             mokaItem={mokaMap[pendingItem.id] ?? null}
+            mokaLoading={mokaLoading}
+            mokaError={mokaError}
             onClose={() => setPendingItem(null)}
             onConfirm={handleConfirmAdd}
           />
