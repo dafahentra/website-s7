@@ -1,0 +1,6 @@
+{
+  "access_token": "30758121bddd13480b027d5feccf4c397c399e4cf99ef79759244b3ce114596a",
+  "refresh_token": "3c9d940fbc17ba91abb01318a803ee496e2827dba963140e8f0ecdc2d72a92da",
+  "expires_in": 15552000,
+  "scope": "library checkout checkout_api"
+}
