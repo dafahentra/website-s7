@@ -1,6 +1,0 @@
-{
-  "access_token": "648b04c3e2e47b81e9d0c6cac866680785e947af96ae875f124492d9cee3d53e",
-  "refresh_token": "2cf0d6e1eb2b37a4dc499195bc8205777419277795aec17ff0f4fff01b1ac3c8",
-  "expires_in": 15552000,
-  "scope": "profile report customer library transaction sales_type checkout checkout_api"
-}

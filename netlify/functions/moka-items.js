@@ -50,7 +50,7 @@ exports.handler = async (event) => {
       statusCode: 200,
       headers: {
         "Content-Type":                "application/json",
-        "Cache-Control":               "public, max-age=300", // cache 5 min at CDN
+        "Cache-Control":               "public, max-age=300",
         "Access-Control-Allow-Origin": "*",
       },
       body: JSON.stringify({ items }),

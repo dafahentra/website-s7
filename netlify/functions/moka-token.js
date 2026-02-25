@@ -8,23 +8,6 @@ const MOKA_BASE = "https://api.mokapos.com";
 // In-memory token cache (lives for duration of function instance warmth)
 let _cache = null;
 
-exports.handler = async () => {
-  try {
-    const token = await getValidToken();
-    return {
-      statusCode: 200,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ access_token: token }),
-    };
-  } catch (err) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
-    };
-  }
-};
-
-// Also export so moka-items and moka-checkout can import directly
 async function getValidToken() {
   // Use cached token if still valid (with 60s buffer)
   if (_cache && Date.now() < _cache.expires_at) {
@@ -66,4 +49,21 @@ async function getValidToken() {
   return _cache.access_token;
 }
 
-module.exports.getValidToken = getValidToken;
+const handler = async () => {
+  try {
+    const token = await getValidToken();
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ access_token: token }),
+    };
+  } catch (err) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
+  }
+};
+
+// Export keduanya sekaligus — hindari mixing exports.x dan module.exports
+module.exports = { handler, getValidToken };
