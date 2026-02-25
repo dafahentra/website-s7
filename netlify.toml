@@ -1,15 +1,24 @@
+# netlify.toml — place at ROOT of project
+
 [build]
-  command = "node scripts/generate-sitemap.js && npm run build"
-  publish = "dist"
+  command   = "npm run build"
+  publish   = "dist"           # Vite; change to "build" for CRA
+  functions = "netlify/functions"
 
-[build.environment]
-  NETLIFY = "true"
-
+# Serve the one-time setup tool
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from   = "/moka-setup"
+  to     = "/moka-setup.html"
   status = 200
 
-# Prerender pages for crawlers
-[[plugins]]
-  package = "@netlify/plugin-lighthouse"
+# Catch the Moka OAuth redirect
+[[redirects]]
+  from   = "/callback"
+  to     = "/callback.html"
+  status = 200
+
+# SPA fallback — must be LAST
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200

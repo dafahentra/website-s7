@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moka Auth — Sector Seven Setup</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a1628;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      color: #111;
+      border-radius: 24px;
+      padding: 40px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 32px 64px rgba(0,0,0,0.4);
+    }
+    .logo { font-size: 13px; font-weight: 700; color: #FF6B35; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+    h1 { font-size: 26px; font-weight: 900; color: #0a1628; margin-bottom: 6px; }
+    .sub { font-size: 14px; color: #666; margin-bottom: 32px; line-height: 1.5; }
+    .step {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 16px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .step:last-child { border-bottom: none; }
+    .num {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #0a1628; color: #fff;
+      font-size: 12px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .num.done { background: #22c55e; }
+    .num.active { background: #FF6B35; }
+    .step-content h3 { font-size: 14px; font-weight: 700; color: #0a1628; margin-bottom: 4px; }
+    .step-content p { font-size: 13px; color: #666; line-height: 1.5; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; border-radius: 100px;
+      font-size: 14px; font-weight: 700;
+      cursor: pointer; border: none; text-decoration: none;
+      transition: transform 0.15s, opacity 0.15s;
+      margin-top: 12px;
+    }
+    .btn:hover { transform: scale(1.02); opacity: 0.92; }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: linear-gradient(135deg,#FF6B35,#e85d2a); color: #fff; }
+    .btn-secondary { background: #0a1628; color: #fff; }
+    .btn-outline { background: transparent; border: 2px solid #e5e5e5; color: #333; }
+    .code-box {
+      background: #f8f8f8; border-radius: 12px;
+      padding: 12px 16px; font-family: monospace;
+      font-size: 12px; color: #333; word-break: break-all;
+      border: 1px solid #e5e5e5; margin-top: 8px;
+    }
+    input, textarea {
+      width: 100%; padding: 10px 14px; border-radius: 10px;
+      border: 1.5px solid #e5e5e5; font-size: 13px;
+      font-family: monospace; margin-top: 8px;
+      outline: none; transition: border-color 0.15s;
+    }
+    input:focus, textarea:focus { border-color: #FF6B35; }
+    .tag {
+      display: inline-block; padding: 2px 8px;
+      border-radius: 6px; font-size: 11px; font-weight: 700;
+    }
+    .tag-green { background: #dcfce7; color: #166534; }
+    .tag-orange { background: #fff7ed; color: #c2410c; }
+    .result-box {
+      background: #f0fdf4; border: 1.5px solid #bbf7d0;
+      border-radius: 12px; padding: 16px; margin-top: 12px;
+      display: none;
+    }
+    .result-box.error { background: #fef2f2; border-color: #fecaca; }
+    .result-box h4 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    .env-block {
+      background: #0a1628; color: #a3e635;
+      padding: 16px; border-radius: 12px;
+      font-family: monospace; font-size: 12px;
+      line-height: 1.8; margin-top: 8px; white-space: pre-wrap;
+    }
+    .copy-btn {
+      background: #1e3a5f; color: #fff; border: none;
+      padding: 6px 12px; border-radius: 6px;
+      font-size: 11px; font-weight: 700; cursor: pointer;
+      margin-top: 8px; transition: background 0.15s;
+    }
+    .copy-btn:hover { background: #FF6B35; }
+    #status { font-size: 13px; color: #666; margin-top: 8px; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">⚙ Sector Seven</div>
+  <h1>Connect Moka POS</h1>
+  <p class="sub">Setup satu kali — ikuti 3 langkah ini untuk menghubungkan website ke Moka POS kamu.</p>
+
+  <!-- Step 1 -->
+  <div class="step">
+    <div class="num active" id="n1">1</div>
+    <div class="step-content">
+      <h3>Authorize di Moka Backoffice</h3>
+      <p>Klik tombol di bawah — kamu akan dibuka ke halaman Moka untuk login dan klik <strong>"Allow"</strong>.</p>
+      <a id="authBtn" href="#" class="btn btn-primary" target="_blank" onclick="openAuth()">
+        🔗 Buka Halaman Moka Auth
+      </a>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step">
+    <div class="num" id="n2">2</div>
+    <div class="step-content">
+      <h3>Tempel <code>code</code> dari URL redirect</h3>
+      <p>Setelah Allow, kamu akan diredirect ke <code>sectorseven.space/callback?code=XXXX</code><br>
+      Copy nilai <code>code</code>-nya dan tempel di sini:</p>
+      <input type="text" id="codeInput" placeholder="Contoh: abc123def456..." />
+      <button class="btn btn-secondary" style="margin-top:12px" onclick="exchangeCode()">
+        🔄 Tukar Code → Access Token
+      </button>
+      <div id="status"></div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step">
+    <div class="num" id="n3">3</div>
+    <div class="step-content">
+      <h3>Salin env vars ke Netlify</h3>
+      <p>Setelah berhasil, copy semua baris ini ke <strong>Netlify → Environment Variables</strong>:</p>
+      <div class="result-box" id="resultBox">
+        <h4>✅ Token berhasil didapat!</h4>
+        <div class="env-block" id="envBlock"></div>
+        <button class="copy-btn" onclick="copyEnv()">Copy semua</button>
+      </div>
+      <div class="result-box error" id="errorBox">
+        <h4>❌ Error</h4>
+        <p id="errorMsg"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Config — isi sebelum deploy ──────────────────────────────────────────
+  const CLIENT_ID     = "a00179ab33b43ee0b46d846c2a70592f16785edac7ba8d80a8ff6adca6bcb2f2";
+  const REDIRECT_URI  = "https://sectorseven.space/callback";
+  const SCOPES        = "profile library transaction checkout_api";
+  // NOTE: client_secret harus dihandle via Netlify Function, bukan di sini.
+  // Halaman ini hanya untuk dapat 'code', exchange tetap via backend.
+  // ────────────────────────────────────────────────────────────────────────
+
+  function openAuth() {
+    const url = `https://api.mokapos.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent(SCOPES)}`;
+    document.getElementById("authBtn").href = url;
+    document.getElementById("n1").className = "num done";
+    document.getElementById("n2").className = "num active";
+    document.getElementById("status").textContent = "Menunggu code dari redirect...";
+  }
+
+  async function exchangeCode() {
+    const code = document.getElementById("codeInput").value.trim();
+    if (!code) {
+      document.getElementById("status").textContent = "⚠ Masukkan code dulu!";
+      return;
+    }
+    document.getElementById("status").textContent = "⏳ Menukar code...";
+
+    try {
+      // Exchange via our Netlify function (keeps secret server-side)
+      const res = await fetch("/.netlify/functions/moka-exchange-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, redirect_uri: REDIRECT_URI }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        throw new Error(data.error || data.error_description || "Exchange gagal");
+      }
+
+      // Success — show env vars
+      document.getElementById("n2").className = "num done";
+      document.getElementById("n3").className = "num active";
+      document.getElementById("status").textContent = "✅ Berhasil!";
+
+      const envText = [
+        `MOKA_CLIENT_ID=${CLIENT_ID}`,
+        `MOKA_SECRET=1c203742870c20383e5ed491c714a79d640f1ea7bec8579c9d60d19d00379e8f`,
+        `MOKA_ACCESS_TOKEN=${data.access_token}`,
+        `MOKA_REFRESH_TOKEN=${data.refresh_token}`,
+        `MOKA_TOKEN_SCOPE=${data.scope || SCOPES}`,
+        `# MOKA_OUTLET_ID=<isi setelah dapat dari API>`,
+      ].join("\n");
+
+      document.getElementById("envBlock").textContent = envText;
+      document.getElementById("resultBox").style.display = "block";
+      document.getElementById("errorBox").style.display = "none";
+    } catch (err) {
+      document.getElementById("errorMsg").textContent = err.message;
+      document.getElementById("errorBox").style.display = "block";
+      document.getElementById("resultBox").style.display = "none";
+      document.getElementById("status").textContent = "❌ Gagal";
+    }
+  }
+
+  function copyEnv() {
+    const text = document.getElementById("envBlock").textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      document.querySelector(".copy-btn").textContent = "✓ Tersalin!";
+      setTimeout(() => document.querySelector(".copy-btn").textContent = "Copy semua", 2000);
+    });
+  }
+
+  // Check if we just came back from redirect with ?code=
+  const urlParams = new URLSearchParams(window.location.search);
+  const codeFromUrl = urlParams.get("code");
+  if (codeFromUrl) {
+    document.getElementById("codeInput").value = codeFromUrl;
+    document.getElementById("n1").className = "num done";
+    document.getElementById("n2").className = "num active";
+    document.getElementById("status").textContent = "✅ Code terdeteksi dari URL! Klik 'Tukar Code'";
+  }
+</script>
+</body>
+</html>
