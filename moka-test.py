@@ -21,8 +21,8 @@ except ImportError:
     sys.exit(1)
 
 # ── Credentials ───────────────────────────────────────────────────────────────
-CLIENT_ID     = "a00179ab33b43ee0b46d846c2a70592f16785edac7ba8d80a8ff6adca6bcb2f2"
-CLIENT_SECRET = "1c203742870c20383e5ed491c714a79d640f1ea7bec8579c9d60d19d00379e8f"
+CLIENT_ID     = "d01822723dc890ba8a4b84d318920f236a694d75fdcea7ad079718bc7f55d730"
+CLIENT_SECRET = "a40de2db135e2a2cf73cd0c7af5be979ec2530d4878e5129c9bfdd32bc724887"
 REDIRECT_URI  = "https://sectorseven.space/callback"
 MOKA_BASE     = "https://api.mokapos.com"
 SCOPES        = "profile library transaction checkout_api"
