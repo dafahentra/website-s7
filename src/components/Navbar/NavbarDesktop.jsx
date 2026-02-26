@@ -2,19 +2,16 @@
 import React, { useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { FaWhatsapp } from "react-icons/fa";
+import { BsCart3 } from "react-icons/bs";
 import { LuAlignRight } from "react-icons/lu";
 import logo from "../../assets/logo.png";
-import { menuItems, getWhatsAppLink, isActiveRoute } from "../../data/navbarData";
+import { menuItems, isActiveRoute } from "../../data/navbarData";
 import useAnalytics from "../../hooks/useAnalytics";
 import { TYPOGRAPHY, RADIUS, TRANSITIONS } from "../../styles/designSystem";
 
 const NavbarDesktop = ({ onMenuToggle }) => {
   const location = useLocation();
-  const { trackWhatsAppOrder, trackNav } = useAnalytics();
-
-  // Memoize WhatsApp link
-  const whatsappLink = useMemo(() => getWhatsAppLink(), []);
+  const { trackNav } = useAnalytics();
 
   // Scroll animations
   const { scrollY } = useScroll();
@@ -34,11 +31,6 @@ const NavbarDesktop = ({ onMenuToggle }) => {
     "1px solid rgba(255, 255, 255, 0.8)"
   ]);
   const padding = useTransform(scrollY, [0, 400], ["1.5rem 2rem", "0.8rem 2rem"]);
-
-  // Handle WhatsApp Click with Analytics
-  const handleWhatsAppClick = () => {
-    trackWhatsAppOrder('desktop');
-  };
 
   // Handle Navigation Click with Analytics
   const handleNavClick = (itemName) => {
@@ -87,18 +79,16 @@ const NavbarDesktop = ({ onMenuToggle }) => {
           </li>
         ))}
         
-        {/* Order Button - WhatsApp Direct Link with Analytics */}
+        {/* Order Button - Link to /menu */}
         <li>
-          <a
-            href={whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={handleWhatsAppClick}
-            className={`flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-500 text-white px-6 py-3 ${RADIUS.circle} hover:from-brand-navy hover:to-green-600 ${TRANSITIONS.fast} shadow-lg hover:shadow-xl hover:scale-105 whitespace-nowrap`}
+          <Link
+            to="/menu"
+            onClick={() => handleNavClick('Order Now')}
+            className={`flex items-center gap-2 bg-gradient-to-r from-brand-orange to-orange-400 text-white px-6 py-3 ${RADIUS.circle} hover:from-orange-600 hover:to-brand-orange ${TRANSITIONS.fast} shadow-lg hover:shadow-xl hover:scale-105 whitespace-nowrap`}
           >
-            <FaWhatsapp className="text-xl" />
+            <BsCart3 className="text-xl" />
             <span>Order Now</span>
-          </a>
+          </Link>
         </li>
       </ul>
 
