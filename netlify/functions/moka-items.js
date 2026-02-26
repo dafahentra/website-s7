@@ -3,6 +3,29 @@ const MOKA_BASE = "https://api.mokapos.com";
 
 let _cache = null;
 
+// Persist refresh token baru ke Netlify env vars agar tidak hangus saat cold start
+async function persistRefreshToken(newToken) {
+  const apiToken = process.env.NETLIFY_API_TOKEN;
+  const siteId   = process.env.NETLIFY_SITE_ID;
+  if (!apiToken || !siteId) return;
+
+  try {
+    await fetch(`https://api.netlify.com/api/v1/sites/${siteId}/env/MOKA_REFRESH_TOKEN`, {
+      method: "PUT",
+      headers: {
+        "Authorization": `Bearer ${apiToken}`,
+        "Content-Type":  "application/json",
+      },
+      body: JSON.stringify({
+        key: "MOKA_REFRESH_TOKEN",
+        values: [{ context: "all", value: newToken }],
+      }),
+    });
+  } catch (e) {
+    console.error("[moka-items] Failed to persist refresh token:", e.message);
+  }
+}
+
 async function getValidToken() {
   if (_cache && Date.now() < _cache.expires_at) return _cache.access_token;
 
@@ -23,11 +46,18 @@ async function getValidToken() {
   const data = await res.json();
   if (!res.ok) throw new Error(data?.error_description || data?.error || `Token refresh failed: ${res.status}`);
 
+  const newRefreshToken = data.refresh_token || refreshToken;
+
   _cache = {
     access_token:  data.access_token,
-    refresh_token: data.refresh_token || refreshToken,
+    refresh_token: newRefreshToken,
     expires_at:    Date.now() + ((data.expires_in || 7200) - 60) * 1000,
   };
+
+  // Auto-persist token baru ke Netlify env vars (fire and forget)
+  if (data.refresh_token && data.refresh_token !== refreshToken) {
+    persistRefreshToken(data.refresh_token);
+  }
 
   return _cache.access_token;
 }
