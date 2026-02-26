@@ -125,12 +125,16 @@ CustomerInfoModal.displayName = "CustomerInfoModal";
 
 // ── Single cart row ───────────────────────────────────────────────────────────
 const CartRow = React.memo(({ entry, onIncrement, onDecrement, onRemove }) => {
-  const { itemId, qty, unitPrice, size, mods } = entry;
+  // Bug fix: entry menggunakan mokaVariantName & mokaModifiers, bukan size/mods
+  const { itemId, qty, unitPrice, mokaVariantName, mokaModifiers } = entry;
   const item = getItemById(itemId);
   if (!item) return null;
 
-  const sizeLabel = size === "large" ? "Large" : "Regular";
-  const modTags   = mods ? Object.values(mods).filter(Boolean) : [];
+  // Gabungkan variant name + semua modifier option name sebagai tags
+  const tags = [
+    mokaVariantName || null,
+    ...(mokaModifiers ?? []).map((m) => m.modifier_option_name),
+  ].filter(Boolean);
 
   return (
     <motion.div
@@ -148,12 +152,7 @@ const CartRow = React.memo(({ entry, onIncrement, onDecrement, onRemove }) => {
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-gray-900 text-[15px] leading-tight">{item.name}</p>
         <div className="flex flex-wrap gap-1 mt-1.5">
-          {size && (
-            <span className="text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-              {sizeLabel}
-            </span>
-          )}
-          {modTags.map((tag) => (
+          {tags.map((tag) => (
             <span key={tag} className="text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
               {tag}
             </span>
