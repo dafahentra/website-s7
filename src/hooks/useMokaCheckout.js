@@ -1,80 +1,97 @@
 // src/hooks/useMokaCheckout.js
-// Builds Moka CheckoutApi payload and submits via Netlify proxy.
+// Sends cart to Moka via the moka-checkout Netlify function.
+// Builds the CheckoutApi payload from cart entries.
 
 import { useState, useCallback } from "react";
-import { submitCheckout } from "../services/mokaApi";
+
+const fmt = (n) => Math.round(Number(n) || 0);
 
 export function useMokaCheckout() {
   const [submitting, setSubmitting] = useState(false);
-  const [result,     setResult]     = useState(null);
-  const [error,      setError]      = useState(null);
 
   /**
-   * cart entries must include:
-   * { itemName, mokaItemId, mokaVariantId, mokaVariantName, mokaVariantSku,
-   *   mokaCategoryId, mokaCategoryName, mokaModifiers, qty, unitPrice }
+   * checkout(cart, note)
+   * @param {Array}  cart  - array of cart entries from index.jsx state
+   * @param {string} note  - payment note / order note
    */
-  const checkout = useCallback(async (cart, paymentNote = "Online Order") => {
+  const checkout = useCallback(async (cart, note = "Online Order") => {
+    if (!cart.length) throw new Error("Keranjang kosong");
+
     setSubmitting(true);
-    setError(null);
-    setResult(null);
 
     try {
-      const now = new Date().toISOString();
-
-      const items = cart.map((entry) => {
-        const grossSales = entry.unitPrice * entry.qty;
-        return {
+      // Build checkout items
+      const checkoutItems = cart.map((entry) => {
+        const itemObj = {
           quantity:          entry.qty,
           item_id:           entry.mokaItemId,
           item_name:         entry.itemName,
           item_variant_id:   entry.mokaVariantId,
-          item_variant_name: entry.mokaVariantName  ?? "",
-          item_variant_sku:  entry.mokaVariantSku   ?? "",
+          item_variant_name: entry.mokaVariantName || "Regular",
+          item_variant_sku:  entry.mokaVariantSku  || "",
           category_id:       entry.mokaCategoryId,
-          category_name:     entry.mokaCategoryName ?? "",
-          client_price:      entry.unitPrice,
-          gross_sales:       grossSales,
-          net_sales:         grossSales,
-          modifiers: (entry.mokaModifiers ?? []).map((m) => ({
-            modifier_id:           m.modifier_id,
-            modifier_option_id:    m.modifier_option_id,
-            modifier_name:         m.modifier_name,
-            modifier_option_name:  m.modifier_option_name,
-            modifier_option_price: m.modifier_option_price,
-            gross_sales:           (m.modifier_option_price ?? 0) * entry.qty,
-            net_sales:             (m.modifier_option_price ?? 0) * entry.qty,
-            discount_amount:       0,
-            redeem_amount:         0,
-          })),
+          category_name:     entry.mokaCategoryName || "",
+          client_price:      fmt(entry.unitPrice),
+          gross_sales:       fmt(entry.unitPrice * entry.qty),
+          net_sales:         fmt(entry.unitPrice * entry.qty),
         };
+
+        // Add modifiers if any
+        if (entry.mokaModifiers?.length) {
+          itemObj.checkout_item_modifiers = entry.mokaModifiers.map((mod) => ({
+            modifier_id:           mod.modifier_id,
+            modifier_option_id:    mod.modifier_option_id,
+            modifier_name:         mod.modifier_name,
+            modifier_option_name:  mod.modifier_option_name,
+            modifier_option_price: fmt(mod.modifier_option_price ?? 0),
+          }));
+        }
+
+        return itemObj;
       });
 
-      const totalGross = items.reduce((s, i) => s + i.gross_sales, 0);
+      // Calculate totals
+      const totalGross = cart.reduce((s, e) => s + fmt(e.unitPrice * e.qty), 0);
 
       const payload = {
-        note:                    paymentNote,
-        client_created_at:       now,
-        total_gross_sales:       totalGross,
-        total_net_sales:         totalGross,
-        total_collected:         totalGross,
-        amount_pay:              totalGross,
-        include_tax_and_gratuity: false,
-        enable_tax:              false,
-        enable_gratuity:         false,
-        items,
+        checkout: {
+          note,
+          client_created_at: new Date().toISOString(),
+          total_gross_sales:  totalGross,
+          total_discount:     0,
+          total_gratuity:     0,
+          total_tax:          0,
+          total_net_sales:    totalGross,
+          total_collected:    totalGross,
+          include_tax_and_gratuity: false,
+          enable_tax:         false,
+          enable_gratuity:    false,
+          payment_type:       "cash",
+          checkout_items:     checkoutItems,
+        },
       };
 
-      const res = await submitCheckout(payload);
-      setResult(res);
-      return res;
-    } catch (e) {
-      setError(e.message);
-      throw e;
+      const res = await fetch("/.netlify/functions/moka-checkout", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(
+          data?.meta?.error_message ||
+          data?.error              ||
+          `Checkout gagal: HTTP ${res.status}`
+        );
+      }
+
+      return data;
     } finally {
       setSubmitting(false);
     }
   }, []);
 
-  return { checkout, submitting, result, error };
+  return { checkout, submitting };
 }
