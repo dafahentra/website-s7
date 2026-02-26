@@ -30,13 +30,6 @@ import Blueberry from "../assets/Blueberry.png"
 export const menuItems = {
 "Espresso Based": [
 {
-    id: 1,
-    name: "Sectorize",
-    description: "Bold espresso with creamy milk and subtle sweetness",
-    price: "23.000",
-    image: Sectorize
-},
-{
     id: 2,
     name: "Americano",
     description: "An Americano, rich espresso shots. Bold and robust cup",
@@ -66,6 +59,13 @@ export const menuItems = {
 }
 ],
 "Flavoured Lattes": [
+{
+    id: 1,
+    name: "Sectorize",
+    description: "Bold espresso with creamy milk and subtle sweetness",
+    price: "23.000",
+    image: Sectorize
+},
 {
     id: 6,
     name: "White Vanilla",
