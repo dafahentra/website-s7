@@ -21,7 +21,7 @@ export function useMokaCheckout() {
     setSubmitting(true);
 
     try {
-      const checkoutItems = cart.map((entry) => {
+      const items = cart.map((entry) => {
         const item = {
           quantity:          entry.qty,
           item_id:           entry.mokaItemId,
@@ -36,8 +36,9 @@ export function useMokaCheckout() {
           net_sales:         round(entry.unitPrice * entry.qty),
         };
 
+        // ← Bug #2 fix: Moka API schema uses "modifiers", bukan "checkout_item_modifiers"
         if (entry.mokaModifiers?.length) {
-          item.checkout_item_modifiers = entry.mokaModifiers.map((mod) => ({
+          item.modifiers = entry.mokaModifiers.map((mod) => ({
             modifier_id:           mod.modifier_id,
             modifier_option_id:    mod.modifier_option_id,
             modifier_name:         mod.modifier_name,
@@ -51,6 +52,7 @@ export function useMokaCheckout() {
 
       const totalGross = cart.reduce((s, e) => s + round(e.unitPrice * e.qty), 0);
 
+      // ← Bug #3 fix: "amount_pay" adalah required field per API spec, sebelumnya hilang
       return await submitCheckout({
         note,
         client_created_at:        new Date().toISOString(),
@@ -60,11 +62,13 @@ export function useMokaCheckout() {
         total_tax:                0,
         total_net_sales:          totalGross,
         total_collected:          totalGross,
+        amount_pay:               totalGross,
         include_tax_and_gratuity: false,
         enable_tax:               false,
         enable_gratuity:          false,
         payment_type:             "cash",
-        checkout_items:           checkoutItems,
+        // ← Bug #1 fix: Moka API schema uses "items", bukan "checkout_items"
+        items,
       });
     } finally {
       setSubmitting(false);
