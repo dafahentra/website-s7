@@ -1,26 +1,17 @@
 // components/Navbar/NavbarMobile.jsx - REFACTORED WITH DESIGN SYSTEM
-import React, { useMemo } from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { IoMdClose } from "react-icons/io";
-import { FaWhatsapp } from "react-icons/fa";
+import { BsCart3 } from "react-icons/bs";
 import logo from "../../assets/logo.png";
-import { menuItems, getWhatsAppLink, isActiveRoute } from "../../data/navbarData";
+import { menuItems, isActiveRoute } from "../../data/navbarData";
 import useAnalytics from "../../hooks/useAnalytics";
 import { TYPOGRAPHY, RADIUS, TRANSITIONS } from "../../styles/designSystem";
 
 const NavbarMobile = ({ isOpen, onClose }) => {
   const location = useLocation();
-  const { trackWhatsAppOrder, trackNav } = useAnalytics();
-
-  // Memoize WhatsApp link
-  const whatsappLink = useMemo(() => getWhatsAppLink(), []);
-
-  // Handle WhatsApp Click with Analytics
-  const handleWhatsAppClick = () => {
-    trackWhatsAppOrder('mobile');
-    onClose();
-  };
+  const { trackNav } = useAnalytics();
 
   // Handle Navigation Click with Analytics
   const handleNavClick = (itemName) => {
@@ -72,18 +63,16 @@ const NavbarMobile = ({ isOpen, onClose }) => {
             </li>
           ))}
           
-          {/* Order Button - Mobile with Analytics */}
+          {/* Order Button - Mobile */}
           <li className="pt-4">
-            <a
-              href={whatsappLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={handleWhatsAppClick}
-              className={`inline-flex items-center gap-3 bg-gradient-to-r from-green-600 to-green-500 text-white px-8 py-4 ${RADIUS.circle} hover:from-brand-navy hover:to-green-600 ${TRANSITIONS.fast} shadow-xl ${TYPOGRAPHY.body.default} ${TYPOGRAPHY.weight.bold}`}
+            <Link
+              to="/menu"
+              onClick={() => handleNavClick('Order Now')}
+              className={`inline-flex items-center gap-3 bg-gradient-to-r from-brand-orange to-orange-400 text-white px-8 py-4 ${RADIUS.circle} hover:from-orange-600 hover:to-brand-orange ${TRANSITIONS.fast} shadow-xl ${TYPOGRAPHY.body.default} ${TYPOGRAPHY.weight.bold}`}
             >
-              <FaWhatsapp className="text-2xl" />
+              <BsCart3 className="text-2xl" />
               <span>Order Now</span>
-            </a>
+            </Link>
           </li>
         </ul>
 
