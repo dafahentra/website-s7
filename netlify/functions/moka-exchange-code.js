@@ -4,7 +4,7 @@
 
 const MOKA_BASE = "https://api.mokapos.com";
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
