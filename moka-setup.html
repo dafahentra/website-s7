@@ -3,235 +3,225 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Moka Setup</title>
+  <title>Moka OAuth Setup — Sector Seven</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:     #f4f2ef;
+      --white:  #ffffff;
+      --navy:   #1d3866;
+      --orange: #f39248;
+      --muted:  #9ca3af;
+      --text:   #1f2937;
+      --border: #e5e7eb;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f5f5f5;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      padding: 24px;
+      padding: 40px 20px;
     }
+
+    .container { width: 100%; max-width: 480px; }
+
+    .brand {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+    .brand span { color: var(--orange); }
+
+    h1 {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 8px;
+      line-height: 1.15;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
     .card {
-      background: white;
-      border-radius: 16px;
-      padding: 40px;
-      max-width: 480px;
-      width: 100%;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      background: var(--white);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }
-    h1 { font-size: 22px; font-weight: 800; color: #0a1628; margin-bottom: 6px; }
-    .subtitle { font-size: 13px; color: #888; margin-bottom: 32px; }
-    label { display: block; font-size: 11px; font-weight: 700; color: #666;
-            text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-    input {
-      width: 100%; padding: 12px 14px; border: 1.5px solid #e5e5e5;
-      border-radius: 10px; font-size: 13px; color: #333;
-      outline: none; transition: border-color 0.15s;
+
+    .card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
       margin-bottom: 16px;
     }
-    input:focus { border-color: #FF6B35; }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 16px;
+    }
+    .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .info-key { font-size: 12px; color: var(--muted); flex-shrink: 0; padding-top: 1px; }
+
+    .info-val {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--navy);
+      text-align: right;
+      word-break: break-all;
+    }
+    .info-val.accent { color: var(--orange); }
+
+    .step-list { list-style: none; margin-bottom: 28px; }
+
+    .step-list li {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .step-list li:last-child { border-bottom: none; }
+
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--orange);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
     .btn {
-      width: 100%; padding: 14px; border: none; border-radius: 50px;
-      font-size: 14px; font-weight: 800; cursor: pointer;
-      transition: opacity 0.15s, transform 0.1s;
+      display: block;
+      width: 100%;
+      padding: 15px 24px;
+      background: var(--navy);
+      color: white;
+      border: none;
+      border-radius: 100px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
     }
-    .btn:active { transform: scale(0.98); }
-    .btn-primary { background: linear-gradient(135deg,#FF6B35,#e85d2a); color: white; }
-    .btn-secondary {
-      background: #f5f5f5; color: #333; margin-top: 10px;
-      display: none;
+    .btn:hover { background: var(--orange); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    .notice {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 20px;
+      line-height: 1.65;
+      background: var(--white);
+      border-radius: 16px;
+      padding: 16px;
     }
-    .step {
-      display: none;
-      animation: fadeIn 0.2s ease;
-    }
-    .step.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .status {
-      padding: 12px 16px; border-radius: 10px; font-size: 13px;
-      margin-top: 16px; display: none; word-break: break-all;
-    }
-    .status.success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
-    .status.error   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
-    .status.info    { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
-    .token-box {
-      background: #f8f8f8; border: 1.5px solid #e5e5e5; border-radius: 10px;
-      padding: 12px; font-size: 11px; font-family: monospace;
-      word-break: break-all; color: #333; margin-top: 12px;
-      max-height: 80px; overflow-y: auto;
-    }
-    .copy-btn {
-      width: 100%; padding: 10px; margin-top: 8px; border-radius: 8px;
-      background: #0a1628; color: white; border: none; font-size: 12px;
-      font-weight: 700; cursor: pointer;
-    }
-    .divider { height: 1px; background: #f0f0f0; margin: 24px 0; }
-    .step-indicator {
-      display: flex; gap: 6px; margin-bottom: 28px;
-    }
-    .dot {
-      height: 4px; border-radius: 99px; transition: all 0.2s;
-      background: #e5e5e5; flex: 1;
-    }
-    .dot.active { background: #FF6B35; }
+    .notice strong { color: var(--navy); }
+    .notice code { color: var(--orange); font-size: 11px; font-family: monospace; }
   </style>
 </head>
 <body>
-<div class="card">
-  <div class="step-indicator">
-    <div class="dot active" id="dot1"></div>
-    <div class="dot" id="dot2"></div>
-    <div class="dot" id="dot3"></div>
-  </div>
+  <div class="container">
+    <p class="brand"><span>Sector Seven</span> — Moka Setup</p>
 
-  <!-- Step 1: Input Client ID -->
-  <div class="step active" id="step1">
-    <h1>Moka OAuth Setup</h1>
-    <p class="subtitle">Generate refresh token baru untuk koneksi Moka POS</p>
-    <label>Client ID</label>
-    <input type="text" id="clientId" placeholder="Paste MOKA_CLIENT_ID di sini" />
-    <label>Redirect URI</label>
-    <input type="text" id="redirectUri" placeholder="https://yourdomain.com/callback" />
-    <p style="font-size:11px;color:#aaa;margin-top:-10px;margin-bottom:16px;">
-      Harus sama persis dengan yang didaftarkan di Moka Developer Dashboard
-    </p>
-    <button class="btn btn-primary" onclick="goToMokaAuth()">Authorize ke Moka →</button>
-    <div class="status" id="status1"></div>
-  </div>
+    <h1>OAuth Authorization</h1>
+    <p class="subtitle">Jalankan halaman ini sekali untuk mendapatkan token akses Moka. Kamu akan diarahkan ke halaman Moka untuk memberikan izin.</p>
 
-  <!-- Step 2: Paste code from callback -->
-  <div class="step" id="step2">
-    <h1>Paste Authorization Code</h1>
-    <p class="subtitle">Copy parameter <code>?code=</code> dari URL setelah redirect</p>
-    <label>Authorization Code</label>
-    <input type="text" id="authCode" placeholder="Paste code dari URL callback" />
-    <button class="btn btn-primary" onclick="exchangeCode()">Exchange Token</button>
-    <button class="btn btn-secondary" id="backBtn" onclick="goToStep(1)">← Kembali</button>
-    <div class="status" id="status2"></div>
-  </div>
+    <div class="card" style="margin-bottom: 24px;">
+      <p class="card-label">Konfigurasi</p>
+      <div class="info-row">
+        <span class="info-key">Redirect URI</span>
+        <span class="info-val accent">https://sectorseven.space/callback</span>
+      </div>
+      <div class="info-row">
+        <span class="info-key">Scope</span>
+        <span class="info-val">profile library transaction checkout</span>
+      </div>
+      <div class="info-row">
+        <span class="info-key">Response Type</span>
+        <span class="info-val">authorization_code</span>
+      </div>
+    </div>
 
-  <!-- Step 3: Copy new tokens -->
-  <div class="step" id="step3">
-    <h1>✅ Token Berhasil</h1>
-    <p class="subtitle">Copy nilai berikut dan update di Netlify environment variables</p>
+    <div class="card">
+      <p class="card-label">Langkah Setup</p>
+      <ul class="step-list">
+        <li>
+          <span class="step-num">1</span>
+          <span>Klik tombol di bawah untuk membuka halaman authorize Moka.</span>
+        </li>
+        <li>
+          <span class="step-num">2</span>
+          <span>Login ke akun Moka kamu dan klik Allow.</span>
+        </li>
+        <li>
+          <span class="step-num">3</span>
+          <span>Kamu akan diarahkan ke halaman callback — token akan otomatis diproses oleh React.</span>
+        </li>
+        <li>
+          <span class="step-num">4</span>
+          <span>Salin <code>MOKA_REFRESH_TOKEN</code> yang muncul ke Netlify env vars, lalu redeploy.</span>
+        </li>
+      </ul>
 
-    <label>MOKA_REFRESH_TOKEN (update ini di Netlify)</label>
-    <div class="token-box" id="refreshTokenBox">—</div>
-    <button class="copy-btn" onclick="copyToken('refreshTokenBox', this)">Copy MOKA_REFRESH_TOKEN</button>
+      <button class="btn" onclick="startAuth()">Authorize ke Moka</button>
+    </div>
 
-    <div class="divider"></div>
-
-    <label style="color:#aaa;">MOKA_ACCESS_TOKEN (tidak perlu disimpan)</label>
-    <div class="token-box" id="accessTokenBox" style="color:#bbb">—</div>
-
-    <div class="divider"></div>
-
-    <p style="font-size:12px;color:#888;line-height:1.6;">
-      Setelah update env var di Netlify Dashboard:<br>
-      1. Jalankan <code>netlify env:set MOKA_REFRESH_TOKEN "nilai_baru"</code><br>
-      2. Update juga file <code>.env</code> lokal Anda<br>
-      3. Restart <code>netlify dev</code>
+    <p class="notice">
+      <strong>Halaman ini hanya untuk setup awal.</strong><br />
+      Setelah <code>MOKA_REFRESH_TOKEN</code> tersimpan di Netlify,<br />
+      halaman ini tidak perlu diakses lagi.
     </p>
   </div>
-</div>
 
-<script>
-  let _clientId = "";
-  let _redirectUri = "";
+  <script>
+    var CLIENT_ID    = "d01822723dc890ba8a4b84d318920f236a694d75fdcea7ad079718bc7f55d730";
+    var REDIRECT_URI = "https://sectorseven.space/callback";
+    var SCOPES       = "profile library transaction checkout checkout_api";
 
-  function showStatus(id, msg, type) {
-    const el = document.getElementById(id);
-    el.textContent = msg;
-    el.className = `status ${type}`;
-    el.style.display = "block";
-  }
-
-  function goToStep(n) {
-    document.querySelectorAll(".step").forEach((s, i) => {
-      s.classList.toggle("active", i === n - 1);
-    });
-    document.querySelectorAll(".dot").forEach((d, i) => {
-      d.classList.toggle("active", i < n);
-    });
-  }
-
-  function goToMokaAuth() {
-    _clientId    = document.getElementById("clientId").value.trim();
-    _redirectUri = document.getElementById("redirectUri").value.trim();
-
-    if (!_clientId) {
-      showStatus("status1", "Client ID wajib diisi", "error");
-      return;
+    function startAuth() {
+      var url = new URL("https://api.mokapos.com/oauth/authorize");
+      url.searchParams.set("client_id",     CLIENT_ID);
+      url.searchParams.set("redirect_uri",  REDIRECT_URI);
+      url.searchParams.set("response_type", "code");
+      url.searchParams.set("scope",         SCOPES);
+      window.location.href = url.toString();
     }
-    if (!_redirectUri) {
-      showStatus("status1", "Redirect URI wajib diisi", "error");
-      return;
-    }
-
-    const authUrl =
-      `https://api.mokapos.com/oauth/authorize` +
-      `?client_id=${encodeURIComponent(_clientId)}` +
-      `&redirect_uri=${encodeURIComponent(_redirectUri)}` +
-      `&response_type=code` +
-      `&scope=profile+report+customer+library+transaction+checkout+checkout_api`;
-
-    showStatus("status1", "Membuka halaman Moka… Setelah authorize, copy code dari URL redirect dan kembali ke tab ini.", "info");
-
-    setTimeout(() => {
-      window.open(authUrl, "_blank");
-      goToStep(2);
-      document.getElementById("backBtn").style.display = "block";
-    }, 800);
-  }
-
-  async function exchangeCode() {
-    const code = document.getElementById("authCode").value.trim();
-    if (!code) {
-      showStatus("status2", "Authorization code wajib diisi", "error");
-      return;
-    }
-
-    showStatus("status2", "Menukar code… tunggu sebentar", "info");
-
-    try {
-      const res = await fetch("/.netlify/functions/moka-exchange-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, redirect_uri: _redirectUri }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || data.error) {
-        showStatus("status2", `Error: ${data.error}`, "error");
-        return;
-      }
-
-      document.getElementById("refreshTokenBox").textContent = data.refresh_token;
-      document.getElementById("accessTokenBox").textContent  = data.access_token;
-      goToStep(3);
-
-    } catch (err) {
-      showStatus("status2", `Network error: ${err.message}`, "error");
-    }
-  }
-
-  function copyToken(boxId, btn) {
-    const text = document.getElementById(boxId).textContent;
-    navigator.clipboard.writeText(text).then(() => {
-      const orig = btn.textContent;
-      btn.textContent = "✓ Copied!";
-      btn.style.background = "#16a34a";
-      setTimeout(() => {
-        btn.textContent = orig;
-        btn.style.background = "#0a1628";
-      }, 2000);
-    });
-  }
-</script>
+  </script>
 </body>
 </html>
