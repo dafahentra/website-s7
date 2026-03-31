@@ -3,7 +3,6 @@ const MOKA_BASE = "https://api.mokapos.com";
 
 let _cache = null;
 
-// Persist refresh token baru ke Netlify env vars agar tidak hangus saat cold start
 async function persistRefreshToken(newToken) {
   const apiToken = process.env.NETLIFY_API_TOKEN;
   const siteId   = process.env.NETLIFY_SITE_ID;
@@ -27,11 +26,8 @@ async function persistRefreshToken(newToken) {
 }
 
 async function getValidToken() {
-  // Pakai cached token jika masih valid
   if (_cache && Date.now() < _cache.expires_at) return _cache.access_token;
 
-  // Seed cache dari env vars jika belum ada cache sama sekali
-  // Ini mencegah refresh yang tidak perlu saat access token masih valid
   if (!_cache && process.env.MOKA_ACCESS_TOKEN) {
     _cache = {
       access_token:  process.env.MOKA_ACCESS_TOKEN,
@@ -66,7 +62,6 @@ async function getValidToken() {
     expires_at:    Date.now() + ((data.expires_in || 7200) - 60) * 1000,
   };
 
-  // Auto-persist token baru ke Netlify env vars (fire and forget)
   if (data.refresh_token && data.refresh_token !== refreshToken) {
     persistRefreshToken(data.refresh_token);
   }
@@ -74,7 +69,7 @@ async function getValidToken() {
   return _cache.access_token;
 }
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
   if (event.httpMethod !== "GET") {
     return { statusCode: 405, body: "Method Not Allowed" };
   }

@@ -33,7 +33,7 @@ export const menuItems = {
     id: 2,
     name: "Americano",
     description: "An Americano, rich espresso shots. Bold and robust cup",
-    price: "19.000",
+    price: "21.000",
     image: Americano
 },
 {

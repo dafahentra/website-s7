@@ -26,11 +26,8 @@ async function persistRefreshToken(newToken) {
 }
 
 async function getValidToken() {
-  // Pakai cached token jika masih valid
   if (_cache && Date.now() < _cache.expires_at) return _cache.access_token;
 
-  // Seed cache dari env vars jika belum ada cache sama sekali
-  // Ini mencegah refresh yang tidak perlu saat access token masih valid
   if (!_cache && process.env.MOKA_ACCESS_TOKEN) {
     _cache = {
       access_token:  process.env.MOKA_ACCESS_TOKEN,
@@ -72,7 +69,19 @@ async function getValidToken() {
   return _cache.access_token;
 }
 
-exports.handler = async (event) => {
+// Safely parse response — handle empty body
+async function safeJson(res) {
+  const text = await res.text();
+  if (!text || text.trim() === "") return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    console.error("[moka-checkout] Non-JSON response:", text);
+    return { _raw: text };
+  }
+}
+
+export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
@@ -90,19 +99,44 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { checkout } = JSON.parse(event.body || "{}");
+    let parsed;
+    try {
+      parsed = JSON.parse(event.body || "{}");
+    } catch (e) {
+      console.error("[moka-checkout] Failed to parse body:", event.body);
+      return {
+        statusCode: 400,
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({ error: "Invalid JSON body" }),
+      };
+    }
+
+    const { checkout } = parsed;
     if (!checkout) {
-      return { statusCode: 400, body: JSON.stringify({ error: "Missing checkout payload" }) };
+      console.error("[moka-checkout] Missing checkout in body");
+      return {
+        statusCode: 400,
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({ error: "Missing checkout payload" }),
+      };
     }
 
-    const token    = await getValidToken();
     const outletId = process.env.MOKA_OUTLET_ID;
-
     if (!outletId) {
-      return { statusCode: 500, body: JSON.stringify({ error: "MOKA_OUTLET_ID not set" }) };
+      console.error("[moka-checkout] MOKA_OUTLET_ID not set");
+      return {
+        statusCode: 500,
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({ error: "MOKA_OUTLET_ID not set" }),
+      };
     }
 
-    const res = await fetch(`${MOKA_BASE}/v1/outlets/${outletId}/checkouts`, {
+    const token = await getValidToken();
+    const url   = `${MOKA_BASE}/v1/outlets/${outletId}/checkouts`;
+
+    console.log("[moka-checkout] POST", url);
+
+    const res  = await fetch(url, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -111,10 +145,22 @@ exports.handler = async (event) => {
       body: JSON.stringify({ checkout }),
     });
 
-    const data = await res.json();
+    const data = await safeJson(res);
+    console.log("[moka-checkout] status:", res.status, "body:", JSON.stringify(data));
+
+    if (!res.ok) {
+      return {
+        statusCode: res.status,
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({
+          error:  data?.meta?.errors || data?.error_description || data?.error || `Moka error ${res.status}`,
+          detail: data,
+        }),
+      };
+    }
 
     return {
-      statusCode: res.status,
+      statusCode: 200,
       headers: {
         "Content-Type":                "application/json",
         "Access-Control-Allow-Origin": "*",
@@ -122,6 +168,7 @@ exports.handler = async (event) => {
       body: JSON.stringify(data),
     };
   } catch (err) {
+    console.error("[moka-checkout] Unhandled error:", err.message);
     return {
       statusCode: 500,
       headers: { "Access-Control-Allow-Origin": "*" },
