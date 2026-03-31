@@ -27,7 +27,19 @@ async function persistRefreshToken(newToken) {
 }
 
 async function getValidToken() {
+  // Pakai cached token jika masih valid
   if (_cache && Date.now() < _cache.expires_at) return _cache.access_token;
+
+  // Seed cache dari env vars jika belum ada cache sama sekali
+  // Ini mencegah refresh yang tidak perlu saat access token masih valid
+  if (!_cache && process.env.MOKA_ACCESS_TOKEN) {
+    _cache = {
+      access_token:  process.env.MOKA_ACCESS_TOKEN,
+      refresh_token: process.env.MOKA_REFRESH_TOKEN,
+      expires_at:    Date.now() + (15552000 - 60) * 1000,
+    };
+    return _cache.access_token;
+  }
 
   const refreshToken = _cache?.refresh_token || process.env.MOKA_REFRESH_TOKEN;
   if (!refreshToken) throw new Error("MOKA_REFRESH_TOKEN not set");
