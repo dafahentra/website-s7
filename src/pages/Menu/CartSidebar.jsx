@@ -14,10 +14,12 @@ function getItemById(id) {
 }
 
 // ── Customer Info Modal ───────────────────────────────────────────────────────
-const CustomerInfoModal = React.memo(({ totalPrice, onConfirm, onCancel }) => {
-  const [name, setName]     = useState("");
-  const [phone, setPhone]   = useState("");
-  const [errors, setErrors] = useState({});
+// Menerima savedInfo dan onSave agar input tidak hilang saat modal ditutup
+const CustomerInfoModal = React.memo(({ totalPrice, savedInfo, onSave, onConfirm, onCancel }) => {
+  const [name,      setName]      = useState(savedInfo.name      || "");
+  const [phone,     setPhone]     = useState(savedInfo.phone     || "");
+  const [orderNote, setOrderNote] = useState(savedInfo.orderNote || "");
+  const [errors,    setErrors]    = useState({});
 
   const validate = () => {
     const e = {};
@@ -31,7 +33,25 @@ const CustomerInfoModal = React.memo(({ totalPrice, onConfirm, onCancel }) => {
   const handleSubmit = () => {
     const e = validate();
     if (Object.keys(e).length > 0) { setErrors(e); return; }
-    onConfirm({ name: name.trim(), phone: phone.trim() });
+    const info = { name: name.trim(), phone: phone.trim(), orderNote: orderNote.trim() };
+    onSave(info);
+    onConfirm(info);
+  };
+
+  // Simpan input setiap kali berubah agar tidak hilang saat modal ditutup
+  const handleNameChange = (v) => {
+    setName(v);
+    onSave({ name: v, phone, orderNote });
+    setErrors((p) => ({ ...p, name: null }));
+  };
+  const handlePhoneChange = (v) => {
+    setPhone(v);
+    onSave({ name, phone: v, orderNote });
+    setErrors((p) => ({ ...p, phone: null }));
+  };
+  const handleNoteChange = (v) => {
+    setOrderNote(v);
+    onSave({ name, phone, orderNote: v });
   };
 
   return (
@@ -55,9 +75,9 @@ const CustomerInfoModal = React.memo(({ totalPrice, onConfirm, onCancel }) => {
         <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5 sm:hidden" />
 
         {/* Header */}
-        <div className="mb-6">
-          <h3 className="text-xl font-black text-brand-navy">Detail Pemesan</h3>
-          <p className="text-gray-400 text-xs mt-1">Kami akan konfirmasi pesanan via WhatsApp</p>
+        <div className="mb-5">
+          <h3 className="text-xl font-black text-brand-navy">Detail Pesanan</h3>
+          <p className="text-gray-400 text-xs mt-1">Pembayaran via QRIS / Transfer / GoPay / OVO</p>
         </div>
 
         {/* Name */}
@@ -68,7 +88,7 @@ const CustomerInfoModal = React.memo(({ totalPrice, onConfirm, onCancel }) => {
           <input
             type="text"
             value={name}
-            onChange={(e) => { setName(e.target.value); setErrors((p) => ({ ...p, name: null })); }}
+            onChange={(e) => handleNameChange(e.target.value)}
             placeholder="Nama kamu"
             className={`w-full px-4 py-3 rounded-xl border text-sm font-medium text-gray-800 placeholder-gray-300 outline-none transition-all ${
               errors.name
@@ -80,14 +100,14 @@ const CustomerInfoModal = React.memo(({ totalPrice, onConfirm, onCancel }) => {
         </div>
 
         {/* Phone */}
-        <div className="mb-6">
+        <div className="mb-4">
           <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
             Nomor WhatsApp
           </label>
           <input
             type="tel"
             value={phone}
-            onChange={(e) => { setPhone(e.target.value); setErrors((p) => ({ ...p, phone: null })); }}
+            onChange={(e) => handlePhoneChange(e.target.value)}
             placeholder="08xxxxxxxxxx"
             className={`w-full px-4 py-3 rounded-xl border text-sm font-medium text-gray-800 placeholder-gray-300 outline-none transition-all ${
               errors.phone
@@ -96,6 +116,23 @@ const CustomerInfoModal = React.memo(({ totalPrice, onConfirm, onCancel }) => {
             }`}
           />
           {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
+        </div>
+
+        {/* Order Note */}
+        <div className="mb-6">
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+            Catatan Pesanan{" "}
+            <span className="text-gray-300 normal-case font-normal">(opsional)</span>
+          </label>
+          <textarea
+            value={orderNote}
+            onChange={(e) => handleNoteChange(e.target.value)}
+            placeholder="Contoh: less ice, no sugar, extra hot..."
+            rows={2}
+            maxLength={200}
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium text-gray-800 placeholder-gray-300 outline-none transition-all focus:border-brand-orange focus:bg-white resize-none"
+          />
+          <p className="text-gray-300 text-[10px] text-right mt-1">{orderNote.length}/200</p>
         </div>
 
         {/* Total recap */}
@@ -109,7 +146,7 @@ const CustomerInfoModal = React.memo(({ totalPrice, onConfirm, onCancel }) => {
           className="w-full py-4 rounded-full text-white font-black text-[15px] tracking-tight transition-all hover:scale-[1.015] active:scale-[.98] shadow-lg shadow-orange-200"
           style={{ background: "linear-gradient(135deg,#FF6B35,#e85d2a)" }}
         >
-          Konfirmasi Pesanan
+          Lanjut ke Pembayaran
         </button>
         <button
           onClick={onCancel}
@@ -125,12 +162,10 @@ CustomerInfoModal.displayName = "CustomerInfoModal";
 
 // ── Single cart row ───────────────────────────────────────────────────────────
 const CartRow = React.memo(({ entry, onIncrement, onDecrement, onRemove }) => {
-  // Bug fix: entry menggunakan mokaVariantName & mokaModifiers, bukan size/mods
   const { itemId, qty, unitPrice, mokaVariantName, mokaModifiers } = entry;
   const item = getItemById(itemId);
   if (!item) return null;
 
-  // Gabungkan variant name + semua modifier option name sebagai tags
   const tags = [
     mokaVariantName || null,
     ...(mokaModifiers ?? []).map((m) => m.modifier_option_name),
@@ -196,7 +231,7 @@ const CartRow = React.memo(({ entry, onIncrement, onDecrement, onRemove }) => {
 });
 CartRow.displayName = "CartRow";
 
-// ── Cart Panel (shared inner content) ────────────────────────────────────────
+// ── Cart Panel ────────────────────────────────────────────────────────────────
 const CartPanel = ({ entries, totalItems, totalPrice, onClose, onIncrement, onDecrement, onRemove, onCheckoutClick, submitting, extraTopPadding }) => (
   <>
     <div className={`flex items-center justify-between px-6 ${extraTopPadding ? "pt-8" : "pt-4"} pb-4 flex-shrink-0`}>
@@ -279,6 +314,9 @@ const CartSidebar = React.memo(({ cart, onClose, onIncrement, onDecrement, onRem
   const entries = cart.filter((e) => e.qty > 0);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
 
+  // Autosave — state dipertahankan selama CartSidebar masih mounted
+  const [savedInfo, setSavedInfo] = useState({ name: "", phone: "", orderNote: "" });
+
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth < 1024 : false
   );
@@ -294,12 +332,18 @@ const CartSidebar = React.memo(({ cart, onClose, onIncrement, onDecrement, onRem
   }), [entries]);
 
   const handleCheckoutClick = () => setShowCustomerModal(true);
-  const handleCustomerConfirm = ({ name, phone }) => {
+
+  const handleCustomerConfirm = (info) => {
     setShowCustomerModal(false);
-    onCheckout({ name, phone });
+    onCheckout(info);
   };
 
-  const panelProps = { entries, totalItems, totalPrice, onClose, onIncrement, onDecrement, onRemove, onCheckoutClick: handleCheckoutClick, submitting };
+  const panelProps = {
+    entries, totalItems, totalPrice, onClose,
+    onIncrement, onDecrement, onRemove,
+    onCheckoutClick: handleCheckoutClick,
+    submitting,
+  };
 
   return (
     <>
@@ -314,7 +358,6 @@ const CartSidebar = React.memo(({ cart, onClose, onIncrement, onDecrement, onRem
       />
 
       {isMobile ? (
-        /* Mobile: bottom sheet slides up */
         <motion.div
           key="bottom-sheet"
           initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
@@ -322,14 +365,12 @@ const CartSidebar = React.memo(({ cart, onClose, onIncrement, onDecrement, onRem
           className="fixed bottom-0 left-0 right-0 z-50 bg-white flex flex-col rounded-t-[2rem] overflow-hidden"
           style={{ maxHeight: "90dvh" }}
         >
-          {/* Drag handle */}
           <div className="pt-3 pb-0 flex justify-center flex-shrink-0">
             <div className="w-10 h-1 bg-gray-200 rounded-full" />
           </div>
           <CartPanel {...panelProps} extraTopPadding={false} />
         </motion.div>
       ) : (
-        /* Desktop: right sidebar */
         <motion.div
           key="panel"
           initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
@@ -341,11 +382,12 @@ const CartSidebar = React.memo(({ cart, onClose, onIncrement, onDecrement, onRem
         </motion.div>
       )}
 
-      {/* Customer info popup */}
       <AnimatePresence>
         {showCustomerModal && (
           <CustomerInfoModal
             totalPrice={totalPrice}
+            savedInfo={savedInfo}
+            onSave={setSavedInfo}
             onConfirm={handleCustomerConfirm}
             onCancel={() => setShowCustomerModal(false)}
           />

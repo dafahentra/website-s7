@@ -120,14 +120,19 @@ const Menu = () => {
     setCart((prev) => prev.filter((e) => e.key !== key));
   }, []);
 
-  // ── Checkout ──────────────────────────────────────────────────────────────
-  const handleCheckout = useCallback(async ({ name, phone } = {}) => {
+  // ── Checkout — Midtrans payment + Moka Advanced Ordering ─────────────────
+  const handleCheckout = useCallback(async ({ name, phone, orderNote } = {}) => {
     try {
-      await checkout(cart, `Online Order - Sector Seven | ${name ?? ""} | ${phone ?? ""}`);
-      setCart([]);
-      setCartOpen(false);
+      const result = await checkout(cart, { name, phone, orderNote });
+      if (result?.success) {
+        setCart([]);
+        setCartOpen(false);
+      }
     } catch (e) {
-      alert(`Checkout gagal: ${e.message}`);
+      // Tidak tampilkan alert jika customer menutup popup Midtrans sendiri
+      if (!e.message.includes("dibatalkan")) {
+        alert(`Pembayaran gagal: ${e.message}`);
+      }
     }
   }, [cart, checkout]);
 
