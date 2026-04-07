@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Environment variables — JANGAN PERNAH commit ke GitHub
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -25,5 +32,3 @@ dist-ssr
 
 # Local Netlify folder
 .netlify
-
-grep ".env" .gitignore || echo ".env" >> .gitignore
