@@ -1,7 +1,7 @@
 // src/data/aboutData.js
 import dapekImg from "../assets/Dapek.jpg";
 import clerImg from "../assets/Cler.jpg";
-import abeyImg from "../assets/Abey.jpg";
+import aqmalImg from "../assets/Aqmal.jpg";
 import intanImg from "../assets/Intan.jpg";
 import deponImg from "../assets/Depon.jpg";
 import Milestone1 from "../assets/Milestone1.jpg"
@@ -26,9 +26,9 @@ export const bodMembers = [
     bio: "Indonesian Citizen, born in 1985. Specialist in corporate finance and investment.",
 },
 {
-    name: "Salsabilla Syafa K",
+    name: "Aqmal Buditama A",
     position: "Chief Operating Officer",
-    image: abeyImg,
+    image: aqmalImg,
     bio: "Indonesian Citizen, born in 1980. Expert in retail operations and market expansion.",
 },
 {

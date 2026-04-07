@@ -28,6 +28,7 @@ return (
     <div className="pt-32 min-h-screen bg-gradient-to-b from-white to-gray-50">
     <StorySection />
     <ValuesSection />
+    <BoardOfDirectors members={bodMembers} />
     <MilestoneSection milestones={milestones} />
     <Contact />
     </div>
