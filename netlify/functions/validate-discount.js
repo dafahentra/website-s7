@@ -149,7 +149,9 @@ export const handler = async (event) => {
         valid:          true,
         code:           inputCode,
         mokaId:         matched.id,
+        mokaGuid:       matched.guid   || null,
         mokaName:       matched.name,
+        mokaType:       matched.type,          // "cash" atau "percentage" — untuk dikirim ke Moka order
         type:           matched.type === "percentage" ? "percentage" : "fixed",
         value:          amount,
         discountAmount,
