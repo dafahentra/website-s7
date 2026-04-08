@@ -3,7 +3,6 @@ import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { menuItems } from "../../data/menuData";
 import { validateDiscount } from "../../services/mokaApi";
-import { calcOnlineFee } from "../../utils/onlineFee";
 
 const fmt = (n) => new Intl.NumberFormat("id-ID").format(n);
 
@@ -17,7 +16,7 @@ function getItemById(id) {
 
 // ── Customer Info Modal ───────────────────────────────────────────────────────
 const CustomerInfoModal = React.memo(({
-  subtotal, discountAmount, onlineFee, finalPrice,
+  subtotal, discountAmount, finalPrice,
   discount, savedInfo, onSave, onConfirm, onCancel,
 }) => {
   const [name,      setName]      = useState(savedInfo?.name      || "");
@@ -119,10 +118,6 @@ const CustomerInfoModal = React.memo(({
               <span className="font-semibold text-green-600">-Rp{fmt(discountAmount)}</span>
             </div>
           )}
-          <div className="flex justify-between">
-            <span className="text-gray-400">Online fee</span>
-            <span className="font-semibold text-gray-500">+Rp{fmt(onlineFee)}</span>
-          </div>
           <div className="flex justify-between pt-1.5 border-t border-gray-200">
             <span className="font-bold text-gray-800">Total Bayar</span>
             <span className="font-black text-base text-orange-500">Rp{fmt(finalPrice)}</span>
@@ -292,7 +287,7 @@ CartRow.displayName = "CartRow";
 
 // ── Cart Panel ────────────────────────────────────────────────────────────────
 const CartPanel = ({
-  entries, totalItems, subtotal, discountAmount, onlineFee, finalPrice, discount,
+  entries, totalItems, subtotal, discountAmount, finalPrice, discount,
   onClose, onIncrement, onDecrement, onRemove,
   onCheckoutClick, onDiscountApplied, onDiscountRemoved,
   submitting, extraTopPadding,
@@ -357,13 +352,6 @@ const CartPanel = ({
                 <span className="font-semibold text-green-600">-Rp{fmt(discountAmount)}</span>
               </div>
             )}
-            <div className="flex justify-between items-center">
-              <span className="text-gray-400 flex items-center gap-1">
-                Online fee
-                <span className="text-[10px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full leading-tight">online</span>
-              </span>
-              <span className="font-semibold text-gray-500">+Rp{fmt(onlineFee)}</span>
-            </div>
             <div className="flex justify-between pt-1 border-t border-gray-100">
               <span className="text-gray-800 font-bold">Total</span>
               <span className="text-gray-900 font-black text-xl">Rp{fmt(finalPrice)}</span>
@@ -405,18 +393,14 @@ const CartSidebar = React.memo(({ cart, onClose, onIncrement, onDecrement, onRem
   }, []);
 
   // ── Kalkulasi harga ─────────────────────────────────────────────────────────
-  const { totalItems, subtotal, discountAmount, afterDiscount, onlineFee, finalPrice } = useMemo(() => {
+  const { totalItems, subtotal, discountAmount, finalPrice } = useMemo(() => {
     const sub  = entries.reduce((s, e) => s + e.unitPrice * e.qty, 0);
     const disc = discount?.discountAmount || 0;
-    const after = Math.max(0, sub - disc);
-    const fee  = calcOnlineFee(after);
     return {
       totalItems:     entries.reduce((s, e) => s + e.qty, 0),
       subtotal:       sub,
       discountAmount: disc,
-      afterDiscount:  after,
-      onlineFee:      fee,
-      finalPrice:     after + fee,
+      finalPrice:     Math.max(0, sub - disc),
     };
   }, [entries, discount]);
 
@@ -424,11 +408,11 @@ const CartSidebar = React.memo(({ cart, onClose, onIncrement, onDecrement, onRem
   const handleCustomerConfirm = (info) => {
     setShowCustomerModal(false);
     // Kirim semua: info customer + diskon + kalkulasi harga lengkap
-    onCheckout({ ...info, discount, subtotal, discountAmount, onlineFee, finalPrice });
+    onCheckout({ ...info, discount, subtotal, discountAmount, finalPrice });
   };
 
   const panelProps = {
-    entries, totalItems, subtotal, discountAmount, onlineFee, finalPrice, discount,
+    entries, totalItems, subtotal, discountAmount, finalPrice, discount,
     onClose, onIncrement, onDecrement, onRemove,
     onCheckoutClick:   handleCheckoutClick,
     onDiscountApplied: setDiscount,
@@ -477,7 +461,6 @@ const CartSidebar = React.memo(({ cart, onClose, onIncrement, onDecrement, onRem
           <CustomerInfoModal
             subtotal={subtotal}
             discountAmount={discountAmount}
-            onlineFee={onlineFee}
             finalPrice={finalPrice}
             discount={discount}
             savedInfo={savedInfo}

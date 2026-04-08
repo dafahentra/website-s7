@@ -113,7 +113,7 @@ const Menu = () => {
   }, []);
 
   // ── handleCheckout — terima full payload dari CartSidebar ──────────────────
-  // CartSidebar mengirim: { name, phone, orderNote, discount, subtotal, discountAmount, onlineFee, finalPrice }
+  // CartSidebar mengirim: { name, phone, orderNote, discount, subtotal, discountAmount, finalPrice }
   const handleCheckout = useCallback(async (customerInfo = {}) => {
     try {
       const result = await checkout(cart, customerInfo);
