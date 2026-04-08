@@ -5,6 +5,10 @@ import { useState, useCallback } from "react";
 import { getMidtransToken, submitOrder } from "../services/mokaApi";
 
 const round = (n) => Math.round(Number(n) || 0);
+
+// Sales type ID untuk "Online Order" di Moka
+// Isi dengan ID dari: https://sectorseven.space/.netlify/functions/moka-get-sales-type
+const ONLINE_ORDER_SALES_TYPE_ID = null; // ← ganti dengan angka ID-nya
 const fmtRp = (n) => `Rp${new Intl.NumberFormat("id-ID").format(n)}`;
 
 const IS_PRODUCTION = import.meta.env.VITE_MIDTRANS_ENV === "production";
@@ -26,6 +30,74 @@ function loadSnapScript(clientKey) {
   });
 }
 
+async function sendMokaOrder(cart, {
+  applicationOrderId, name, phone, orderNote,
+  discount, discountAmount, finalPrice,
+}) {
+  const hasDiscount = discountAmount > 0 && discount?.mokaId;
+
+  const order_items = cart.map((entry) => {
+    // item_price_library = harga DASAR (tanpa modifier)
+    // Moka menambah modifier price sendiri dari item_modifiers
+    const modifierSum = (entry.mokaModifiers ?? [])
+      .reduce((s, m) => s + round(m.modifier_option_price ?? 0), 0);
+    const basePrice = round(entry.unitPrice) - modifierSum;
+
+    const item = {
+      item_id:            entry.mokaItemId,
+      item_name:          entry.itemName,
+      quantity:           entry.qty,
+      item_variant_id:    entry.mokaVariantId,
+      item_variant_name:  entry.mokaVariantName || "Regular",
+      item_price_library: basePrice,
+      category_id:        entry.mokaCategoryId,
+      category_name:      entry.mokaCategoryName || "",
+      note:               "",
+    };
+
+    if (entry.mokaModifiers?.length) {
+      item.item_modifiers = entry.mokaModifiers.map((mod) => ({
+        item_modifier_id:           mod.modifier_id,
+        item_modifier_name:         mod.modifier_name,
+        item_modifier_option_id:    mod.modifier_option_id,
+        item_modifier_option_name:  mod.modifier_option_name,
+        item_modifier_option_price: round(mod.modifier_option_price ?? 0),
+      }));
+    }
+
+    return item;
+  });
+
+  // Diskon native Moka
+  const discountFields = hasDiscount ? {
+    discount_id:     discount.mokaId,
+    discount_name:   discount.mokaName  || discount.code,
+    discount_type:   discount.mokaType  || (discount.type === "percentage" ? "percentage" : "cash"),
+    discount_amount: discount.value,
+    ...(discount.mokaGuid ? { discount_guid: discount.mokaGuid } : {}),
+  } : {};
+
+  // Note singkat untuk kasir
+  const noteParts = [
+    orderNote,
+    `Total ${fmtRp(finalPrice)}`,
+  ].filter(Boolean).join(" | ");
+
+  await submitOrder({
+    application_order_id:  applicationOrderId,
+    payment_type:          "online_orders",
+    client_created_at:     new Date().toISOString(),
+    note:                  noteParts.slice(0, 255),
+    // Moka limits: customer_name max 50 chars, customer_phone_number max 13 digits
+    customer_name:         name.trim().slice(0, 50),
+    customer_phone_number: phone.replace(/\s|-|\+/g, '').replace(/^0/, '62').slice(0, 13),
+    sales_type_name:       "Online Order",
+    ...(ONLINE_ORDER_SALES_TYPE_ID ? { sales_type_id: ONLINE_ORDER_SALES_TYPE_ID } : {}),
+    ...discountFields,
+    order_items,
+  });
+}
+
 export function useMokaCheckout() {
   const [submitting, setSubmitting] = useState(false);
 
@@ -43,24 +115,33 @@ export function useMokaCheckout() {
         discount       = null,
         subtotal       = cart.reduce((s, e) => s + round(e.unitPrice * e.qty), 0),
         discountAmount = discount?.discountAmount || 0,
-        finalPrice     = subtotal - discountAmount,
+        finalPrice     = Math.max(0, subtotal - discountAmount),
       } = customerInfo;
 
-      const hasDiscount = discountAmount > 0 && discount?.mokaId;
+      const mokaPayload = { applicationOrderId, name, phone, orderNote, discount, discountAmount, finalPrice };
+
+      // ── KASUS KHUSUS: diskon 100% (finalPrice = 0) ───────────────────────────
+      // Midtrans menolak amount = 0, jadi langsung submit ke Moka tanpa payment
+      if (finalPrice <= 0) {
+        try {
+          await sendMokaOrder(cart, mokaPayload);
+          return { success: true, order_id: applicationOrderId, free: true };
+        } catch (err) {
+          throw new Error(`Order gagal: ${err.message}`);
+        }
+      }
 
       // ── Midtrans item list ───────────────────────────────────────────────────
       const midtransItems = [
         ...cart.map((e) => ({
           id:       String(e.mokaVariantId || e.mokaItemId || "item"),
-          price:    round(e.unitPrice),   // unitPrice sudah include modifier, benar untuk Midtrans
+          price:    round(e.unitPrice),
           quantity: e.qty,
           name:     [e.itemName, e.mokaVariantName].filter(Boolean).join(" - ").slice(0, 50),
         })),
-        ...(hasDiscount ? [{
-          id:       "DISCOUNT",
-          price:    -discountAmount,
-          quantity: 1,
-          name:     (discount.description || `Diskon ${discount.code}`).slice(0, 50),
+        ...(discountAmount > 0 && discount ? [{
+          id: "DISCOUNT", price: -discountAmount, quantity: 1,
+          name: (discount.description || `Diskon ${discount.code}`).slice(0, 50),
         }] : []),
       ];
 
@@ -83,67 +164,8 @@ export function useMokaCheckout() {
 
           onSuccess: async () => {
             try {
-              const order_items = cart.map((entry) => {
-                // ── FIX: item_price_library = harga DASAR saja (tanpa modifier) ──
-                // Moka menambah modifier price sendiri dari item_modifiers.
-                // Kalau kita kirim unitPrice (sudah include modifier), Moka hitung 2x.
-                const modifierSum = (entry.mokaModifiers ?? [])
-                  .reduce((s, m) => s + round(m.modifier_option_price ?? 0), 0);
-                const basePrice = round(entry.unitPrice) - modifierSum;
-
-                const item = {
-                  item_id:            entry.mokaItemId,
-                  item_name:          entry.itemName,
-                  quantity:           entry.qty,
-                  item_variant_id:    entry.mokaVariantId,
-                  item_variant_name:  entry.mokaVariantName || "Regular",
-                  item_price_library: basePrice,   // ← harga dasar, bukan unitPrice
-                  category_id:        entry.mokaCategoryId,
-                  category_name:      entry.mokaCategoryName || "",
-                  note:               "",
-                };
-
-                if (entry.mokaModifiers?.length) {
-                  item.item_modifiers = entry.mokaModifiers.map((mod) => ({
-                    item_modifier_id:           mod.modifier_id,
-                    item_modifier_name:         mod.modifier_name,
-                    item_modifier_option_id:    mod.modifier_option_id,
-                    item_modifier_option_name:  mod.modifier_option_name,
-                    item_modifier_option_price: round(mod.modifier_option_price ?? 0),
-                  }));
-                }
-
-                return item;
-              });
-
-              // Note: catatan customer + total (diskon tercatat via discount_* fields)
-              const noteParts = [
-                orderNote,
-                `Total ${fmtRp(finalPrice)}`,
-              ].filter(Boolean).join(" | ");
-
-              // Diskon native Moka
-              const discountFields = hasDiscount ? {
-                discount_id:     discount.mokaId,
-                discount_name:   discount.mokaName  || discount.code,
-                discount_type:   discount.mokaType  || (discount.type === "percentage" ? "percentage" : "cash"),
-                discount_amount: discount.value,
-                ...(discount.mokaGuid ? { discount_guid: discount.mokaGuid } : {}),
-              } : {};
-
-              await submitOrder({
-                application_order_id:  applicationOrderId,
-                payment_type:          "online_orders",
-                client_created_at:     new Date().toISOString(),
-                note:                  noteParts.slice(0, 255),
-                customer_name:         name,
-                customer_phone_number: phone,
-                ...discountFields,
-                order_items,
-              });
-
+              await sendMokaOrder(cart, mokaPayload);
               resolve({ success: true, order_id: applicationOrderId });
-
             } catch (mokaErr) {
               console.error("[checkout] Moka GAGAL:", mokaErr.message);
               reject(new Error(
