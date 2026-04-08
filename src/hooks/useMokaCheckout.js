@@ -5,9 +5,10 @@ import { useState, useCallback } from "react";
 import { getMidtransToken, submitOrder } from "../services/mokaApi";
 
 const round = (n) => Math.round(Number(n) || 0);
+const fmtRp = (n) => `Rp${new Intl.NumberFormat("id-ID").format(n)}`;
 
 const IS_PRODUCTION = import.meta.env.VITE_MIDTRANS_ENV === "production";
-const SNAP_URL      = IS_PRODUCTION
+const SNAP_URL = IS_PRODUCTION
   ? "https://app.midtrans.com/snap/snap.js"
   : "https://app.sandbox.midtrans.com/snap/snap.js";
 
@@ -28,18 +29,8 @@ function loadSnapScript(clientKey) {
 export function useMokaCheckout() {
   const [submitting, setSubmitting] = useState(false);
 
-  /**
-   * checkout(cart, customerInfo)
-   *
-   * customerInfo shape (dari CartSidebar):
-   *   { name, phone, orderNote, discount, subtotal, discountAmount, onlineFee, finalPrice }
-   *
-   * discount shape (dari validate-discount):
-   *   { valid, code, mokaId, mokaGuid, mokaName, mokaType, value, discountAmount, description }
-   */
   const checkout = useCallback(async (cart, customerInfo = {}) => {
     if (!cart.length) throw new Error("Keranjang kosong");
-
     setSubmitting(true);
 
     try {
@@ -52,37 +43,28 @@ export function useMokaCheckout() {
         discount       = null,
         subtotal       = cart.reduce((s, e) => s + round(e.unitPrice * e.qty), 0),
         discountAmount = discount?.discountAmount || 0,
-        onlineFee      = 0,
-        finalPrice     = subtotal - discountAmount + onlineFee,
+        finalPrice     = subtotal - discountAmount,
       } = customerInfo;
 
-      // ── Item list untuk Midtrans ────────────────────────────────────────────
-      const midtransItems = cart.map((entry) => ({
-        id:       String(entry.mokaVariantId || entry.mokaItemId || "item"),
-        price:    round(entry.unitPrice),
-        quantity: entry.qty,
-        name:     [entry.itemName, entry.mokaVariantName].filter(Boolean).join(" - ").slice(0, 50),
-      }));
+      const hasDiscount = discountAmount > 0 && discount?.mokaId;
 
-      if (discountAmount > 0 && discount) {
-        midtransItems.push({
+      // ── Midtrans item list ───────────────────────────────────────────────────
+      const midtransItems = [
+        ...cart.map((e) => ({
+          id:       String(e.mokaVariantId || e.mokaItemId || "item"),
+          price:    round(e.unitPrice),   // unitPrice sudah include modifier, benar untuk Midtrans
+          quantity: e.qty,
+          name:     [e.itemName, e.mokaVariantName].filter(Boolean).join(" - ").slice(0, 50),
+        })),
+        ...(hasDiscount ? [{
           id:       "DISCOUNT",
           price:    -discountAmount,
           quantity: 1,
           name:     (discount.description || `Diskon ${discount.code}`).slice(0, 50),
-        });
-      }
+        }] : []),
+      ];
 
-      if (onlineFee > 0) {
-        midtransItems.push({
-          id:       "ONLINE_FEE",
-          price:    onlineFee,
-          quantity: 1,
-          name:     "Online Fee",
-        });
-      }
-
-      // ── 1. Buat Midtrans token ──────────────────────────────────────────────
+      // ── 1. Midtrans token ────────────────────────────────────────────────────
       const { token } = await getMidtransToken({
         order_id: applicationOrderId,
         amount:   round(finalPrice),
@@ -90,32 +72,37 @@ export function useMokaCheckout() {
         items:    midtransItems,
       });
 
-      // ── 2. Load Snap.js ─────────────────────────────────────────────────────
+      // ── 2. Load Snap.js ──────────────────────────────────────────────────────
       const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY;
       if (!clientKey) throw new Error("VITE_MIDTRANS_CLIENT_KEY tidak ditemukan.");
       await loadSnapScript(clientKey);
 
-      // ── 3. Buka popup & tunggu hasil ────────────────────────────────────────
+      // ── 3. Buka popup ────────────────────────────────────────────────────────
       return new Promise((resolve, reject) => {
         window.snap.pay(token, {
 
-          onSuccess: async (result) => {
-            console.log("[checkout] Midtrans success:", result.order_id);
-
+          onSuccess: async () => {
             try {
-              // Build Moka order items — harga tetap original (Moka hitung diskon sendiri)
               const order_items = cart.map((entry) => {
+                // ── FIX: item_price_library = harga DASAR saja (tanpa modifier) ──
+                // Moka menambah modifier price sendiri dari item_modifiers.
+                // Kalau kita kirim unitPrice (sudah include modifier), Moka hitung 2x.
+                const modifierSum = (entry.mokaModifiers ?? [])
+                  .reduce((s, m) => s + round(m.modifier_option_price ?? 0), 0);
+                const basePrice = round(entry.unitPrice) - modifierSum;
+
                 const item = {
                   item_id:            entry.mokaItemId,
                   item_name:          entry.itemName,
                   quantity:           entry.qty,
                   item_variant_id:    entry.mokaVariantId,
                   item_variant_name:  entry.mokaVariantName || "Regular",
-                  item_price_library: round(entry.unitPrice),
+                  item_price_library: basePrice,   // ← harga dasar, bukan unitPrice
                   category_id:        entry.mokaCategoryId,
                   category_name:      entry.mokaCategoryName || "",
                   note:               "",
                 };
+
                 if (entry.mokaModifiers?.length) {
                   item.item_modifiers = entry.mokaModifiers.map((mod) => ({
                     item_modifier_id:           mod.modifier_id,
@@ -125,27 +112,23 @@ export function useMokaCheckout() {
                     item_modifier_option_price: round(mod.modifier_option_price ?? 0),
                   }));
                 }
+
                 return item;
               });
 
-              // Note Moka: singkat, hanya fee & total bayar (diskon sudah tercatat di field native)
-              const fmtRp = (n) => `Rp${new Intl.NumberFormat("id-ID").format(n)}`;
+              // Note: catatan customer + total (diskon tercatat via discount_* fields)
               const noteParts = [
-                orderNote || "",
-                onlineFee > 0 ? `Biaya online +${fmtRp(onlineFee)}` : "",
-                `Total dibayar ${fmtRp(finalPrice)}`,
+                orderNote,
+                `Total ${fmtRp(finalPrice)}`,
               ].filter(Boolean).join(" | ");
 
-              // Discount fields native Moka — inilah yang membuat diskon tampil
-              // di receipt Moka dan bisa di-refund lewat sistem Moka
-              const discountFields = (discountAmount > 0 && discount) ? {
-                discount_id:     discount.mokaId     || undefined,
-                discount_guid:   discount.mokaGuid   || undefined,
-                discount_name:   discount.mokaName   || discount.code,
-                // mokaType: "cash" | "percentage" — langsung dari Moka discounts API
-                discount_type:   discount.mokaType   || (discount.type === "percentage" ? "percentage" : "cash"),
-                // value = angka mentah dari Moka: 10 untuk 10%, 5000 untuk flat Rp5.000
+              // Diskon native Moka
+              const discountFields = hasDiscount ? {
+                discount_id:     discount.mokaId,
+                discount_name:   discount.mokaName  || discount.code,
+                discount_type:   discount.mokaType  || (discount.type === "percentage" ? "percentage" : "cash"),
                 discount_amount: discount.value,
+                ...(discount.mokaGuid ? { discount_guid: discount.mokaGuid } : {}),
               } : {};
 
               await submitOrder({
@@ -162,22 +145,17 @@ export function useMokaCheckout() {
               resolve({ success: true, order_id: applicationOrderId });
 
             } catch (mokaErr) {
-              console.error("[checkout] Moka order gagal setelah pembayaran:", mokaErr.message);
-              resolve({ success: true, order_id: applicationOrderId, mokaError: mokaErr.message });
+              console.error("[checkout] Moka GAGAL:", mokaErr.message);
+              reject(new Error(
+                `Pembayaran berhasil (${applicationOrderId}) tapi order gagal masuk sistem. ` +
+                `Tunjukkan kode ini ke kasir: ${applicationOrderId}`
+              ));
             }
           },
 
-          onPending: () => {
-            resolve({ success: false, pending: true, order_id: applicationOrderId });
-          },
-
-          onError: () => {
-            reject(new Error("Pembayaran gagal. Silakan coba lagi."));
-          },
-
-          onClose: () => {
-            reject(new Error("Pembayaran dibatalkan."));
-          },
+          onPending: () => resolve({ success: false, pending: true }),
+          onError:   () => reject(new Error("Pembayaran gagal. Silakan coba lagi.")),
+          onClose:   () => reject(new Error("Pembayaran dibatalkan.")),
         });
       });
 
