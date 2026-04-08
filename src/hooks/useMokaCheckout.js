@@ -34,10 +34,8 @@ export function useMokaCheckout() {
    * customerInfo shape (dari CartSidebar):
    *   { name, phone, orderNote, discount, subtotal, discountAmount, onlineFee, finalPrice }
    *
-   * Alur:
-   *   1. Buat Midtrans token dengan finalPrice (sudah termasuk fee, sudah dikurangi diskon)
-   *   2. Buka Midtrans popup
-   *   3. onSuccess → kirim Advanced Order ke Moka
+   * discount shape (dari validate-discount):
+   *   { valid, code, mokaId, mokaGuid, mokaName, mokaType, value, discountAmount, description }
    */
   const checkout = useCallback(async (cart, customerInfo = {}) => {
     if (!cart.length) throw new Error("Keranjang kosong");
@@ -48,14 +46,14 @@ export function useMokaCheckout() {
       const applicationOrderId = `S7-${Date.now()}`;
 
       const {
-        name        = "Customer",
-        phone       = "",
-        orderNote   = "",
-        discount    = null,
-        subtotal    = cart.reduce((s, e) => s + round(e.unitPrice * e.qty), 0),
+        name           = "Customer",
+        phone          = "",
+        orderNote      = "",
+        discount       = null,
+        subtotal       = cart.reduce((s, e) => s + round(e.unitPrice * e.qty), 0),
         discountAmount = discount?.discountAmount || 0,
-        onlineFee   = 0,
-        finalPrice  = subtotal - discountAmount + onlineFee,
+        onlineFee      = 0,
+        finalPrice     = subtotal - discountAmount + onlineFee,
       } = customerInfo;
 
       // ── Item list untuk Midtrans ────────────────────────────────────────────
@@ -66,17 +64,15 @@ export function useMokaCheckout() {
         name:     [entry.itemName, entry.mokaVariantName].filter(Boolean).join(" - ").slice(0, 50),
       }));
 
-      // Diskon (nilai negatif di Midtrans)
       if (discountAmount > 0 && discount) {
         midtransItems.push({
           id:       "DISCOUNT",
           price:    -discountAmount,
           quantity: 1,
-          name:     discount.description || `Diskon ${discount.code}`,
+          name:     (discount.description || `Diskon ${discount.code}`).slice(0, 50),
         });
       }
 
-      // Biaya online order
       if (onlineFee > 0) {
         midtransItems.push({
           id:       "ONLINE_FEE",
@@ -89,7 +85,7 @@ export function useMokaCheckout() {
       // ── 1. Buat Midtrans token ──────────────────────────────────────────────
       const { token } = await getMidtransToken({
         order_id: applicationOrderId,
-        amount:   round(finalPrice),    // ← angka yang benar: setelah diskon + fee
+        amount:   round(finalPrice),
         customer: { name, phone },
         items:    midtransItems,
       });
@@ -107,7 +103,7 @@ export function useMokaCheckout() {
             console.log("[checkout] Midtrans success:", result.order_id);
 
             try {
-              // Build Moka order items
+              // Build Moka order items — harga tetap original (Moka hitung diskon sendiri)
               const order_items = cart.map((entry) => {
                 const item = {
                   item_id:            entry.mokaItemId,
@@ -132,14 +128,25 @@ export function useMokaCheckout() {
                 return item;
               });
 
-              // Note untuk Moka: catatan customer | diskon | fee
+              // Note Moka: singkat, hanya fee & total bayar (diskon sudah tercatat di field native)
               const fmtRp = (n) => `Rp${new Intl.NumberFormat("id-ID").format(n)}`;
               const noteParts = [
                 orderNote || "",
-                discountAmount > 0 ? `Diskon ${discount?.code} -${fmtRp(discountAmount)}` : "",
-                onlineFee > 0      ? `Biaya online +${fmtRp(onlineFee)}` : "",
-                `Total ${fmtRp(finalPrice)}`,
+                onlineFee > 0 ? `Biaya online +${fmtRp(onlineFee)}` : "",
+                `Total dibayar ${fmtRp(finalPrice)}`,
               ].filter(Boolean).join(" | ");
+
+              // Discount fields native Moka — inilah yang membuat diskon tampil
+              // di receipt Moka dan bisa di-refund lewat sistem Moka
+              const discountFields = (discountAmount > 0 && discount) ? {
+                discount_id:     discount.mokaId     || undefined,
+                discount_guid:   discount.mokaGuid   || undefined,
+                discount_name:   discount.mokaName   || discount.code,
+                // mokaType: "cash" | "percentage" — langsung dari Moka discounts API
+                discount_type:   discount.mokaType   || (discount.type === "percentage" ? "percentage" : "cash"),
+                // value = angka mentah dari Moka: 10 untuk 10%, 5000 untuk flat Rp5.000
+                discount_amount: discount.value,
+              } : {};
 
               await submitOrder({
                 application_order_id:  applicationOrderId,
@@ -148,6 +155,7 @@ export function useMokaCheckout() {
                 note:                  noteParts.slice(0, 255),
                 customer_name:         name,
                 customer_phone_number: phone,
+                ...discountFields,
                 order_items,
               });
 
@@ -155,7 +163,6 @@ export function useMokaCheckout() {
 
             } catch (mokaErr) {
               console.error("[checkout] Moka order gagal setelah pembayaran:", mokaErr.message);
-              // Pembayaran sudah berhasil — jangan reject, tapi catat error
               resolve({ success: true, order_id: applicationOrderId, mokaError: mokaErr.message });
             }
           },

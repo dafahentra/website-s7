@@ -122,9 +122,14 @@ const Menu = () => {
         setCartOpen(false);
       }
     } catch (e) {
-      if (!e.message.includes("dibatalkan")) {
-        alert(`Pembayaran gagal: ${e.message}`);
+      const msg = e.message || "";
+      if (msg.includes("dibatalkan")) return;
+      if (msg.includes("tapi order gagal masuk")) {
+        // Bayar sukses tapi Moka reject — jangan kosongkan cart
+        alert(msg);
+        return;
       }
+      alert(`Pembayaran gagal: ${msg}`);
     }
   }, [cart, checkout]);
 
