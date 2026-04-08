@@ -41,12 +41,14 @@ const NavbarMobile = ({ isOpen, onClose }) => {
         className="fixed top-0 right-0 w-full min-h-screen bg-brand-nav-mobile z-[40] flex flex-col items-center justify-center lg:hidden overflow-y-auto"
       >
         {/* Logo */}
-        <Link to="/" onClick={() => handleNavClick('Logo')}>
+        <Link to="/" onClick={() => handleNavClick("Logo")}>
           <img src={logo} alt="logo" className="mb-10 w-24" />
         </Link>
 
         {/* Menu Items */}
-        <ul className={`space-y-8 ${TYPOGRAPHY.weight.bold} ${TYPOGRAPHY.subheading.lg} text-center`}>
+        <ul
+          className={`space-y-8 ${TYPOGRAPHY.weight.bold} ${TYPOGRAPHY.subheading.lg} text-center`}
+        >
           {menuItems.map((item) => (
             <li key={item.path}>
               <Link
@@ -54,7 +56,7 @@ const NavbarMobile = ({ isOpen, onClose }) => {
                 onClick={() => handleNavClick(item.name)}
                 className={`${
                   isActiveRoute(location.pathname, item.path)
-                    ? "text-brand-orange" 
+                    ? "text-brand-orange"
                     : "text-brand-navy hover:text-brand-orange"
                 } ${TRANSITIONS.hover.color}`}
               >
@@ -62,12 +64,12 @@ const NavbarMobile = ({ isOpen, onClose }) => {
               </Link>
             </li>
           ))}
-          
+
           {/* Order Button - Mobile */}
           <li className="pt-4">
             <Link
               to="/menu"
-              onClick={() => handleNavClick('Order Now')}
+              onClick={() => handleNavClick("Order Now")}
               className={`inline-flex items-center gap-3 bg-gradient-to-r from-brand-orange to-orange-400 text-white px-8 py-4 ${RADIUS.circle} hover:from-orange-600 hover:to-brand-orange ${TRANSITIONS.fast} shadow-xl ${TYPOGRAPHY.body.default} ${TYPOGRAPHY.weight.bold}`}
             >
               <BsCart3 className="text-2xl" />
@@ -77,7 +79,7 @@ const NavbarMobile = ({ isOpen, onClose }) => {
         </ul>
 
         {/* Close Button */}
-        <button 
+        <button
           onClick={onClose}
           className={`absolute top-10 right-10 text-gray-800 hover:text-gray-600 ${TRANSITIONS.hover.color}`}
           aria-label="Close menu"
