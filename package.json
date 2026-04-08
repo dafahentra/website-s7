@@ -15,6 +15,7 @@
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@material-tailwind/react": "^2.1.9",
+    "@netlify/blobs": "^10.7.4",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "flickity": "^2.3.0",

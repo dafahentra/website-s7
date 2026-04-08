@@ -52,22 +52,19 @@ const Menu = () => {
   const [activeCategory, setActiveCategory] = useState("Espresso Based");
   const [currentIndex, setCurrentIndex]     = useState(0);
   const [direction, setDirection]           = useState(0);
-  const [cart, setCart]                     = useState([]);   // array of entries
+  const [cart, setCart]                     = useState([]);
   const [cartOpen, setCartOpen]             = useState(false);
-  const [pendingItem, setPendingItem]       = useState(null); // triggers modal
+  const [pendingItem, setPendingItem]       = useState(null);
 
-  // ── Destructure loading & error agar modal tahu status fetch ──────────────
   const { mokaMap, loading: mokaLoading, error: mokaError } = useMokaData();
   const { checkout, submitting } = useMokaCheckout();
 
   const currentItems = useMemo(() => menuItems[activeCategory] || [], [activeCategory]);
 
-  // ── onAddToCart — ALWAYS opens modal (first tap or tapping + on existing) ──
   const handleAddToCart = useCallback((item) => {
     setPendingItem(item);
   }, []);
 
-  // ── Confirm from modal ────────────────────────────────────────────────────
   const handleConfirmAdd = useCallback(({
     item, mokaItemId, mokaVariantId, mokaVariantName, mokaVariantSku,
     mokaCategoryId, mokaCategoryName, mokaModifiers, qty, unitPrice,
@@ -90,17 +87,13 @@ const Menu = () => {
     });
   }, []);
 
-  // ── onDecrement — quick −1 on the most recent entry for this item ─────────
   const handleDecrement = useCallback((item) => {
-    const id = typeof item === "string" ? item : null;
+    const id     = typeof item === "string" ? item : null;
     const itemId = item?.id ?? null;
-
     setCart((prev) => {
       if (id) {
-        // called from sidebar with entry key
         return prev.map((e) => e.key === id ? { ...e, qty: e.qty - 1 } : e).filter((e) => e.qty > 0);
       }
-      // called from card/slider with item object — decrement last matching entry
       const idx = [...prev].reverse().findIndex((e) => String(e.itemId) === String(itemId));
       if (idx === -1) return prev;
       const realIdx = prev.length - 1 - idx;
@@ -111,7 +104,6 @@ const Menu = () => {
     });
   }, []);
 
-  // ── Sidebar increment (by key) ────────────────────────────────────────────
   const handleSidebarIncrement = useCallback((key) => {
     setCart((prev) => prev.map((e) => e.key === key ? { ...e, qty: e.qty + 1 } : e));
   }, []);
@@ -120,29 +112,27 @@ const Menu = () => {
     setCart((prev) => prev.filter((e) => e.key !== key));
   }, []);
 
-  // ── Checkout — Midtrans payment + Moka Advanced Ordering ─────────────────
-  const handleCheckout = useCallback(async ({ name, phone, orderNote } = {}) => {
+  // ── handleCheckout — terima full payload dari CartSidebar ──────────────────
+  // CartSidebar mengirim: { name, phone, orderNote, discount, subtotal, discountAmount, onlineFee, finalPrice }
+  const handleCheckout = useCallback(async (customerInfo = {}) => {
     try {
-      const result = await checkout(cart, { name, phone, orderNote });
+      const result = await checkout(cart, customerInfo);
       if (result?.success) {
         setCart([]);
         setCartOpen(false);
       }
     } catch (e) {
-      // Tidak tampilkan alert jika customer menutup popup Midtrans sendiri
       if (!e.message.includes("dibatalkan")) {
         alert(`Pembayaran gagal: ${e.message}`);
       }
     }
   }, [cart, checkout]);
 
-  // ── Totals ────────────────────────────────────────────────────────────────
   const { cartTotalItems, cartTotalPrice } = useMemo(() => ({
     cartTotalItems: cart.reduce((s, e) => s + e.qty, 0),
     cartTotalPrice: fmt(cart.reduce((s, e) => s + e.unitPrice * e.qty, 0)),
   }), [cart]);
 
-  // ── Navigation ────────────────────────────────────────────────────────────
   const handleCategoryChange = useCallback((id) => {
     setActiveCategory(id); setCurrentIndex(0); setDirection(0);
   }, []);
@@ -158,12 +148,10 @@ const Menu = () => {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [currentItems]);
 
-  // Props passed down to Slider + Grid
   const cartProps = {
     cart,
-    onAddToCart: handleAddToCart,   // always opens modal
-    onDecrement: handleDecrement,   // quick −1
-    // onIncrement not needed — + always opens modal now
+    onAddToCart: handleAddToCart,
+    onDecrement: handleDecrement,
   };
 
   return (
@@ -177,7 +165,6 @@ const Menu = () => {
       />
 
       <div className="min-h-screen bg-white">
-        {/* Desktop */}
         <div className="hidden lg:flex">
           <CategorySidebar categories={menuCategories} activeCategory={activeCategory} onCategoryChange={handleCategoryChange} />
           <div className="flex-1 ml-64">
@@ -189,7 +176,6 @@ const Menu = () => {
           </div>
         </div>
 
-        {/* Mobile */}
         <div className="lg:hidden">
           <CategoryIconBar categories={menuCategories} activeCategory={activeCategory} onCategoryChange={handleCategoryChange} />
           <ProductSlider items={currentItems} currentIndex={currentIndex} activeCategory={activeCategory}
@@ -216,7 +202,6 @@ const Menu = () => {
         )}
       </AnimatePresence>
 
-      {/* Modal — always shows variant + modifier selector */}
       <AnimatePresence>
         {pendingItem && (
           <AddToCartModal
