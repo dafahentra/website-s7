@@ -83,7 +83,7 @@ const Follow = () => {
             {/* VIDEO — play icon pojok kanan atas */}
             {post.type === "VIDEO" && (
               <div className="absolute top-1.5 right-1.5 pointer-events-none">
-                <svg className="w-12 h-12 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]" viewBox="0 0 24 24" fill="none">
+                <svg className="w-7 h-7 md:w-12 md:h-12 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]" viewBox="0 0 24 24" fill="none">
                   <path d="M7 5 L19 12 L7 19 Z" fill="white"/>
                 </svg>
               </div>
@@ -91,7 +91,7 @@ const Follow = () => {
             {/* CAROUSEL — ikon pojok kanan atas */}
             {post.type === "CAROUSEL_ALBUM" && (
               <div className="absolute top-2 right-2 pointer-events-none">
-                <svg className="w-12 h-12 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]" viewBox="0 0 24 24" fill="none">
+                <svg className="w-7 h-7 md:w-12 md:h-12 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]" viewBox="0 0 24 24" fill="none">
                   <rect x="2" y="6" width="13" height="13" rx="2" stroke="white" strokeWidth="1.8" fill="none"/>
                   <path d="M7 4h11a2 2 0 012 2v11" stroke="white" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
                 </svg>
