@@ -15,6 +15,7 @@ const Follow = () => {
           setPosts(
             data.slice(0, 9).map((p) => ({
               id:       p.id,
+              type:     p.type,
               postUrl:  p.permalink,
               imageUrl: p.url,
             }))
@@ -79,18 +80,20 @@ const Follow = () => {
               </div>
             </div>
 
-            {/* Media type badge — pojok kanan atas, selalu tampil */}
+            {/* VIDEO — play icon pojok kanan atas */}
             {post.type === "VIDEO" && (
-              <div className="absolute top-2 right-2 bg-black/50 rounded-full p-1">
-                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M17 10.5V7a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h12a1 1 0 001-1v-3.5l4 4v-11l-4 4z"/>
+              <div className="absolute top-2.5 right-2.5 pointer-events-none">
+                <svg className="w-8 h-8 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]" viewBox="0 0 48 48" fill="none">
+                  <path d="M14 10 L38 24 L14 38 Z" fill="white" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
             )}
+            {/* CAROUSEL — ikon besar pojok kanan atas */}
             {post.type === "CAROUSEL_ALBUM" && (
-              <div className="absolute top-2 right-2 bg-black/50 rounded-full p-1">
-                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M2 6C2 4.9 2.9 4 4 4h12c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6zm2 0v12h12V6H4zm14-2h2v14h-2V4zm2-2h2v14h-2V2z"/>
+              <div className="absolute top-2.5 right-2.5 pointer-events-none">
+                <svg className="w-10 h-10 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]" viewBox="0 0 24 24" fill="none">
+                  <rect x="2" y="6" width="13" height="13" rx="2" stroke="white" strokeWidth="2" fill="none"/>
+                  <path d="M7 4h11a2 2 0 012 2v11" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/>
                 </svg>
               </div>
             )}
