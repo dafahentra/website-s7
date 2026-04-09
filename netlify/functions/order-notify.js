@@ -29,7 +29,7 @@ function buildMessages(name, orderId, items, total) {
       `*Detail Pesanan (${orderId}):*\n` +
       (hasItems ? `${itemLines}\n` : "") +
       `${totalLine}\n\n` +
-      `Mohon tunggu sebentar ya~`
+      `Mohon ditunggu sebentar`
     ),
 
     completed: (
@@ -38,12 +38,12 @@ function buildMessages(name, orderId, items, total) {
       `*Receipt (${orderId}):*\n` +
       (hasItems ? `${itemLines}\n` : "") +
       `${totalLine}\n\n` +
-      `Silakan ambil di kasir. Terima kasih sudah order di *${STORE_NAME}*! 🙏🏻`
+      `Silakan ambil di kasir. Terima kasih sudah order di *${STORE_NAME}*!`
     ),
 
     cancelled: (
       `Halo *${name}*. 🙏🏻\n\n` +
-      `Maaf, pesanan kamu (*${orderId}*) dibatalkan.\n\n` +
+      `Maaf, pesanan kamu (*${orderId}*) telah dibatalkan.\n\n` +
       `Silakan hubungi kami langsung di kasir. Terima kasih.`
     ),
   };
