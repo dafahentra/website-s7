@@ -224,7 +224,7 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
               </svg>
-              Memuat varian dari Moka…
+              Memuat varian…
             </div>
           )}
 
@@ -233,7 +233,7 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
               <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
               </svg>
-              Gagal memuat data Moka: {mokaError}
+              Gagal memuat data: {mokaError}
             </div>
           )}
 
