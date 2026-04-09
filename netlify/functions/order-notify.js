@@ -2,18 +2,12 @@
 // Menerima webhook dari Moka saat status order berubah,
 // lalu kirim notifikasi WhatsApp ke customer via Fonnte.
 //
-// Setup:
-//   1. Daftar di https://fonnte.com
-//   2. Add Device → scan QR dengan WA yang akan jadi pengirim
-//   3. Copy token → set env var FONNTE_TOKEN di Netlify Dashboard
-//
-// Webhook ini otomatis didaftarkan ke Moka saat order dibuat
-// di useMokaCheckout.js (accept/complete/cancel_order_notification_url)
+// Moka mengirim POST dengan body berisi data order lengkap,
+// termasuk customer_name dan customer_phone_number.
 
 const FONNTE_TOKEN = process.env.FONNTE_TOKEN;
 const STORE_NAME   = "Sector Seven";
 
-// ── Pesan WA per status ───────────────────────────────────────────────────────
 const MESSAGES = {
   accepted: (name, orderId) =>
     `Halo *${name}*! 👋\n\n` +
@@ -31,14 +25,12 @@ const MESSAGES = {
     `Silakan hubungi kami langsung di kasir. Terima kasih.`,
 };
 
-// ── Kirim WA via Fonnte ───────────────────────────────────────────────────────
 async function sendWhatsApp(phone, message) {
   if (!FONNTE_TOKEN) {
-    console.warn("[order-notify] FONNTE_TOKEN not set — skipping WA send");
+    console.warn("[order-notify] FONNTE_TOKEN not set — skipping");
     return { skipped: true };
   }
 
-  // Normalize: 08xx → 628xx, +628xx → 628xx
   const normalized = phone
     .replace(/\s|-/g, "")
     .replace(/^\+/, "")
@@ -46,68 +38,62 @@ async function sendWhatsApp(phone, message) {
 
   console.log(`[order-notify] Sending WA to ${normalized}`);
 
-  const res = await fetch("https://api.fonnte.com/send", {
+  const res  = await fetch("https://api.fonnte.com/send", {
     method: "POST",
     headers: {
       "Authorization": FONNTE_TOKEN,
       "Content-Type":  "application/json",
     },
-    body: JSON.stringify({
-      target:      normalized,
-      message,
-      countryCode: "62",
-    }),
+    body: JSON.stringify({ target: normalized, message, countryCode: "62" }),
   });
 
   const data = await res.json().catch(() => ({}));
-  console.log("[order-notify] Fonnte response:", JSON.stringify(data));
+  console.log("[order-notify] Fonnte:", JSON.stringify(data));
   return data;
 }
 
-// ── Handler ───────────────────────────────────────────────────────────────────
 export const handler = async (event) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Content-Type": "application/json",
   };
 
-  try {
-    // Baca params — Moka bisa kirim via GET query string atau POST body
-    const q = event.queryStringParameters || {};
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 200, headers, body: "" };
+  }
 
-    let bodyParams = {};
+  try {
+    // Event type dari query string (accept/complete/cancel)
+    const q         = event.queryStringParameters || {};
+    const eventType = q.event || "unknown";
+    const orderId   = q.order || "-";
+
+    // Data customer dari body yang Moka POST ke kita
+    let body = {};
     if (event.body) {
-      try { bodyParams = JSON.parse(event.body); } catch { /* ignore */ }
+      try { body = JSON.parse(event.body); } catch { /* ignore */ }
     }
 
-    const eventType = q.event  || bodyParams.event  || "unknown";
-    const orderId   = q.order  || bodyParams.order  || "-";
-    const phone     = q.phone  || bodyParams.phone  || "";
-    const name      = decodeURIComponent(q.name || bodyParams.name || "Pelanggan");
+    // Moka mengirim data order lengkap di body webhook
+    const customerName  = body.customer_name         || body.name  || "Pelanggan";
+    const customerPhone = body.customer_phone_number || body.phone || "";
 
-    console.log(`[order-notify] event=${eventType} order=${orderId} phone=${phone} name=${name}`);
+    console.log(`[order-notify] event=${eventType} order=${orderId} name=${customerName} phone=${customerPhone}`);
+    console.log(`[order-notify] raw body:`, JSON.stringify(body));
 
     const msgFn = MESSAGES[eventType];
 
     if (!msgFn) {
-      console.warn("[order-notify] Unknown event type:", eventType);
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ ok: true, skipped: true, reason: "unknown_event" }),
-      };
+      console.warn("[order-notify] Unknown event:", eventType);
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, skipped: true }) };
     }
 
-    if (!phone) {
-      console.warn("[order-notify] No phone number in request");
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ ok: true, skipped: true, reason: "no_phone" }),
-      };
+    if (!customerPhone) {
+      console.warn("[order-notify] No phone in webhook body");
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, skipped: true, reason: "no_phone" }) };
     }
 
-    const result = await sendWhatsApp(phone, msgFn(name, orderId));
+    const result = await sendWhatsApp(customerPhone, msgFn(customerName, orderId));
 
     return {
       statusCode: 200,
@@ -116,8 +102,8 @@ export const handler = async (event) => {
     };
 
   } catch (err) {
-    console.error("[order-notify] Unhandled error:", err.message);
-    // Selalu return 200 agar Moka tidak retry terus-menerus
+    console.error("[order-notify] Error:", err.message);
+    // Selalu 200 agar Moka tidak retry
     return {
       statusCode: 200,
       headers,
