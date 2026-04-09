@@ -8,7 +8,7 @@ const round = (n) => Math.round(Number(n) || 0);
 
 // Sales type ID untuk "Online Order" di Moka
 // Isi dengan ID dari: https://sectorseven.space/.netlify/functions/moka-get-sales-type
-const ONLINE_ORDER_SALES_TYPE_ID = null; // ← ganti dengan angka ID-nya
+const ONLINE_ORDER_SALES_TYPE_ID = 602868;
 const fmtRp = (n) => `Rp${new Intl.NumberFormat("id-ID").format(n)}`;
 
 const IS_PRODUCTION = import.meta.env.VITE_MIDTRANS_ENV === "production";
@@ -91,8 +91,8 @@ async function sendMokaOrder(cart, {
     // Moka limits: customer_name max 50 chars, customer_phone_number max 13 digits
     customer_name:         name.trim().slice(0, 50),
     customer_phone_number: phone.replace(/\s|-|\+/g, '').replace(/^0/, '62').slice(0, 13),
-    sales_type_name:       "Online Order",
-    ...(ONLINE_ORDER_SALES_TYPE_ID ? { sales_type_id: ONLINE_ORDER_SALES_TYPE_ID } : {}),
+    sales_type_id:   ONLINE_ORDER_SALES_TYPE_ID,
+    sales_type_name: "Online Order",
     ...discountFields,
     order_items,
   });
