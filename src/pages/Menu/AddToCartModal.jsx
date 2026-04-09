@@ -251,7 +251,7 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
             <div className="flex items-center gap-2 bg-gray-100 rounded-full px-2 py-1.5 flex-shrink-0">
               <button
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
-                className="w-7 h-7 rounded-full bg-white text-brand-navy flex items-center justify-center shadow-sm active:scale-90 transition-all"
+                className="w-7 h-7 rounded-full bg-white text-brand-navy flex items-center justify-center shadow-sm active:scale-90 transition-transform"
               >
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" d="M5 12h14"/></svg>
               </button>
@@ -261,15 +261,16 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
               </motion.span>
               <button
                 onClick={() => setQty((q) => q + 1)}
-                className="w-7 h-7 rounded-full bg-brand-orange text-white flex items-center justify-center shadow-sm active:scale-90 transition-all"
+                className="w-7 h-7 rounded-full bg-brand-orange text-white flex items-center justify-center shadow-sm active:scale-90 transition-transform"
               >
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" d="M12 5v14M5 12h14"/></svg>
               </button>
             </div>
 
+            {/* Tambah button - no hover scale animation */}
             <button
               onClick={handleConfirm}
-              className="flex-1 py-3.5 rounded-full text-white font-black text-sm shadow-md hover:scale-[1.02] active:scale-[.97] transition-all"
+              className="flex-1 py-3.5 rounded-full text-white font-black text-sm shadow-md active:scale-[.97] transition-transform"
               style={{ background: "linear-gradient(135deg,#FF6B35,#e85d2a)" }}
             >
               Tambah · Rp{fmt(totalPrice)}
