@@ -3,7 +3,7 @@ import React, { useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TYPOGRAPHY, RADIUS, TRANSITIONS } from "../../styles/designSystem";
 
-// ── Nav Arrow Button — no hover background, border only ──────────────────────
+// ── Nav Arrow Button ──────────────────────────────────────────────────────────
 const NavButton = React.memo(({ onClick, direction, isMobile }) => {
   const size  = isMobile ? "w-10 h-10" : "w-12 h-12";
   const iSize = isMobile ? "w-4 h-4"   : "w-5 h-5";
@@ -21,13 +21,11 @@ const NavButton = React.memo(({ onClick, direction, isMobile }) => {
 });
 NavButton.displayName = "NavButton";
 
-// ── Add/Qty Pill — consistent with ProductCard ────────────────────────────────
-// Filled orange "Add" → hover transparent + orange outline
-// When qty > 0 → − qty + compact pill
+// ── Add / Qty Pill — w-full, sized by parent ──────────────────────────────────
 const SliderCartPill = React.memo(({ item, cartQty, onAddToCart, onDecrement }) => {
   const stop = (e, fn) => { e.stopPropagation(); fn?.(); };
   return (
-    <div className="relative h-10 w-28 flex-shrink-0">
+    <div className="relative h-10 w-full">
       <AnimatePresence mode="wait" initial={false}>
         {cartQty === 0 ? (
           <motion.button
@@ -87,10 +85,10 @@ const ProductInfo = React.memo(({
   currentItem, activeCategory, isMobile,
   cartQty, onAddToCart, onDecrement,
 }) => {
-  const catSize   = isMobile ? TYPOGRAPHY.body.small          : TYPOGRAPHY.body.default;
-  const nameSize  = isMobile ? TYPOGRAPHY.subheading.tablet   : TYPOGRAPHY.subheading.desktop;
-  const priceSize = isMobile ? TYPOGRAPHY.subheading.lg       : TYPOGRAPHY.subheading.tablet;
-  const descSize  = isMobile ? TYPOGRAPHY.body.small          : `${TYPOGRAPHY.body.small} leading-relaxed`;
+  const catSize   = isMobile ? TYPOGRAPHY.body.small        : TYPOGRAPHY.body.default;
+  const nameSize  = isMobile ? TYPOGRAPHY.subheading.tablet : TYPOGRAPHY.subheading.desktop;
+  const priceSize = isMobile ? TYPOGRAPHY.subheading.lg     : TYPOGRAPHY.subheading.tablet;
+  const descSize  = isMobile ? TYPOGRAPHY.body.small        : `${TYPOGRAPHY.body.small} leading-relaxed`;
 
   return (
     <motion.div
@@ -115,27 +113,18 @@ const ProductInfo = React.memo(({
         {currentItem.description}
       </p>
 
-      {/* Price + Add button inline (desktop) */}
-      {!isMobile && (
-        <div className="flex items-center gap-4">
-          <span className={`${priceSize} ${TYPOGRAPHY.weight.bold} text-gray-900`}>
-            Rp{currentItem.price}
-          </span>
-          <SliderCartPill
-            item={currentItem}
-            cartQty={cartQty}
-            onAddToCart={onAddToCart}
-            onDecrement={onDecrement}
-          />
-        </div>
-      )}
-
-      {/* Price only (mobile — pill rendered separately below) */}
-      {isMobile && (
-        <div className={`${priceSize} ${TYPOGRAPHY.weight.bold} text-gray-900`}>
+      {/* Price + Add — wrapped in inline-flex so button width = price width */}
+      <div className="inline-flex flex-col items-stretch gap-2">
+        <span className={`${priceSize} ${TYPOGRAPHY.weight.bold} text-gray-900 whitespace-nowrap`}>
           Rp{currentItem.price}
-        </div>
-      )}
+        </span>
+        <SliderCartPill
+          item={currentItem}
+          cartQty={cartQty}
+          onAddToCart={onAddToCart}
+          onDecrement={onDecrement}
+        />
+      </div>
     </motion.div>
   );
 });
@@ -192,7 +181,6 @@ const ProductSlider = React.memo(({
     <div className={containerClass}>
       <div className={`flex items-center justify-center ${isMobile ? "gap-4" : "gap-8"} max-w-5xl mx-auto w-full`}>
 
-        {/* Prev button */}
         {items.length > 1 && <NavButton onClick={onPrev} direction="prev" isMobile={isMobile} />}
 
         {/* Sliding image */}
@@ -220,10 +208,9 @@ const ProductSlider = React.memo(({
           </AnimatePresence>
         </div>
 
-        {/* Next button */}
         {items.length > 1 && <NavButton onClick={onNext} direction="next" isMobile={isMobile} />}
 
-        {/* Desktop info panel — price + Add inline */}
+        {/* Desktop info panel */}
         {!isMobile && (
           <div className="flex-1 max-w-md flex flex-col">
             <div className="flex-1">
@@ -252,18 +239,8 @@ const ProductSlider = React.memo(({
             {currentItem && <ProductInfo {...commonProps} isMobile={true} />}
           </AnimatePresence>
 
-          {/* Price row + pill inline for mobile too */}
-          <div className="flex items-center justify-center gap-4 mt-3 mb-4">
-            <SliderCartPill
-              item={currentItem}
-              cartQty={cartQty}
-              onAddToCart={onAddToCart}
-              onDecrement={onDecrement}
-            />
-          </div>
-
           {items.length > 1 && (
-            <div className="flex justify-center gap-2">
+            <div className="flex justify-center mt-4">
               <DotIndicators
                 items={items}
                 currentIndex={currentIndex}
