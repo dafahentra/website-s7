@@ -25,7 +25,7 @@ function buildMessages(name, orderId, items, total) {
   return {
     accepted: (
       `*${STORE_NAME}* Order Update \n\n` +
-      'Halo *${name}*! 👋\n\n' +
+      `Halo *${name}*! ✅\n\n` +
       `Pesanan kamu sudah diterima dan sedang diproses barista kami.\n\n` +
       `*Detail Pesanan (${orderId}):*\n` +
       (hasItems ? `${itemLines}\n` : "") +
