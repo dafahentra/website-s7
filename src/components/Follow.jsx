@@ -82,18 +82,18 @@ const Follow = () => {
 
             {/* VIDEO — play icon pojok kanan atas */}
             {post.type === "VIDEO" && (
-              <div className="absolute top-2.5 right-2.5 pointer-events-none">
-                <svg className="w-8 h-8 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]" viewBox="0 0 48 48" fill="none">
-                  <path d="M14 10 L38 24 L14 38 Z" fill="white" strokeLinecap="round" strokeLinejoin="round"/>
+              <div className="absolute top-2 right-2 pointer-events-none">
+                <svg className="w-12 h-12 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]" viewBox="0 0 24 24" fill="none">
+                  <path d="M7 5 L19 12 L7 19 Z" fill="white" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
             )}
-            {/* CAROUSEL — ikon besar pojok kanan atas */}
+            {/* CAROUSEL — ikon pojok kanan atas */}
             {post.type === "CAROUSEL_ALBUM" && (
-              <div className="absolute top-2.5 right-2.5 pointer-events-none">
-                <svg className="w-10 h-10 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]" viewBox="0 0 24 24" fill="none">
-                  <rect x="2" y="6" width="13" height="13" rx="2" stroke="white" strokeWidth="2" fill="none"/>
-                  <path d="M7 4h11a2 2 0 012 2v11" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/>
+              <div className="absolute top-2 right-2 pointer-events-none">
+                <svg className="w-12 h-12 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]" viewBox="0 0 24 24" fill="none">
+                  <rect x="2" y="6" width="13" height="13" rx="2" stroke="white" strokeWidth="1.8" fill="none"/>
+                  <path d="M7 4h11a2 2 0 012 2v11" stroke="white" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
                 </svg>
               </div>
             )}
