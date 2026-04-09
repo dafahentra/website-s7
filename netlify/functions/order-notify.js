@@ -25,8 +25,8 @@ function buildMessages(name, orderId, items, total) {
   return {
     accepted: (
       `Halo *${name}*! 👋\n\n` +
-      `Pesanan kamu sudah diterima dan sedang diproses barista kami. ☕\n\n` +
-      `📋 *Detail Pesanan (${orderId}):*\n` +
+      `Pesanan kamu sudah diterima dan sedang diproses barista kami.\n\n` +
+      `*Detail Pesanan (${orderId}):*\n` +
       (hasItems ? `${itemLines}\n` : "") +
       `${totalLine}\n\n` +
       `Mohon tunggu sebentar ya~`
@@ -35,14 +35,14 @@ function buildMessages(name, orderId, items, total) {
     completed: (
       `Halo *${name}*! ✅\n\n` +
       `Pesanan kamu sudah selesai dan siap diambil!\n\n` +
-      `🧾 *Receipt (${orderId}):*\n` +
+      `*Receipt (${orderId}):*\n` +
       (hasItems ? `${itemLines}\n` : "") +
       `${totalLine}\n\n` +
-      `Silakan ambil di kasir. Terima kasih sudah order di *${STORE_NAME}* 🖤`
+      `Silakan ambil di kasir. Terima kasih sudah order di *${STORE_NAME}*! 🙏🏻`
     ),
 
     cancelled: (
-      `Halo *${name}*. ℹ️\n\n` +
+      `Halo *${name}*. 🙏🏻\n\n` +
       `Maaf, pesanan kamu (*${orderId}*) dibatalkan.\n\n` +
       `Silakan hubungi kami langsung di kasir. Terima kasih.`
     ),
