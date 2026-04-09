@@ -1,20 +1,10 @@
 // components/Follow.jsx - DYNAMIC INSTAGRAM FEED
 import React, { useEffect, useState } from "react";
 import instagram from "../assets/instagram.png";
-import post1 from "../assets/post 1.jpg";
-import post2 from "../assets/post 2.jpg";
-import post3 from "../assets/post 3.jpg";
 import { TYPOGRAPHY, RADIUS, TRANSITIONS, SPACING } from "../styles/designSystem";
 
-// Fallback ke foto statis kalau API gagal
-const FALLBACK_POSTS = [
-  { id: 3, postUrl: "https://www.instagram.com/p/DUfwNf0E2fR/", imageUrl: post3 },
-  { id: 2, postUrl: "https://www.instagram.com/reel/DTmfu_Xk2os/", imageUrl: post2 },
-  { id: 1, postUrl: "https://www.instagram.com/p/DTkGm_Pkxvk/", imageUrl: post1 },
-];
-
 const Follow = () => {
-  const [posts, setPosts] = useState(FALLBACK_POSTS);
+  const [posts, setPosts] = useState([]);
 
   useEffect(() => {
     fetch("/.netlify/functions/instagram-feed")
@@ -23,7 +13,7 @@ const Follow = () => {
         if (Array.isArray(data) && data.length > 0) {
           // Ambil 3 post pertama, sesuai layout grid yang ada
           setPosts(
-            data.slice(0, 3).map((p) => ({
+            data.slice(0, 9).map((p) => ({
               id:       p.id,
               postUrl:  p.permalink,
               imageUrl: p.url,
@@ -31,9 +21,7 @@ const Follow = () => {
           );
         }
       })
-      .catch(() => {
-        // Diam-diam fallback ke foto statis
-      });
+      .catch(() => {});
   }, []);
 
   return (
@@ -62,7 +50,7 @@ const Follow = () => {
       </div>
 
       {/* Instagram Feed Grid — layout persis sama seperti sebelumnya */}
-      <div className={`grid grid-cols-3 md:grid-cols-4 gap-1 ${SPACING.container.padding}`}>
+      <div className={`grid grid-cols-3 gap-1 ${SPACING.container.padding}`}>
         {posts.map((post) => (
           <a
             key={post.id}
@@ -90,6 +78,22 @@ const Follow = () => {
                 </svg>
               </div>
             </div>
+
+            {/* Media type badge — pojok kanan atas, selalu tampil */}
+            {post.type === "VIDEO" && (
+              <div className="absolute top-2 right-2 bg-black/50 rounded-full p-1">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17 10.5V7a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h12a1 1 0 001-1v-3.5l4 4v-11l-4 4z"/>
+                </svg>
+              </div>
+            )}
+            {post.type === "CAROUSEL_ALBUM" && (
+              <div className="absolute top-2 right-2 bg-black/50 rounded-full p-1">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M2 6C2 4.9 2.9 4 4 4h12c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6zm2 0v12h12V6H4zm14-2h2v14h-2V4zm2-2h2v14h-2V2z"/>
+                </svg>
+              </div>
+            )}
           </a>
         ))}
       </div>
