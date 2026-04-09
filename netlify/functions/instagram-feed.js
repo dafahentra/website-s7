@@ -8,7 +8,7 @@
 
 const IG_BASE  = "https://graph.instagram.com";
 const FIELDS   = "id,media_type,media_url,thumbnail_url,permalink,timestamp";
-const LIMIT    = 12;
+const LIMIT    = 15;
 
 // In-memory cache
 let _cache = null;
