@@ -20,7 +20,7 @@ function buildItemLines(items) {
 function buildMessages(name, orderId, items, total) {
   const hasItems = items.length > 0;
   const itemLines = hasItems ? buildItemLines(items) : "";
-  const totalLine = total ? `\n💰 *Total:* ${fmt(total)}` : "";
+  const totalLine = total ? `\n *Total:* ${fmt(total)}` : "";
 
   return {
     accepted: (
