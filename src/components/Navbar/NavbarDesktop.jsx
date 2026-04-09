@@ -98,12 +98,12 @@ const NavbarDesktop = ({ onMenuToggle, isMenuPage }) => {
           </li>
         ))}
 
-        {/* Order Button - Link to /menu */}
+        {/* Order Button - single solid orange color */}
         <li>
           <Link
             to="/menu"
             onClick={() => handleNavClick("Order Now")}
-            className={`flex items-center gap-2 bg-gradient-to-r from-brand-orange to-orange-400 text-white px-6 py-3 ${RADIUS.circle} hover:from-orange-600 hover:to-brand-orange ${TRANSITIONS.fast} shadow-lg hover:shadow-xl hover:scale-105 whitespace-nowrap`}
+            className={`flex items-center gap-2 bg-brand-orange text-white px-6 py-3 ${RADIUS.circle} transition-all duration-300 shadow-lg hover:shadow-xl whitespace-nowrap`}
           >
             <BsCart3 className="text-xl" />
             <span>Order Now</span>

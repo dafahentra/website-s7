@@ -124,9 +124,10 @@ const CustomerInfoModal = React.memo(({
           </div>
         </div>
 
+        {/* Lanjut ke Pembayaran - no hover scale animation */}
         <button
           onClick={handleSubmit}
-          className="w-full py-4 rounded-full text-white font-black text-[15px] tracking-tight transition-all hover:scale-[1.015] active:scale-[.98] shadow-lg shadow-orange-200"
+          className="w-full py-4 rounded-full text-white font-black text-[15px] tracking-tight active:scale-[.98] transition-transform shadow-lg shadow-orange-200"
           style={{ background: "linear-gradient(135deg,#FF6B35,#e85d2a)" }}
         >
           Lanjut ke Pembayaran →
@@ -266,7 +267,7 @@ const CartRow = React.memo(({ entry, onIncrement, onDecrement, onRemove }) => {
         <div className="flex items-center gap-1.5 bg-gray-100 rounded-full px-1.5 py-1">
           <button
             onClick={() => qty === 1 ? onRemove(entry.key) : onDecrement(entry.key)}
-            className="w-5 h-5 rounded-full bg-white text-gray-700 flex items-center justify-center shadow-sm hover:bg-gray-50 active:scale-90 transition-all"
+            className="w-5 h-5 rounded-full bg-white text-gray-700 flex items-center justify-center shadow-sm hover:bg-gray-50 active:scale-90 transition-transform"
           >
             <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" d="M5 12h14"/></svg>
           </button>
@@ -274,7 +275,7 @@ const CartRow = React.memo(({ entry, onIncrement, onDecrement, onRemove }) => {
             className="text-gray-800 font-bold text-xs w-3.5 text-center">{qty}</motion.span>
           <button
             onClick={() => onIncrement(entry.key)}
-            className="w-5 h-5 rounded-full bg-orange-500 text-white flex items-center justify-center shadow-sm hover:bg-orange-600 active:scale-90 transition-all"
+            className="w-5 h-5 rounded-full bg-orange-500 text-white flex items-center justify-center shadow-sm hover:bg-orange-600 active:scale-90 transition-transform"
           >
             <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" d="M12 5v14M5 12h14"/></svg>
           </button>
@@ -298,7 +299,7 @@ const CartPanel = ({
         <h2 className="text-[22px] font-black text-gray-900 tracking-tight">Keranjang</h2>
         <p className="text-gray-400 text-xs mt-0.5">{totalItems > 0 ? `${totalItems} item` : "Kosong"}</p>
       </div>
-      <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 active:scale-90 transition-all" aria-label="Tutup">
+      <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 active:scale-90 transition-transform" aria-label="Tutup">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
@@ -358,10 +359,11 @@ const CartPanel = ({
             </div>
           </div>
 
+          {/* Lanjut ke Pembayaran - no hover scale animation */}
           <button
             onClick={onCheckoutClick}
             disabled={submitting}
-            className="w-full py-4 rounded-full text-white font-black text-[15px] tracking-tight transition-all hover:scale-[1.015] active:scale-[.98] shadow-lg shadow-orange-200 disabled:opacity-60"
+            className="w-full py-4 rounded-full text-white font-black text-[15px] tracking-tight active:scale-[.98] transition-transform shadow-lg shadow-orange-200 disabled:opacity-60"
             style={{ background: "linear-gradient(135deg,#FF6B35,#e85d2a)" }}
           >
             {submitting ? "Memproses…" : "Lanjut ke Pembayaran →"}
@@ -407,7 +409,6 @@ const CartSidebar = React.memo(({ cart, onClose, onIncrement, onDecrement, onRem
   const handleCheckoutClick   = () => setShowCustomerModal(true);
   const handleCustomerConfirm = (info) => {
     setShowCustomerModal(false);
-    // Kirim semua: info customer + diskon + kalkulasi harga lengkap
     onCheckout({ ...info, discount, subtotal, discountAmount, finalPrice });
   };
 
