@@ -1,28 +1,53 @@
 // netlify/functions/order-notify.js
 // Menerima webhook dari Moka saat status order berubah,
-// lalu kirim WA ke customer via Fonnte.
-//
-// Customer info dikirim langsung di query params dari useMokaCheckout.js
+// lalu kirim WA ke customer via Fonnte dengan detail menu dan receipt.
 
 const FONNTE_TOKEN = process.env.FONNTE_TOKEN;
 const STORE_NAME   = "Sector Seven";
 
-const MESSAGES = {
-  accepted: (name, orderId) =>
-    `Halo *${name}*! 👋\n\n` +
-    `Pesanan kamu (*${orderId}*) sudah diterima dan sedang diproses barista kami. ☕\n\n` +
-    `Mohon tunggu sebentar ya~`,
+const fmt = (n) => `Rp${new Intl.NumberFormat("id-ID").format(Number(n) || 0)}`;
 
-  completed: (name, orderId) =>
-    `Halo *${name}*! ✅\n\n` +
-    `Pesanan kamu (*${orderId}*) sudah selesai dan siap diambil!\n\n` +
-    `Silakan ambil di kasir. Terima kasih sudah order di *${STORE_NAME}* 🖤`,
+// Parse items summary dari query param: "2x Latte (Hot) - Less Sugar|1x Americano"
+function parseItems(itemsParam) {
+  if (!itemsParam) return [];
+  return decodeURIComponent(itemsParam).split("|").filter(Boolean);
+}
 
-  cancelled: (name, orderId) =>
-    `Halo *${name}*. ℹ️\n\n` +
-    `Maaf, pesanan kamu (*${orderId}*) dibatalkan.\n\n` +
-    `Silakan hubungi kami langsung di kasir. Terima kasih.`,
-};
+function buildItemLines(items) {
+  return items.map((item) => `  • ${item}`).join("\n");
+}
+
+function buildMessages(name, orderId, items, total) {
+  const hasItems = items.length > 0;
+  const itemLines = hasItems ? buildItemLines(items) : "";
+  const totalLine = total ? `\n💰 *Total:* ${fmt(total)}` : "";
+
+  return {
+    accepted: (
+      `Halo *${name}*! 👋\n\n` +
+      `Pesanan kamu sudah diterima dan sedang diproses barista kami. ☕\n\n` +
+      `📋 *Detail Pesanan (${orderId}):*\n` +
+      (hasItems ? `${itemLines}\n` : "") +
+      `${totalLine}\n\n` +
+      `Mohon tunggu sebentar ya~`
+    ),
+
+    completed: (
+      `Halo *${name}*! ✅\n\n` +
+      `Pesanan kamu sudah selesai dan siap diambil!\n\n` +
+      `🧾 *Receipt (${orderId}):*\n` +
+      (hasItems ? `${itemLines}\n` : "") +
+      `${totalLine}\n\n` +
+      `Silakan ambil di kasir. Terima kasih sudah order di *${STORE_NAME}* 🖤`
+    ),
+
+    cancelled: (
+      `Halo *${name}*. ℹ️\n\n` +
+      `Maaf, pesanan kamu (*${orderId}*) dibatalkan.\n\n` +
+      `Silakan hubungi kami langsung di kasir. Terima kasih.`
+    ),
+  };
+}
 
 async function sendWhatsApp(phone, message) {
   if (!FONNTE_TOKEN) {
@@ -65,21 +90,25 @@ export const handler = async (event) => {
     const orderId   = q.order || "-";
     const phone     = q.phone ? decodeURIComponent(q.phone) : "";
     const name      = q.name  ? decodeURIComponent(q.name)  : "Pelanggan";
+    const total     = q.total || "";
+    const items     = parseItems(q.items);
 
-    console.log(`[order-notify] event=${eventType} order=${orderId} phone=${phone} name=${name}`);
+    console.log(`[order-notify] event=${eventType} order=${orderId} phone=${phone} name=${name} items=${items.length}`);
 
-    const msgFn = MESSAGES[eventType];
-    if (!msgFn) {
+    const messages = buildMessages(name, orderId, items, total);
+    const message  = messages[eventType];
+
+    if (!message) {
       console.warn("[order-notify] Unknown event:", eventType);
       return { statusCode: 200, headers, body: JSON.stringify({ ok: true, skipped: true, reason: "unknown_event" }) };
     }
 
     if (!phone) {
-      console.warn("[order-notify] No phone in query params");
+      console.warn("[order-notify] No phone");
       return { statusCode: 200, headers, body: JSON.stringify({ ok: true, skipped: true, reason: "no_phone" }) };
     }
 
-    const result = await sendWhatsApp(phone, msgFn(name, orderId));
+    const result = await sendWhatsApp(phone, message);
 
     return {
       statusCode: 200,
