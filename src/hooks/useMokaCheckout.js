@@ -94,9 +94,9 @@ async function sendMokaOrder(cart, {
     customer_phone_number: phone.replace(/\s|-|\+/g, '').replace(/^0/, '62').slice(0, 13),
     sales_type_id:   ONLINE_ORDER_SALES_TYPE_ID,
     sales_type_name: "Online Order",
-    accept_order_notification_url:   `${NOTIF_BASE}/order-notify?event=accepted&order=${applicationOrderId}`,
-    complete_order_notification_url: `${NOTIF_BASE}/order-notify?event=completed&order=${applicationOrderId}`,
-    cancel_order_notification_url:   `${NOTIF_BASE}/order-notify?event=cancelled&order=${applicationOrderId}`,
+    accept_order_notification_url:   `${NOTIF_BASE}/order-notify?event=accepted&order=${applicationOrderId}&phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}`,
+    complete_order_notification_url: `${NOTIF_BASE}/order-notify?event=completed&order=${applicationOrderId}&phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}`,
+    cancel_order_notification_url:   `${NOTIF_BASE}/order-notify?event=cancelled&order=${applicationOrderId}&phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}`,
     ...discountFields,
     order_items,
   });

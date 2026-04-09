@@ -2,10 +2,7 @@
 // Menerima webhook dari Moka saat status order berubah,
 // lalu kirim WA ke customer via Fonnte.
 //
-// Customer info (name, phone) disimpan di Netlify Blobs saat order dibuat
-// di moka-checkout.js, lalu diambil di sini pakai order ID.
-
-import { getStore } from "@netlify/blobs";
+// Customer info dikirim langsung di query params dari useMokaCheckout.js
 
 const FONNTE_TOKEN = process.env.FONNTE_TOKEN;
 const STORE_NAME   = "Sector Seven";
@@ -47,7 +44,7 @@ async function sendWhatsApp(phone, message) {
   });
 
   const data = await res.json().catch(() => ({}));
-  console.log("[order-notify] Fonnte response:", JSON.stringify(data));
+  console.log("[order-notify] Fonnte:", JSON.stringify(data));
   return data;
 }
 
@@ -62,16 +59,14 @@ export const handler = async (event) => {
   }
 
   try {
-    const q         = event.queryStringParameters || {};
+    const q = event.queryStringParameters || {};
+
     const eventType = q.event || "unknown";
-    const orderId   = q.order || "";
+    const orderId   = q.order || "-";
+    const phone     = q.phone ? decodeURIComponent(q.phone) : "";
+    const name      = q.name  ? decodeURIComponent(q.name)  : "Pelanggan";
 
-    console.log(`[order-notify] event=${eventType} order=${orderId}`);
-
-    if (!orderId) {
-      console.warn("[order-notify] No order ID in request");
-      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, skipped: true, reason: "no_order_id" }) };
-    }
+    console.log(`[order-notify] event=${eventType} order=${orderId} phone=${phone} name=${name}`);
 
     const msgFn = MESSAGES[eventType];
     if (!msgFn) {
@@ -79,31 +74,12 @@ export const handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ ok: true, skipped: true, reason: "unknown_event" }) };
     }
 
-    // Ambil customer info dari Netlify Blobs
-    let customerName  = "Pelanggan";
-    let customerPhone = "";
-
-    try {
-      const store = getStore("order-customers");
-      const raw   = await store.get(orderId);
-      if (raw) {
-        const info  = JSON.parse(raw);
-        customerName  = info.name  || "Pelanggan";
-        customerPhone = info.phone || "";
-        console.log(`[order-notify] Found customer: ${customerName} (${customerPhone})`);
-      } else {
-        console.warn(`[order-notify] No customer info found for order ${orderId}`);
-      }
-    } catch (blobErr) {
-      console.error("[order-notify] Blob read error:", blobErr.message);
-    }
-
-    if (!customerPhone) {
-      console.warn("[order-notify] No phone number — skipping WA");
+    if (!phone) {
+      console.warn("[order-notify] No phone in query params");
       return { statusCode: 200, headers, body: JSON.stringify({ ok: true, skipped: true, reason: "no_phone" }) };
     }
 
-    const result = await sendWhatsApp(customerPhone, msgFn(customerName, orderId));
+    const result = await sendWhatsApp(phone, msgFn(name, orderId));
 
     return {
       statusCode: 200,
@@ -113,11 +89,6 @@ export const handler = async (event) => {
 
   } catch (err) {
     console.error("[order-notify] Error:", err.message);
-    // Selalu 200 agar Moka tidak retry
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ ok: false, error: err.message }),
-    };
+    return { statusCode: 200, headers, body: JSON.stringify({ ok: false, error: err.message }) };
   }
 };

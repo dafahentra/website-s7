@@ -1,7 +1,6 @@
 // netlify/functions/moka-checkout.js
 // Advanced Ordering API: POST /v1/outlets/{outlet_id}/advanced_orderings/orders
 
-import { getStore } from "@netlify/blobs";
 
 const MOKA_BASE = "https://api.mokapos.com";
 
@@ -110,20 +109,6 @@ export const handler = async (event) => {
       };
     }
 
-    // Simpan customer info ke Netlify Blobs agar order-notify bisa kirim WA
-    const orderId = order.application_order_id;
-    if (orderId && order.customer_phone_number) {
-      try {
-        const store = getStore("order-customers");
-        await store.set(orderId, JSON.stringify({
-          name:  order.customer_name         || "Pelanggan",
-          phone: order.customer_phone_number || "",
-        }));
-        console.log(`[moka-checkout] Saved customer info for ${orderId}`);
-      } catch (blobErr) {
-        console.error("[moka-checkout] Failed to save customer info:", blobErr.message);
-      }
-    }
 
     return { statusCode: 200, headers: { ...corsHeaders, "Content-Type": "application/json" }, body: JSON.stringify(data) };
 
