@@ -82,9 +82,9 @@ const Follow = () => {
 
             {/* VIDEO — play icon pojok kanan atas */}
             {post.type === "VIDEO" && (
-              <div className="absolute top-2 right-2 pointer-events-none">
+              <div className="absolute top-1.5 right-1.5 pointer-events-none">
                 <svg className="w-12 h-12 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]" viewBox="0 0 24 24" fill="none">
-                  <path d="M7 5 L19 12 L7 19 Z" fill="white" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M7 5 L19 12 L7 19 Z" fill="white"/>
                 </svg>
               </div>
             )}
