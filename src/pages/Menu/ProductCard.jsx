@@ -1,7 +1,7 @@
 // pages/Menu/ProductCard.jsx
 // Minimalist: image → name + price (stacked, bigger) → Add to Cart pill
-// cartQty === 0  → full "Add to Cart" outlined pill
-// cartQty  > 0  → compact filled − qty + pill (short, same height as figma)
+// cartQty === 0  → full "Add to Cart" filled orange pill
+// cartQty  > 0  → compact filled − qty + pill
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SHADOWS, TRANSITIONS } from "../../styles/designSystem";
@@ -27,12 +27,12 @@ const ProductCard = React.memo(({
         cartQty > 0 ? "border-brand-orange" : "border-transparent"
       } ${isMobile ? "active:border-brand-orange" : "hover:border-brand-orange hover:shadow-card-lg"}`}
     >
-      {/* ── Image ── */}
+      {/* ── Image (no hover zoom animation) ── */}
       <div className="aspect-square overflow-hidden relative">
         <img
           src={item.image}
           alt={item.name}
-          className={`w-full h-full object-cover ${!isMobile && "hover:scale-110"} transition-transform duration-300`}
+          className="w-full h-full object-cover"
           loading="lazy"
         />
         {/* Qty badge */}
@@ -65,7 +65,7 @@ const ProductCard = React.memo(({
         {/* ── Cart control ── */}
         <AnimatePresence mode="wait" initial={false}>
           {cartQty === 0 ? (
-            /* "+ Add to Cart" outlined pill — auto width, centered */
+            /* "+ Add to Cart" solid orange pill */
             <motion.button
               key="add"
               initial={{ opacity: 0, scale: 0.92 }}
@@ -73,7 +73,7 @@ const ProductCard = React.memo(({
               exit={{ opacity: 0, scale: 0.92 }}
               transition={{ duration: 0.12 }}
               onClick={(e) => stop(e, () => onAddToCart?.(item))}
-              className="flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full border-2 border-brand-orange text-brand-orange text-xs font-semibold hover:bg-brand-orange hover:text-white active:scale-95 transition-all"
+              className="flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-brand-orange text-white text-xs font-semibold active:scale-95 transition-transform"
               aria-label="Add to cart"
             >
               <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -82,7 +82,7 @@ const ProductCard = React.memo(({
               Add to Cart
             </motion.button>
           ) : (
-            /* Compact filled − qty + pill — fixed narrow width */
+            /* Compact filled − qty + pill */
             <motion.div
               key="qty"
               initial={{ opacity: 0, scale: 0.92 }}
@@ -93,7 +93,7 @@ const ProductCard = React.memo(({
             >
               <button
                 onClick={(e) => stop(e, () => onDecrement?.(item))}
-                className="w-6 h-6 rounded-full bg-white/25 text-white flex items-center justify-center hover:bg-white/40 active:scale-90 transition-all"
+                className="w-6 h-6 rounded-full bg-white/25 text-white flex items-center justify-center active:scale-90 transition-transform"
               >
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" d="M5 12h14"/></svg>
               </button>
@@ -108,7 +108,7 @@ const ProductCard = React.memo(({
               </motion.span>
               <button
                 onClick={(e) => stop(e, () => onAddToCart?.(item))}
-                className="w-6 h-6 rounded-full bg-white/25 text-white flex items-center justify-center hover:bg-white/40 active:scale-90 transition-all"
+                className="w-6 h-6 rounded-full bg-white/25 text-white flex items-center justify-center active:scale-90 transition-transform"
               >
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" d="M12 5v14M5 12h14"/></svg>
               </button>

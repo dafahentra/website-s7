@@ -4,15 +4,15 @@ import { motion } from "framer-motion";
 import { TYPOGRAPHY, RADIUS, SHADOWS, TRANSITIONS } from "../../styles/designSystem";
 
 // Memoized FormInput component with design system
-const FormInput = memo(({ 
-  label, 
-  type = "text", 
-  name, 
-  value, 
-  onChange, 
-  required = false, 
+const FormInput = memo(({
+  label,
+  type = "text",
+  name,
+  value,
+  onChange,
+  required = false,
   placeholder,
-  rows 
+  rows
 }) => {
   const isTextarea = type === "textarea";
   const InputComponent = isTextarea ? "textarea" : "input";
@@ -44,21 +44,21 @@ FormInput.displayName = 'FormInput';
 const PhoneInput = memo(({ label, name, value, onChange, required = false, placeholder }) => {
   const handlePhoneChange = (e) => {
     const input = e.target.value;
-    
+
     // Remove all non-numeric characters except + at start
     let cleaned = input.replace(/[^\d+]/g, '');
-    
+
     // Only allow + at the beginning
     if (cleaned.indexOf('+') > 0) {
       cleaned = cleaned.replace(/\+/g, '');
     }
-    
+
     // If there's a +, make sure it's only at the start
     if (cleaned.startsWith('+')) {
       const numbers = cleaned.slice(1).replace(/\+/g, '');
       cleaned = '+' + numbers;
     }
-    
+
     // Create synthetic event with cleaned value
     const syntheticEvent = {
       target: {
@@ -66,7 +66,7 @@ const PhoneInput = memo(({ label, name, value, onChange, required = false, place
         value: cleaned
       }
     };
-    
+
     onChange(syntheticEvent);
   };
 
@@ -143,14 +143,14 @@ const ContactForm = ({ formData, isSubmitting, onSubmit, onChange }) => {
           placeholder="Write Your Message Here..."
         />
 
-        {/* Submit Button with Design System */}
+        {/* Submit Button - hover: white bg with navy outline */}
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`w-full bg-brand-navy text-white py-3 sm:py-4 ${RADIUS.card.default} ${TYPOGRAPHY.weight.bold} ${TYPOGRAPHY.body.regular} sm:${TYPOGRAPHY.body.default} ${TRANSITIONS.hover.color} shadow-card-lg hover:shadow-card-xl ${
-            isSubmitting 
-              ? 'opacity-50 cursor-not-allowed' 
-              : 'hover:bg-brand-orange'
+          className={`w-full bg-brand-navy text-white py-3 sm:py-4 ${RADIUS.card.default} ${TYPOGRAPHY.weight.bold} ${TYPOGRAPHY.body.regular} sm:${TYPOGRAPHY.body.default} transition-all duration-300 shadow-card-lg border-2 border-brand-navy hover:bg-white hover:text-brand-navy ${
+            isSubmitting
+              ? 'opacity-50 cursor-not-allowed'
+              : ''
           }`}
         >
           {isSubmitting ? 'SENDING...' : 'SEND'}

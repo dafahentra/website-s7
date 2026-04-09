@@ -56,13 +56,12 @@ const ContactInfo = () => {
       transition={{ duration: 0.8 }}
       className="relative h-full"
     >
-      {/* Contact Info Box with Design System */}
-      <div 
-        className={`${RADIUS.image.responsive} p-6 sm:p-8 lg:p-12 text-white shadow-card-xl relative overflow-hidden h-full flex flex-col justify-between`}
-        style={{ background: 'linear-gradient(to bottom right, #3962a8, #f0a97a)' }}
+      {/* Contact Info Box - single brand navy color */}
+      <div
+        className={`${RADIUS.image.responsive} p-6 sm:p-8 lg:p-12 text-white shadow-card-xl relative overflow-hidden h-full flex flex-col justify-between bg-brand-navy`}
       >
-        {/* Background decoration */}
-        <div className="absolute bottom-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mb-20"></div>
+        {/* Subtle background decoration */}
+        <div className="absolute bottom-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mb-20"></div>
         <div className="absolute top-20 right-10 w-32 h-32 bg-white/5 rounded-full"></div>
 
         <div className="relative z-10 flex-1 flex flex-col">
@@ -103,14 +102,14 @@ const ContactInfo = () => {
           <div className="mt-auto pt-6 sm:pt-8 border-t border-white/20">
             <div className="flex gap-3 sm:gap-4 justify-center">
               {socialMediaLinks.map((social) => (
-                <SocialMediaLink 
-                  key={social.name} 
+                <SocialMediaLink
+                  key={social.name}
                   social={social}
                   onSocialClick={handleSocialMediaClick}
                 />
               ))}
             </div>
-            
+
             {/* Optional: Device type indicator for debugging */}
             {process.env.NODE_ENV === 'development' && (
               <p className="text-center text-xs text-white/50 mt-2">
