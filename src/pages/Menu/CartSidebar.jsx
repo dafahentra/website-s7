@@ -66,11 +66,11 @@ const CustomerInfoModal = React.memo(({
 
         {/* Name */}
         <div className="mb-4">
-          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Nama</label>
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Nama Panggilan</label>
           <input
             type="text" value={name}
             onChange={(e) => { setName(e.target.value); save({ name: e.target.value }); setErrors((p) => ({ ...p, name: null })); }}
-            placeholder="Nama kamu"
+            placeholder="Tulis nama panggilan untuk pesananmu"
             className={`w-full px-4 py-3 rounded-xl border text-sm font-medium text-gray-800 placeholder-gray-300 outline-none transition-all ${
               errors.name ? "border-red-400 bg-red-50" : "border-gray-200 bg-gray-50 focus:border-orange-400 focus:bg-white"
             }`}
@@ -100,7 +100,7 @@ const CustomerInfoModal = React.memo(({
           <textarea
             value={orderNote}
             onChange={(e) => { setOrderNote(e.target.value); save({ orderNote: e.target.value }); }}
-            placeholder="Contoh: less ice, no sugar, extra hot..."
+            placeholder="Contoh: diambil jam 3 sore, tanpa gula, dll."
             rows={2} maxLength={200}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium text-gray-800 placeholder-gray-300 outline-none transition-all focus:border-orange-400 focus:bg-white resize-none"
           />
