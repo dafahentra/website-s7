@@ -12,19 +12,6 @@ const ONLINE_ORDER_SALES_TYPE_ID = 602868;
 const NOTIF_BASE = "https://sectorseven.space/.netlify/functions";
 const fmtRp = (n) => `Rp${new Intl.NumberFormat("id-ID").format(n)}`;
 
-// Simpan order payload ke Blobs sebagai safety net untuk midtrans-notify
-async function savePendingOrder(orderId, orderPayload) {
-  try {
-    await fetch("/.netlify/functions/save-pending-order", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ orderId, orderPayload }),
-    });
-  } catch (e) {
-    console.warn("[checkout] Failed to save pending order:", e.message);
-  }
-}
-
 const IS_PRODUCTION = import.meta.env.VITE_MIDTRANS_ENV === "production";
 const SNAP_URL = IS_PRODUCTION
   ? "https://app.midtrans.com/snap/snap.js"
@@ -187,13 +174,7 @@ export function useMokaCheckout() {
       if (!clientKey) throw new Error("VITE_MIDTRANS_CLIENT_KEY tidak ditemukan.");
       await loadSnapScript(clientKey);
 
-      // ── 3. Simpan pending order sebagai safety net ─────────────────────────────
-      // Kalau onSuccess tidak terpanggil (browser tutup dll), midtrans-notify
-      // akan ambil data ini dan kirim ke Moka
-      const mokaOrderPayload = await buildMokaPayload(cart, mokaPayload);
-      await savePendingOrder(applicationOrderId, mokaOrderPayload);
-
-      // ── 4. Buka popup ────────────────────────────────────────────────────────
+      // ── 3. Buka popup ────────────────────────────────────────────────────────
       return new Promise((resolve, reject) => {
         window.snap.pay(token, {
 
