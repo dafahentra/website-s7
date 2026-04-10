@@ -80,11 +80,24 @@ const Follow = () => {
               </div>
             </div>
 
-            {/* VIDEO — play icon pojok kanan atas */}
+            {/* VIDEO — kotak putih rounded dengan segitiga cutout rounded */}
             {post.type === "VIDEO" && (
               <div className="absolute top-1 right-1 md:top-2 md:right-2 pointer-events-none">
-                <svg className="w-7 h-7 md:w-12 md:h-12 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]" viewBox="0 0 24 24" fill="none">
-                  <path d="M7 5 L19 12 L7 19 Z" fill="white"/>
+                <svg className="w-7 h-7 md:w-12 md:h-12 drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]" viewBox="0 0 24 24">
+                  <mask id={`play-${post.id}`}>
+                    {/* Kotak lebih rounded */}
+                    <rect x="1" y="1" width="22" height="22" rx="7" fill="white"/>
+                    {/* Segitiga di tengah, sedikit geser kanan supaya ada ilusi kosong di kiri */}
+                    <path
+                      d="M8.5 7 L18 12 L8.5 17 Z"
+                      fill="black"
+                      stroke="black"
+                      strokeWidth="1.5"
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
+                    />
+                  </mask>
+                  <rect x="1" y="1" width="22" height="22" rx="7" fill="white" mask={`url(#play-${post.id})`}/>
                 </svg>
               </div>
             )}
