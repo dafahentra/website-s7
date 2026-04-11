@@ -161,14 +161,7 @@ const PromoPopup = () => {
                       letterSpacing: "-0.01em",
                       transition: "transform 0.15s ease, box-shadow 0.15s ease",
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "scale(1.02)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "scale(1)";
-                    }}
-                    onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.97)"; }}
-                    onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1.02)"; }}
+
                   >
                     {CTA_LABEL} →
                   </button>
