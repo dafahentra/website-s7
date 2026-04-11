@@ -359,8 +359,7 @@ const CartPanel = ({
             )}
             <div className="flex justify-between items-center">
               <span className="text-gray-400 flex items-center gap-1">
-                Biaya online
-                <span className="text-[10px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full">online</span>
+                Website fee
               </span>
               <span className="font-semibold text-gray-500">+Rp{fmt(onlineFee)}</span>
             </div>
