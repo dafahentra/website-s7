@@ -359,7 +359,8 @@ const CartPanel = ({
             )}
             <div className="flex justify-between items-center">
               <span className="text-gray-400 flex items-center gap-1">
-                Website fee
+                Biaya online
+                <span className="text-[10px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full">online</span>
               </span>
               <span className="font-semibold text-gray-500">+Rp{fmt(onlineFee)}</span>
             </div>
@@ -393,6 +394,24 @@ const CartSidebar = React.memo(({ cart, onClose, onIncrement, onDecrement, onRem
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [savedInfo,         setSavedInfo]         = useState({ name: "", phone: "", orderNote: "" });
   const [discount,          setDiscount]          = useState(null);
+  const [pendingPromo,      setPendingPromo]      = useState(null);
+
+  // Auto-apply diskon dari URL param ?promo=KODE
+  useEffect(() => {
+    const params    = new URLSearchParams(window.location.search);
+    const promoCode = params.get("promo");
+    if (!promoCode) return;
+
+    // Hapus param dari URL segera
+    const url = new URL(window.location.href);
+    url.searchParams.delete("promo");
+    window.history.replaceState({}, "", url.toString());
+
+    // Set kode sebagai pending — akan divalidasi saat cart dibuka & ada items
+    setPendingPromo(promoCode.toUpperCase());
+  }, []);
+
+
 
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth < 1024 : false
@@ -417,6 +436,17 @@ const CartSidebar = React.memo(({ cart, onClose, onIncrement, onDecrement, onRem
       finalPrice:     after + fee,
     };
   }, [entries, discount]);
+
+  // Validasi pending promo saat subtotal sudah ada (setelah useMemo)
+  useEffect(() => {
+    if (!pendingPromo || subtotal <= 0 || discount) return;
+    validateDiscount({ code: pendingPromo, orderTotal: subtotal })
+      .then((result) => {
+        if (result.valid) setDiscount(result);
+      })
+      .catch(() => {})
+      .finally(() => setPendingPromo(null));
+  }, [pendingPromo, subtotal, discount]);
 
   const handleCheckoutClick   = () => setShowCustomerModal(true);
   const handleCustomerConfirm = (info) => {

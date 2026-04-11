@@ -20,8 +20,10 @@ return (
         image="/og-image.jpg"
     />
     
+    <PromoPopup />
     <Hero />
     <Story />
+    <Promo />
     <Follow />
     <Contact />
     </>
