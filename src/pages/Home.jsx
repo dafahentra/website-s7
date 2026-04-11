@@ -2,6 +2,7 @@ import React from "react";
 import SEO from "../components/SEO";
 import Hero from "../components/Hero";
 import Story from "../components/Story";
+import PromoPopup from "../components/PromoPopup";
 import News from "../components/News";
 import Promo from "../components/Promo";
 import Testimoni from "../components/Testimoni";
