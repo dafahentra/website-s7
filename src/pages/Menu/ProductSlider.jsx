@@ -87,7 +87,7 @@ const ProductInfo = React.memo(({
 }) => {
   const catSize   = isMobile ? TYPOGRAPHY.body.small        : TYPOGRAPHY.body.default;
   const nameSize  = isMobile ? TYPOGRAPHY.subheading.tablet : TYPOGRAPHY.subheading.desktop;
-  const priceSize = isMobile ? TYPOGRAPHY.subheading.lg     : TYPOGRAPHY.subheading.tablet;
+  const priceSize = isMobile ? TYPOGRAPHY.subheading.mobile : TYPOGRAPHY.subheading.tablet;
   const descSize  = isMobile ? TYPOGRAPHY.body.small        : `${TYPOGRAPHY.body.small} leading-relaxed`;
 
   return (

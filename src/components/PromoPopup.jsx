@@ -6,9 +6,10 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // ── KONFIGURASI ───────────────────────────────────────────────────────────────
 import poster from "../assets/test-popup.jpg";
-const POSTER_IMAGE = poster;
-const CTA_LABEL    = "Order Sekarang";
-const CTA_HREF     = "/menu";
+const POSTER_IMAGE  = poster;
+const CTA_LABEL     = "Klaim Diskon";
+const CTA_HREF      = "/menu";
+const PROMO_CODE    = "DEPON50"; // ← kode diskon dari Moka (null = tidak ada)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PromoPopup = () => {
@@ -23,7 +24,10 @@ const PromoPopup = () => {
 
   const handleCTA = () => {
     dismiss();
-    window.location.href = CTA_HREF;
+    const url = PROMO_CODE
+      ? `${CTA_HREF}?promo=${encodeURIComponent(PROMO_CODE)}`
+      : CTA_HREF;
+    window.location.href = url;
   };
 
   return (
