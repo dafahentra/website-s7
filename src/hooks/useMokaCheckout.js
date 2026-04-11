@@ -32,15 +32,17 @@ function loadSnapScript(clientKey) {
 }
 
 // Buat ringkasan item untuk WA notification
-function buildItemsSummary(cart) {
-  return cart.map((e) => {
+function buildItemsSummary(cart, onlineFee = 0) {
+  const lines = cart.map((e) => {
     const mods = (e.mokaModifiers ?? [])
       .filter((m) => m.modifier_option_name)
       .map((m) => m.modifier_option_name)
       .join(", ");
     const line = `${e.qty}x ${e.itemName}${e.mokaVariantName && e.mokaVariantName !== "Regular" ? ` (${e.mokaVariantName})` : ""}`;
     return mods ? `${line} - ${mods}` : line;
-  }).join("|");
+  });
+  if (onlineFee > 0) lines.push(`Biaya online +${new Intl.NumberFormat("id-ID").format(onlineFee)}`);
+  return lines.join("|");
 }
 
 async function sendMokaOrder(cart, {
@@ -106,8 +108,8 @@ async function sendMokaOrder(cart, {
     customer_phone_number: phone.replace(/\s|-|\+/g, '').replace(/^0/, '62').slice(0, 13),
     sales_type_id:   ONLINE_ORDER_SALES_TYPE_ID,
     sales_type_name: "Online Order",
-    accept_order_notification_url:   `${NOTIF_BASE}/order-notify?event=accepted&order=${applicationOrderId}&phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}&total=${finalPrice}&items=${encodeURIComponent(buildItemsSummary(cart))}`,
-    complete_order_notification_url: `${NOTIF_BASE}/order-notify?event=completed&order=${applicationOrderId}&phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}&total=${finalPrice}&items=${encodeURIComponent(buildItemsSummary(cart))}`,
+    accept_order_notification_url:   `${NOTIF_BASE}/order-notify?event=accepted&order=${applicationOrderId}&phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}&total=${finalPrice}&items=${encodeURIComponent(buildItemsSummary(cart, onlineFee))}`,
+    complete_order_notification_url: `${NOTIF_BASE}/order-notify?event=completed&order=${applicationOrderId}&phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}&total=${finalPrice}&items=${encodeURIComponent(buildItemsSummary(cart, onlineFee))}`,
     cancel_order_notification_url:   `${NOTIF_BASE}/order-notify?event=cancelled&order=${applicationOrderId}&phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}`,
     ...discountFields,
     order_items,
@@ -131,10 +133,11 @@ export function useMokaCheckout() {
         discount       = null,
         subtotal       = cart.reduce((s, e) => s + round(e.unitPrice * e.qty), 0),
         discountAmount = discount?.discountAmount || 0,
-        finalPrice     = Math.max(0, subtotal - discountAmount),
+        onlineFee      = 0,
+        finalPrice     = Math.max(0, subtotal - discountAmount) + (onlineFee || 0),
       } = customerInfo;
 
-      const mokaPayload = { applicationOrderId, name, phone, orderNote, discount, discountAmount, finalPrice };
+      const mokaPayload = { applicationOrderId, name, phone, orderNote, discount, discountAmount, onlineFee, finalPrice };
 
       // ── KASUS KHUSUS: diskon 100% (finalPrice = 0) ───────────────────────────
       // Midtrans menolak amount = 0, jadi langsung submit ke Moka tanpa payment
@@ -158,6 +161,10 @@ export function useMokaCheckout() {
         ...(discountAmount > 0 && discount ? [{
           id: "DISCOUNT", price: -discountAmount, quantity: 1,
           name: (discount.description || `Diskon ${discount.code}`).slice(0, 50),
+        }] : []),
+        ...(onlineFee > 0 ? [{
+          id: "ONLINE_FEE", price: onlineFee, quantity: 1,
+          name: "Biaya Online Order",
         }] : []),
       ];
 
