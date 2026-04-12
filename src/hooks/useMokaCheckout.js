@@ -47,7 +47,7 @@ function buildItemsSummary(cart, onlineFee = 0) {
 
 async function sendMokaOrder(cart, {
   applicationOrderId, name, phone, orderNote,
-  discount, discountAmount, finalPrice,
+  discount, discountAmount, onlineFee, finalPrice,
 }) {
   const hasDiscount = discountAmount > 0 && discount?.mokaId;
 
