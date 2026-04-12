@@ -82,7 +82,7 @@ async function sendWA(phone, message) {
 async function getLastSync() {
   try {
     const data = await sheetsGet({ action: "get_meta", key: "last_sync" });
-    return data?.value ? Number(data.value) : Date.now() - 2 * 60 * 1000;
+    return data?.value ? Number(data.value) : Date.now() - 7 * 24 * 60 * 60 * 1000; // default 7 hari lalu
   } catch {
     return Date.now() - 2 * 60 * 1000;
   }
@@ -100,7 +100,8 @@ export const handler = async () => {
 
     const token = await getMokaToken();
     const txs   = await fetchTransactions(token, sinceEpoch);
-    console.log(`[loyalty-sync] ${txs.length} transactions`);
+    console.log(`[loyalty-sync] ${txs.length} transactions since ${new Date(sinceMs).toISOString()}`);
+    txs.forEach(tx => console.log(`[loyalty-sync] tx=${tx.payment_no} type=${tx.payment_type} phone=${tx.customer_phone} total=${tx.total_collected}`));
 
     let earned = 0, redeemed = 0;
 
