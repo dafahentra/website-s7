@@ -92,11 +92,6 @@ async function setLastSync(epoch) {
   await sheetsPost({ action: "set_meta", key: "last_sync", value: String(epoch) }).catch(() => {});
 }
 
-// Netlify scheduled function config
-export const config = {
-  schedule: "* * * * *",
-};
-
 export const handler = async () => {
   console.log("[loyalty-sync] Starting...");
   try {

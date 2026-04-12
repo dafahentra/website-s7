@@ -5,10 +5,6 @@
   publish   = "dist"           # Vite; change to "build" for CRA
   functions = "netlify/functions"
 
-[[scheduled_functions]]
-  name = "loyalty-sync"
-  cron = "* * * * *"
-
 # Serve the one-time setup tool
 [[redirects]]
   from   = "/moka-setup"
