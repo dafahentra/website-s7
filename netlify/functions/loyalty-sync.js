@@ -95,14 +95,15 @@ async function setLastSync(epoch) {
 export const handler = async () => {
   console.log("[loyalty-sync] Starting...");
   try {
-    const sinceMs        = await getLastSync();
-    const sinceEpoch     = Math.floor(sinceMs / 1000);
-    const forceSince     = Math.floor((Date.now() - 2 * 60 * 60 * 1000) / 1000);
-    const effectiveSince = Math.min(sinceEpoch, forceSince);
-    console.log(`[loyalty-sync] effectiveSince=${effectiveSince}`);
+    const sinceMs    = await getLastSync();
+    const sinceEpoch = Math.floor(sinceMs / 1000);
+    console.log(`[loyalty-sync] since=${new Date(sinceMs).toISOString()}`);
+
+    // Update last_sync SEKARANG sebelum fetch — agar tidak fetch ulang transaksi sama
+    await setLastSync(Date.now());
 
     const token = await getMokaToken();
-    const txs   = await fetchTransactions(token, effectiveSince);
+    const txs   = await fetchTransactions(token, sinceEpoch);
     console.log(`[loyalty-sync] ${txs.length} transactions since ${new Date(sinceMs).toISOString()}`);
     txs.forEach(tx => console.log(`[loyalty-sync] tx=${tx.payment_no} type=${tx.payment_type} phone=${tx.customer_phone} total=${tx.total_collected}`));
 
@@ -206,7 +207,6 @@ export const handler = async () => {
       }
     }
 
-    await setLastSync(Date.now());
     console.log(`[loyalty-sync] Done. earned=${earned} redeemed=${redeemed}`);
     return { statusCode: 200, body: JSON.stringify({ ok: true, earned, redeemed }) };
 
