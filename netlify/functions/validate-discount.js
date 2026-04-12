@@ -103,6 +103,15 @@ export const handler = async (event) => {
 
     const inputCode = String(code).trim().toUpperCase();
 
+    // Blokir kode reward loyalty — hanya bisa dipakai offline via kasir
+    if (inputCode.startsWith("REWARD_")) {
+      return {
+        statusCode: 400,
+        headers: corsHeaders,
+        body: JSON.stringify({ valid: false, error: "Kode ini hanya berlaku untuk offline order. Tukarkan poin di sectorseven.space/loyalty" }),
+      };
+    }
+
     // Ambil daftar diskon dari Moka
     const token     = await getAccessToken();
     const discounts = await getMokaDiscounts(token);
