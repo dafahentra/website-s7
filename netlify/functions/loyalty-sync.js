@@ -99,7 +99,7 @@ export const handler = async () => {
     const sinceEpoch = Math.floor(sinceMs / 1000);
 
     const token = await getMokaToken();
-    const txs   = await fetchTransactions(token, sinceEpoch);
+    const txs   = await fetchTransactions(token, effectiveSince);
     console.log(`[loyalty-sync] ${txs.length} transactions since ${new Date(sinceMs).toISOString()}`);
     txs.forEach(tx => console.log(`[loyalty-sync] tx=${tx.payment_no} type=${tx.payment_type} phone=${tx.customer_phone} total=${tx.total_collected}`));
 
