@@ -19,6 +19,10 @@ const PhoneInput = ({ onFound }) => {
     try {
       const res  = await fetch(`/.netlify/functions/loyalty-get?phone=${encodeURIComponent(phone.trim())}&_=${Date.now()}`);
       const data = await res.json();
+      if (data.found === false) {
+        setError("Nomor tidak ditemukan. Pastikan kamu sudah pernah bertransaksi.");
+        return;
+      }
       onFound({ ...data, inputPhone: phone.trim() });
     } catch {
       setError("Gagal mengambil data. Coba lagi.");
@@ -126,7 +130,7 @@ const Dashboard = ({ customer, onBack }) => {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-sm mx-auto pt-2 md:pt-12">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm md:max-w-3xl mx-auto pt-6 md:pt-12">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button onClick={onBack} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
@@ -140,77 +144,83 @@ const Dashboard = ({ customer, onBack }) => {
         </div>
       </div>
 
-      {/* Points card */}
-      <div className="rounded-3xl p-6 mb-6 text-white relative overflow-hidden"
-        style={{ background: "linear-gradient(135deg,#1d3866 0%,#2d4f8a 100%)" }}>
-        <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-10"
-          style={{ background: "radial-gradient(circle,#f39248,transparent)" }}/>
-        <p className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-1">Total Poin Kamu</p>
-        <motion.p key={points} initial={{ scale: 1.1 }} animate={{ scale: 1 }} className="text-5xl font-black mb-1">
-          {points}
-        </motion.p>
-        <p className="text-white/50 text-xs">Rp10.000 = 10 poin</p>
-        {!customer.found && (
-          <p className="text-orange-300 text-xs mt-2">✨ Daftar otomatis saat transaksi pertama!</p>
-        )}
-      </div>
+      {/* 2-col on desktop */}
+      <div className="md:grid md:grid-cols-2 md:gap-8">
+        {/* LEFT COL */}
+        <div>
+          {/* Points card */}
+          <div className="rounded-3xl p-6 mb-6 text-white relative overflow-hidden"
+            style={{ background: "linear-gradient(135deg,#1d3866 0%,#2d4f8a 100%)" }}>
+            <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-10"
+              style={{ background: "radial-gradient(circle,#f39248,transparent)" }}/>
+            <p className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-1">Total Poin Kamu</p>
+            <motion.p key={points} initial={{ scale: 1.1 }} animate={{ scale: 1 }} className="text-5xl font-black mb-1">
+              {points}
+            </motion.p>
+            <p className="text-white/50 text-xs">Rp10.000 = 10 poin</p>
+            {!customer.found && (
+              <p className="text-orange-300 text-xs mt-2">✨ Daftar otomatis saat transaksi pertama!</p>
+            )}
+          </div>
 
-      {/* Redeem success */}
-      <AnimatePresence>
-        {redeemed && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
-            className="rounded-2xl p-4 mb-6 border-2 border-green-400 bg-green-50"
-          >
-            <p className="text-green-700 font-bold text-sm">✅ {redeemed.reward} berhasil diklaim!</p>
-            <p className="text-green-600 text-xs mt-1">Kode dikirim ke WhatsApp kamu.</p>
-            <div className="bg-white rounded-xl px-4 py-2 mt-2 text-center">
-              <p className="text-xs text-gray-400">Tunjukkan ke kasir:</p>
-              <p className="font-black text-brand-navy text-lg tracking-widest">{redeemed.mokaDiscountName}</p>
-            </div>
-            <p className="text-green-600 text-xs text-center mt-1">Berlaku hari ini</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {error && <p className="text-red-400 text-xs text-center mb-4">{error}</p>}
-
-      {/* Rewards */}
-      <h3 className="font-bold text-brand-navy text-sm mb-3">Reward Tersedia</h3>
-      <div className="space-y-3 mb-6">
-        {(customer.allRewards || []).map((r) => (
-          <RewardCard key={r.id} reward={r} currentPoints={points} onRedeem={handleRedeem} loading={loading} />
-        ))}
-      </div>
-
-      {/* History */}
-      {(customer.history || []).length > 0 && (
-        <>
-          <h3 className="font-bold text-brand-navy text-sm mb-3">Riwayat</h3>
-          <div className="space-y-2">
-            {customer.history.slice(0, 5).map((h, i) => (
-              <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-                <div>
-                  <p className="text-gray-700 text-xs font-medium">{h.note}</p>
-                  <p className="text-gray-400 text-[10px]">
-                    {h.createdAt
-                      ? (() => {
-                          const d = new Date(h.createdAt);
-                          return isNaN(d.getTime())
-                            ? String(h.createdAt).split(",")[0]
-                            : d.toLocaleDateString("id-ID");
-                        })()
-                      : "-"}
-                  </p>
+          {/* Redeem success */}
+          <AnimatePresence>
+            {redeemed && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                className="rounded-2xl p-4 mb-6 border-2 border-green-400 bg-green-50"
+              >
+                <p className="text-green-700 font-bold text-sm">✅ {redeemed.reward} berhasil diklaim!</p>
+                <p className="text-green-600 text-xs mt-1">Kode dikirim ke WhatsApp kamu.</p>
+                <div className="bg-white rounded-xl px-4 py-2 mt-2 text-center">
+                  <p className="text-xs text-gray-400">Tunjukkan ke kasir:</p>
+                  <p className="font-black text-brand-navy text-lg tracking-widest">{redeemed.mokaDiscountName}</p>
                 </div>
-                <span className={`font-bold text-sm ${h.points > 0 ? "text-green-500" : "text-red-400"}`}>
-                  {h.points > 0 ? "+" : ""}{h.points}
-                </span>
-              </div>
+                <p className="text-green-600 text-xs text-center mt-1">Berlaku hari ini</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {error && <p className="text-red-400 text-xs text-center mb-4">{error}</p>}
+
+          {/* Rewards */}
+          <h3 className="font-bold text-brand-navy text-sm mb-3">Reward Tersedia</h3>
+          <div className="space-y-3 mb-6">
+            {(customer.allRewards || []).map((r) => (
+              <RewardCard key={r.id} reward={r} currentPoints={points} onRedeem={handleRedeem} loading={loading} />
             ))}
           </div>
-        </>
-      )}
+        </div>
+
+        {/* RIGHT COL — History */}
+        {(customer.history || []).length > 0 && (
+          <div>
+            <h3 className="font-bold text-brand-navy text-sm mb-3">Riwayat</h3>
+            <div className="bg-white rounded-2xl p-4 space-y-2">
+              {customer.history.slice(0, 10).map((h, i) => (
+                <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                  <div>
+                    <p className="text-gray-700 text-xs font-medium">{h.note}</p>
+                    <p className="text-gray-400 text-[10px]">
+                      {h.createdAt
+                        ? (() => {
+                            const d = new Date(h.createdAt);
+                            return isNaN(d.getTime())
+                              ? String(h.createdAt).split(",")[0]
+                              : d.toLocaleDateString("id-ID");
+                          })()
+                        : "-"}
+                    </p>
+                  </div>
+                  <span className={`font-bold text-sm ${h.points > 0 ? "text-green-500" : "text-red-400"}`}>
+                    {h.points > 0 ? "+" : ""}{h.points}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 };
