@@ -95,8 +95,11 @@ async function setLastSync(epoch) {
 export const handler = async () => {
   console.log("[loyalty-sync] Starting...");
   try {
-    const sinceMs    = await getLastSync();
-    const sinceEpoch = Math.floor(sinceMs / 1000);
+    const sinceMs        = await getLastSync();
+    const sinceEpoch     = Math.floor(sinceMs / 1000);
+    const forceSince     = Math.floor((Date.now() - 2 * 60 * 60 * 1000) / 1000);
+    const effectiveSince = Math.min(sinceEpoch, forceSince);
+    console.log(`[loyalty-sync] effectiveSince=${effectiveSince}`);
 
     const token = await getMokaToken();
     const txs   = await fetchTransactions(token, effectiveSince);
