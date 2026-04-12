@@ -82,7 +82,7 @@ export const handler = async (event) => {
       `${source === "online" ? "Pesanan online" : "Kunjungan"} kamu di *Sector Seven* selesai!\n` +
       `Kamu dapat *+${pts} poin*.\n` +
       `Total poin: *${newPoints} pts*\n\n` +
-      `Cek & tukar poin: sectorseven.space/loyalty`
+      `Cek & tukar poin: www.sectorseven.space/loyalty`
     );
 
     console.log(`[loyalty-add] ${normalized} +${pts} pts → total ${newPoints}`);

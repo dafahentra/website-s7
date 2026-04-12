@@ -17,7 +17,7 @@ const PhoneInput = ({ onFound }) => {
     if (!phone.trim()) return;
     setLoading(true); setError("");
     try {
-      const res  = await fetch(`/.netlify/functions/loyalty-get?phone=${encodeURIComponent(phone.trim())}`);
+      const res  = await fetch(`/.netlify/functions/loyalty-get?phone=${encodeURIComponent(phone.trim())}&_=${Date.now()}`);
       const data = await res.json();
       onFound({ ...data, inputPhone: phone.trim() });
     } catch {
@@ -126,7 +126,7 @@ const Dashboard = ({ customer, onBack }) => {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-sm mx-auto">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-sm mx-auto pt-2 md:pt-12">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button onClick={onBack} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
@@ -219,7 +219,7 @@ const Dashboard = ({ customer, onBack }) => {
 const LoyaltyPage = () => {
   const [customer, setCustomer] = useState(null);
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-12 px-4">
+    <div className="min-h-screen bg-gray-50 flex items-start justify-center pt-32 pb-12 px-4">
       <AnimatePresence mode="wait">
         {!customer
           ? <PhoneInput key="input" onFound={setCustomer} />
