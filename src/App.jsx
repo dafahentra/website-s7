@@ -11,6 +11,7 @@ import NewsPage from "./pages/NewsPage";
 import NewsDetail from "./pages/NewsDetail";
 import ScrollToTop from "./components/ScrollToTop";
 import MokaCallback from "./pages/MokaCallback";
+import LoyaltyPage from "./pages/Loyalty";
 
 // Component wrapper untuk tracking
 function AppContent() {
@@ -28,6 +29,7 @@ function AppContent() {
         <Route path="/news" element={<NewsPage />} />
         <Route path="/news/:slug" element={<NewsDetail />} />
         <Route path="/callback" element={<MokaCallback />} />
+        <Route path="/loyalty" element={<LoyaltyPage />} />
       </Routes>
     </div>
   );
