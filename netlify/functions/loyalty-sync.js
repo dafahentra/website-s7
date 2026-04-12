@@ -146,6 +146,30 @@ export const handler = async () => {
             redeemed++;
           }
         }
+      } else if (tx.is_refunded && amount > 0) {
+        // Transaksi yang di-refund — potong poin yang sudah diberikan
+        const pts = calcPoints(amount);
+        if (pts > 0) {
+          const result = await sheetsPost({
+            action: "deduct_points",
+            phone,
+            points: pts,
+            note:   `Refund transaksi ${txId} (-${pts} pts)`,
+            txId:   `refund-${txId}`,
+          });
+          if (result?.ok) {
+            await sendWA(phone,
+              `Halo! ⚠️
+
+` +
+              `Transaksi kamu di *Sector Seven* telah di-refund.
+` +
+              `Poin dikurangi: *${pts} pts*
+` +
+              `Sisa poin: *${result.newPoints} pts*`
+            );
+          }
+        }
       } else if (amount > 0) {
         // Normal offline transaction — tambah poin
         const pts = calcPoints(amount);
