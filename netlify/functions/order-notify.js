@@ -3,6 +3,7 @@
 // lalu kirim WA ke customer via Fonnte dengan detail menu dan receipt.
 
 const FONNTE_TOKEN = process.env.FONNTE_TOKEN;
+const BASE_URL     = process.env.URL || "https://sectorseven.space";
 const STORE_NAME   = "Sector Seven";
 
 const fmt = (n) => `Rp${new Intl.NumberFormat("id-ID").format(Number(n) || 0)}`;
@@ -118,7 +119,7 @@ export const handler = async (event) => {
       const total = Number(q.total) || 0;
       if (total > 0) {
         promises.push(
-          fetch("https://sectorseven.space/.netlify/functions/loyalty-add", {
+          fetch(`${BASE_URL}/.netlify/functions/loyalty-add`, {
             method:  "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
