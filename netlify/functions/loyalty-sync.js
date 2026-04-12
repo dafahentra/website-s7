@@ -146,19 +146,30 @@ export const handler = async () => {
             redeemed++;
           }
         }
-      } else if (tx.is_refunded && amount > 0) {
-        // Transaksi yang di-refund — potong poin yang sudah diberikan
-        const pts = calcPoints(amount);
-        if (pts > 0) {
+      } else if (tx.payment_refunds?.length > 0) {
+        // Transaksi yang di-refund — pakai refund UUID agar idempotent
+        for (const refund of tx.payment_refunds) {
+          const refundUUID  = refund.uuid;
+          const refundPhone = normalizePhone(refund.customer_phone) || phone;
+          if (!refundUUID || !refundPhone) continue;
+
+          // Skip kalau refund ini sudah diproses (cek via txId di History Sheets)
+          // Kita rely pada deduct_points di Apps Script — kalau sudah ada txId sama, tidak akan double
+
+          const refundAmt = Number(refund.refund_amount) || 0;
+          const pts       = calcPoints(refundAmt);
+          if (pts <= 0) continue;
+
           const result = await sheetsPost({
             action: "deduct_points",
-            phone,
+            phone:  refundPhone,
             points: pts,
-            note:   `Refund transaksi ${txId} (-${pts} pts)`,
-            txId:   `refund-${txId}`,
+            note:   `Refund ${refund.refund_type}: ${txId} (-${pts} pts)`,
+            txId:   refundUUID,
           });
+
           if (result?.ok) {
-            await sendWA(phone,
+            await sendWA(refundPhone,
               `Halo! ⚠️
 
 ` +
@@ -168,6 +179,7 @@ export const handler = async () => {
 ` +
               `Sisa poin: *${result.newPoints} pts*`
             );
+            // txId sudah tersimpan di History Sheets sebagai idempotency key
           }
         }
       } else if (amount > 0) {
