@@ -192,7 +192,16 @@ const Dashboard = ({ customer, onBack }) => {
               <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
                 <div>
                   <p className="text-gray-700 text-xs font-medium">{h.note}</p>
-                  <p className="text-gray-400 text-[10px]">{new Date(h.createdAt).toLocaleDateString("id-ID")}</p>
+                  <p className="text-gray-400 text-[10px]">
+                    {h.createdAt
+                      ? (() => {
+                          const d = new Date(h.createdAt);
+                          return isNaN(d.getTime())
+                            ? String(h.createdAt).split(",")[0]
+                            : d.toLocaleDateString("id-ID");
+                        })()
+                      : "-"}
+                  </p>
                 </div>
                 <span className={`font-bold text-sm ${h.points > 0 ? "text-green-500" : "text-red-400"}`}>
                   {h.points > 0 ? "+" : ""}{h.points}

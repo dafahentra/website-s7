@@ -111,12 +111,37 @@ export const handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ ok: true, skipped: true, reason: "no_phone" }) };
     }
 
-    const result = await sendWhatsApp(phone, message);
+    // Jalankan WA notif + loyalty-add secara paralel
+    const promises = [sendWhatsApp(phone, message)];
+
+    if (eventType === "completed" && phone) {
+      const total = Number(q.total) || 0;
+      if (total > 0) {
+        promises.push(
+          fetch("https://sectorseven.space/.netlify/functions/loyalty-add", {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              phone,
+              name:      decodeURIComponent(q.name || ""),
+              amountIDR: total,
+              source:    "online",
+              txId:      `completed-${orderId}`,
+            }),
+          })
+          .then((r) => r.json())
+          .then((d) => console.log("[order-notify] loyalty-add:", JSON.stringify(d)))
+          .catch((e) => console.error("[order-notify] loyalty-add failed:", e.message))
+        );
+      }
+    }
+
+    const [waResult] = await Promise.all(promises);
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ ok: true, event: eventType, order: orderId, wa: result }),
+      body: JSON.stringify({ ok: true, event: eventType, order: orderId, wa: waResult }),
     };
 
   } catch (err) {

@@ -110,6 +110,21 @@ export const handler = async (event) => {
     }
 
 
+    // Simpan customer data ke Blobs via save-customer function
+    if (order.customer_phone_number) {
+      const siteUrl = process.env.URL || "https://sectorseven.space";
+      fetch(`${siteUrl}/.netlify/functions/save-customer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name:    order.customer_name         || "",
+          phone:   order.customer_phone_number || "",
+          orderId: order.application_order_id  || "",
+          total:   order.order_items?.reduce((s, i) => s + (i.item_price_library * i.quantity), 0) || 0,
+        }),
+      }).catch((e) => console.error("[moka-checkout] save-customer failed:", e.message));
+    }
+
     return { statusCode: 200, headers: { ...corsHeaders, "Content-Type": "application/json" }, body: JSON.stringify(data) };
 
   } catch (err) {
