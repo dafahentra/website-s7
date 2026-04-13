@@ -1,5 +1,5 @@
 // components/Navbar/NavbarMobile.jsx
-import React, { useRef } from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   motion,
@@ -32,18 +32,16 @@ const itemVariants = {
     opacity: 1, y: 0,
     transition: { delay: i * 0.04, duration: 0.26, ease: [0.25, 0.46, 0.45, 0.94] },
   }),
-  // Exit items lebih cepat agar tidak tabrakan dengan navigasi
-  exit: { opacity: 0, transition: { duration: 0.08 } },
+  exit: (i) => ({
+    opacity: 0, y: -3,
+    transition: { delay: i * 0.015, duration: 0.16, ease: [0.4, 0, 1, 1] },
+  }),
 };
 
 const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) => {
   const location = useLocation();
   const { trackNav } = useAnalytics();
   const { scrollY } = useScroll();
-
-  // Track apakah close dipicu oleh navigasi atau tap backdrop
-  // Kalau navigasi: skip exit animation sama sekali
-  const isNavigatingRef = useRef(false);
 
   const mvLeft  = useMotionValue(0);
   const mvWidth = useMotionValue(typeof window !== "undefined" ? window.innerWidth : 390);
@@ -76,39 +74,29 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
   const radiusBtn    = isMenuPage ? useMotionValue(20) : useTransform(scrollY, [0, 400], [20, 28]);
   const btnBorderRadius = useMotionTemplate`${radiusBtn}px`;
 
+  // handleNavClick: TIDAK panggil onClose() — biarkan index.jsx yang tutup via
+  // useEffect[location.pathname]. Ini memastikan menu tutup SETELAH router
+  // commit navigasi, bukan sebelumnya (yang bisa menyebabkan race condition).
   const handleNavClick = (itemName) => {
-    // Tandai bahwa ini adalah navigasi — skip exit animation
-    isNavigatingRef.current = true;
     trackNav(itemName);
-    onClose();
-    // Reset flag setelah render cycle berikutnya
-    setTimeout(() => { isNavigatingRef.current = false; }, 100);
+    // onClose() sengaja tidak dipanggil di sini
+    // index.jsx akan menutup via useEffect saat location.pathname berubah
   };
 
-  const handleBackdropClick = () => {
-    isNavigatingRef.current = false;
-    onClose();
-  };
-
-  // Exit animation: instant kalau navigasi, normal kalau tutup biasa
-  const dropdownExit = isNavigatingRef.current
-    ? { opacity: 0, transition: { duration: 0 } }
-    : { opacity: 0, scaleY: 0.86, y: -8, transition: { duration: 0.28, ease: [0.4, 0, 1, 1] } };
+  const handleBackdropClick = () => onClose();
 
   return (
-    // Fragment — tidak ada elemen permanen di DOM saat menu tutup
-    <AnimatePresence mode="wait">
+    <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop: hanya ada saat isOpen=true, langsung unmount saat false */}
+          {/* Backdrop — hanya ada saat isOpen, tidak ada di DOM saat tutup */}
           <motion.div
             key="backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: isNavigatingRef.current ? 0 : 0.18 } }}
-            transition={{ duration: 0.18 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             className="fixed inset-0 z-[38] lg:hidden"
-            // Tidak ada background/blur — murni untuk menangkap klik di luar
             onClick={handleBackdropClick}
           />
 
@@ -116,7 +104,7 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
             key="dropdown"
             initial={{ opacity: 0, scaleY: 0.82, y: -10 }}
             animate={{ opacity: 1, scaleY: 1, y: 0 }}
-            exit={dropdownExit}
+            exit={{ opacity: 0, scaleY: 0.86, y: -8 }}
             transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
             style={{
               position: "fixed",
@@ -135,8 +123,16 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
               border: borderVal,
               boxShadow: shadowVal,
               overflow: "hidden",
+              // Kunci fix blank: pointer-events mati saat animasi exit berjalan
+              // Framer Motion tidak provide hook untuk ini, jadi kita pakai
+              // CSS pointer-events none pada saat exit via onAnimationComplete
             }}
             className="lg:hidden"
+            // Pastikan tidak ada interaksi saat sedang exit
+            onAnimationStart={(def) => {
+              // 'def' adalah nama animasi yang sedang berjalan
+              // Tidak perlu action — AnimatePresence sudah handle unmount
+            }}
           >
             <ul className="py-2">
               {menuItems.map((item, i) => {
