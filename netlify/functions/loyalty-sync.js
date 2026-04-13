@@ -196,11 +196,11 @@ export const handler = async () => {
           await sheetsPost({ action: "add_history", phone, name: custName, type: "earn", points: pts, amount, source: "offline", txId, note: `${pts} pts dari offline order` });
 
           await sendWA(phone,
-            `Halo *${custName || "Kamu"}*! ☕\n\n` +
+            `Halo *${custName || "Kamu"}*!\n\n` +
             `Terima kasih sudah ke *Sector Seven*!\n` +
             `Kamu dapat *+${pts} poin*.\n` +
             `Total poin: *${newPoints} pts*\n\n` +
-            `Cek & tukar poin: www.sectorseven.space/loyalty`
+            `Cek & tukar poin: www.sectorseven.space/loyalty/`
           );
           earned++;
         }
