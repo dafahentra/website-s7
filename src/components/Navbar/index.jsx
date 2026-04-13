@@ -1,5 +1,5 @@
 // components/Navbar/index.jsx
-import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useScroll } from "framer-motion";
 import NavbarDesktop from "./NavbarDesktop";
@@ -21,10 +21,12 @@ const Navbar = () => {
     return () => unsubscribe();
   }, [scrollY]);
 
-  // useLayoutEffect: jalan synchronous sebelum browser paint frame baru
-  // Ini memastikan menu sudah tertutup (isOpen=false → AnimatePresence unmount)
-  // sebelum page baru dirender ke layar — eliminasi blank screen sepenuhnya
-  useLayoutEffect(() => {
+  // FIX: Ganti useLayoutEffect → useEffect biasa.
+  // useLayoutEffect menutup menu secara synchronous SEBELUM browser paint,
+  // sehingga AnimatePresence tidak sempat menjalankan exit animation → blank screen.
+  // useEffect berjalan SETELAH paint, memberi AnimatePresence cukup waktu
+  // untuk commit exit animation sebelum unmount.
+  useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
