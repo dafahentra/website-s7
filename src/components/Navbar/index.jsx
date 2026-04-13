@@ -26,6 +26,7 @@ const Navbar = () => {
     }
   }, []);
 
+  // Update saat scroll
   useEffect(() => {
     const unsubscribe = scrollY.on("change", (latest) => {
       setIsTransformed(latest >= 400);
@@ -34,9 +35,17 @@ const Navbar = () => {
     return () => unsubscribe();
   }, [scrollY, updateAnchorRect]);
 
+  // Update saat resize
   useEffect(() => {
     window.addEventListener("resize", updateAnchorRect);
     return () => window.removeEventListener("resize", updateAnchorRect);
+  }, [updateAnchorRect]);
+
+  // Update saat pertama kali mount (agar anchorRect tidak null)
+  useEffect(() => {
+    // Tunggu satu frame agar motion.nav sudah render dengan style-nya
+    const raf = requestAnimationFrame(updateAnchorRect);
+    return () => cancelAnimationFrame(raf);
   }, [updateAnchorRect]);
 
   const handleMenuToggle = () => {
@@ -47,23 +56,6 @@ const Navbar = () => {
   const handleMenuClose = () => {
     setMobileMenuOpen(false);
   };
-
-  // Lock scroll hanya untuk mode full-screen
-  const useFullScreen = !isTransformed || isMenuPage;
-  useEffect(() => {
-    if (mobileMenuOpen && useFullScreen) {
-      const w = window.innerWidth - document.documentElement.clientWidth;
-      document.body.style.overflow = "hidden";
-      document.body.style.paddingRight = `${w}px`;
-    } else {
-      document.body.style.overflow = "";
-      document.body.style.paddingRight = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-      document.body.style.paddingRight = "";
-    };
-  }, [mobileMenuOpen, useFullScreen]);
 
   return (
     <>
@@ -85,7 +77,6 @@ const Navbar = () => {
         isOpen={mobileMenuOpen}
         onClose={handleMenuClose}
         isTransformed={isTransformed}
-        isMenuPage={isMenuPage}
         anchorRect={anchorRect}
       />
     </>
