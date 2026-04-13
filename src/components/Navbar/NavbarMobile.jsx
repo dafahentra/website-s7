@@ -144,7 +144,7 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
             }}
             className="lg:hidden"
           >
-            <ul className="py-2">
+            <ul className="p-3 flex flex-col gap-1">
               {menuItems.map((item, i) => {
                 const active = isActiveRoute(location.pathname, item.path);
                 const icon = iconMap[item.name] ?? <LuUtensilsCrossed size={20} />;
@@ -160,7 +160,7 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
                     <Link
                       to={item.path}
                       onClick={() => handleNavClick(item.name)}
-                      className={`flex items-center gap-4 px-6 py-[15px] ${TYPOGRAPHY.body.default} ${TYPOGRAPHY.weight.bold} transition-colors duration-150 ${active ? "text-brand-orange" : "text-brand-navy/80 hover:text-brand-navy"}`}
+                      className={`flex items-center gap-4 px-4 py-[13px] rounded-full ${TYPOGRAPHY.body.default} ${TYPOGRAPHY.weight.bold} transition-colors duration-150 ${active ? "text-brand-orange" : "text-brand-navy/80 hover:text-brand-navy"}`}
                       style={{ background: active ? "rgba(234,88,12,0.07)" : "transparent" }}
                     >
                       <span className={`transition-colors duration-150 ${active ? "text-brand-orange" : "text-brand-navy/25"}`}>
@@ -168,18 +168,15 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
                       </span>
                       {item.name}
                     </Link>
-                    {i < menuItems.length - 1 && (
-                      <div className="mx-6" style={{ height: "0.5px", background: "rgba(0,0,0,0.07)" }} />
-                    )}
                   </motion.li>
                 );
               })}
             </ul>
 
-            <div className="mx-5" style={{ height: "0.5px", background: "rgba(0,0,0,0.09)" }} />
+            <div className="mx-3" style={{ height: "0.5px", background: "rgba(0,0,0,0.09)" }} />
 
             <motion.div
-              className="px-5 py-4"
+              className="px-3 py-3"
               custom={menuItems.length}
               variants={itemVariants}
               initial="hidden"
