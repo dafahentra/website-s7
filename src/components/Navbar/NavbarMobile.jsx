@@ -1,7 +1,14 @@
 // components/Navbar/NavbarMobile.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useSpring,
+  useTransform,
+  useMotionValue,
+  useScroll,
+} from "framer-motion";
 import { BsCart3 } from "react-icons/bs";
 import { menuItems, isActiveRoute } from "../../data/navbarData";
 import useAnalytics from "../../hooks/useAnalytics";
@@ -46,29 +53,44 @@ const itemVariants = {
   }),
 };
 
+// Spring config — identik dengan feel navbar
+const SPRING = { stiffness: 300, damping: 35, mass: 0.5 };
+
 const NavbarMobile = ({ isOpen, onClose, isTransformed, anchorRect }) => {
   const location = useLocation();
   const { trackNav } = useAnalytics();
+  const { scrollY } = useScroll();
+
+  // ── MotionValues untuk posisi & ukuran — di-drive dari anchorRect ──
+  // anchorRect sudah di-update setiap scroll di parent (via scrollY listener)
+  // Kita tinggal spring-ify agar gerakannya smooth
+
+  const mvLeft = useMotionValue(anchorRect?.left ?? 0);
+  const mvWidth = useMotionValue(anchorRect?.width ?? window.innerWidth);
+  const mvTop = useMotionValue(anchorRect ? anchorRect.top + 6 : 80);
+
+  const springLeft = useSpring(mvLeft, SPRING);
+  const springWidth = useSpring(mvWidth, SPRING);
+  const springTop = useSpring(mvTop, SPRING);
+
+  // Update MotionValues setiap kali anchorRect berubah (driven by scroll di parent)
+  useEffect(() => {
+    if (!anchorRect) return;
+    mvLeft.set(anchorRect.left);
+    mvWidth.set(anchorRect.width);
+    mvTop.set(anchorRect.top + 6);
+  }, [anchorRect, mvLeft, mvWidth, mvTop]);
+
+  // Border radius: derive dari scrollY langsung — ini pure visual, tidak butuh anchorRect
+  const rawRadiusTop = useTransform(scrollY, [0, 400], [0, 28]);
+  const rawRadiusBottom = useTransform(scrollY, [0, 400], [24, 28]);
+  const radiusTop = useSpring(rawRadiusTop, SPRING);
+  const radiusBottom = useSpring(rawRadiusBottom, SPRING);
 
   const handleNavClick = (itemName) => {
     trackNav(itemName);
     onClose();
   };
-
-  // Kalau anchorRect belum tersedia, fallback ke full width di top 0
-  const top = anchorRect ? anchorRect.top + 6 : 80;
-  const left = anchorRect ? anchorRect.left : 0;
-  const width = anchorRect ? anchorRect.width : "100%";
-
-  // Border radius: saat belum transform navbar masih kotak (0px),
-  // saat sudah transform navbar jadi pill (50px) → dropdown ikut membulat (28px)
-  const dropdownRadius = isTransformed ? "28px" : "0px 0px 24px 24px";
-
-  // Background: liquid glass konsisten di dua state,
-  // bedanya shadow lebih besar saat sudah jadi pill (lebih "melayang")
-  const dropdownShadow = isTransformed
-    ? "0 12px 40px rgba(31, 38, 135, 0.13), 0 1.5px 0 0 rgba(255,255,255,0.65) inset"
-    : "0 8px 24px rgba(31, 38, 135, 0.08), 0 1px 0 0 rgba(255,255,255,0.5) inset";
 
   return (
     <AnimatePresence>
@@ -85,7 +107,11 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, anchorRect }) => {
             onClick={onClose}
           />
 
-          {/* Dropdown — posisi, lebar, dan radius ikut navbar secara smooth */}
+          {/*
+            Semua nilai posisi & ukuran pakai MotionValue yang di-spring dari anchorRect.
+            anchorRect di-update setiap frame scroll di parent (index.jsx),
+            jadi dropdown selalu mengikuti navbar secara real-time & smooth.
+          */}
           <motion.div
             key="dropdown"
             initial={{ opacity: 0, scaleY: 0.82, y: -10 }}
@@ -99,24 +125,24 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, anchorRect }) => {
               position: "fixed",
               zIndex: 39,
               transformOrigin: "top center",
-              // Posisi & lebar mengikuti navbar — di-animate agar smooth saat navbar berubah ukuran
-              top,
-              left,
-              width,
-              borderRadius: dropdownRadius,
-              // Liquid glass
+              top: springTop,                        // ← MotionValue dari anchorRect
+              left: springLeft,                      // ← MotionValue dari anchorRect
+              width: springWidth,                    // ← MotionValue dari anchorRect
+              borderTopLeftRadius: radiusTop,        // ← MotionValue dari scrollY
+              borderTopRightRadius: radiusTop,
+              borderBottomLeftRadius: radiusBottom,
+              borderBottomRightRadius: radiusBottom,
               background: "rgba(255, 255, 255, 0.58)",
               backdropFilter: "blur(32px) saturate(200%)",
               WebkitBackdropFilter: "blur(32px) saturate(200%)",
               border: "1px solid rgba(255, 255, 255, 0.78)",
-              boxShadow: dropdownShadow,
+              boxShadow: isTransformed
+                ? "0 12px 40px rgba(31, 38, 135, 0.13), 0 1.5px 0 0 rgba(255,255,255,0.65) inset"
+                : "0 8px 24px rgba(31, 38, 135, 0.08), 0 1px 0 0 rgba(255,255,255,0.5) inset",
               overflow: "hidden",
-              // Transisi lebar/posisi/radius saat navbar transform
-              transition: "top 0.4s cubic-bezier(0.32,0.72,0,1), left 0.4s cubic-bezier(0.32,0.72,0,1), width 0.4s cubic-bezier(0.32,0.72,0,1), border-radius 0.4s cubic-bezier(0.32,0.72,0,1), box-shadow 0.4s ease",
             }}
             className="lg:hidden"
           >
-            {/* Menu Items */}
             <ul className="py-2">
               {menuItems.map((item, i) => {
                 const active = isActiveRoute(location.pathname, item.path);
@@ -165,13 +191,11 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, anchorRect }) => {
               })}
             </ul>
 
-            {/* Divider */}
             <div
               className="mx-5"
               style={{ height: "0.5px", background: "rgba(0,0,0,0.09)" }}
             />
 
-            {/* Order Now */}
             <motion.div
               className="px-5 py-4"
               custom={menuItems.length}
