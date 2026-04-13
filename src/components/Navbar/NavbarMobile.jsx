@@ -81,7 +81,7 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
   );
 
   const radiusTopStatic    = useMotionValue(0);
-  const radiusTopScrolled  = useTransform(scrollY, [0, 400], [0, 50]);
+  const radiusTopScrolled  = useTransform(scrollY, [0, 400], [0, 36]);
   const radiusBotStatic    = useMotionValue(0);
   const radiusBotScrolled  = useTransform(scrollY, [0, 400], [0, 36]);
   const radiusBtnStatic    = useMotionValue(20);
