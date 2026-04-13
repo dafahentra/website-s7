@@ -55,32 +55,50 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
     mvTop.set(rect.bottom + 2);
   });
 
-  // Warna
-  const bgColor   = isMenuPage
-    ? useMotionValue("rgba(255,255,255,0)")
-    : useTransform(scrollY, [0, 400], ["rgba(255,255,255,0)", "rgba(255,255,255,0.65)"]);
+  // FIX: Semua hooks HARUS dipanggil tanpa kondisi (Rules of Hooks).
+  // Sebelumnya, useMotionValue / useTransform dipanggil di dalam ternary
+  // operator → urutan hooks berubah antar render → React crash → blank screen.
+  //
+  // Solusi: selalu panggil kedua hook, lalu pilih nilainya SETELAH semua
+  // hook sudah dipanggil.
 
-  const borderVal = isMenuPage
-    ? useMotionValue("1px solid rgba(255,255,255,0)")
-    : useTransform(scrollY, [0, 400], ["1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,0.8)"]);
+  const bgColorStatic   = useMotionValue("rgba(255,255,255,0)");
+  const bgColorScrolled = useTransform(
+    scrollY, [0, 400],
+    ["rgba(255,255,255,0)", "rgba(255,255,255,0.65)"]
+  );
 
-  const shadowVal = isMenuPage
-    ? useMotionValue("0 0 0 0 rgba(0,0,0,0)")
-    : useTransform(scrollY, [0, 400], ["0 0 0 0 rgba(31,38,135,0)", "0 8px 32px 0 rgba(31,38,135,0.1)"]);
+  const borderStatic   = useMotionValue("1px solid rgba(255,255,255,0)");
+  const borderScrolled = useTransform(
+    scrollY, [0, 400],
+    ["1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,0.8)"]
+  );
 
-  // Radius
-  const radiusTop    = isMenuPage ? useMotionValue(0)  : useTransform(scrollY, [0, 400], [0, 50]);
-  const radiusBottom = isMenuPage ? useMotionValue(0)  : useTransform(scrollY, [0, 400], [0, 36]);
-  const radiusBtn    = isMenuPage ? useMotionValue(20) : useTransform(scrollY, [0, 400], [20, 28]);
+  const shadowStatic   = useMotionValue("0 0 0 0 rgba(0,0,0,0)");
+  const shadowScrolled = useTransform(
+    scrollY, [0, 400],
+    ["0 0 0 0 rgba(31,38,135,0)", "0 8px 32px 0 rgba(31,38,135,0.1)"]
+  );
+
+  const radiusTopStatic    = useMotionValue(0);
+  const radiusTopScrolled  = useTransform(scrollY, [0, 400], [0, 50]);
+  const radiusBotStatic    = useMotionValue(0);
+  const radiusBotScrolled  = useTransform(scrollY, [0, 400], [0, 36]);
+  const radiusBtnStatic    = useMotionValue(20);
+  const radiusBtnScrolled  = useTransform(scrollY, [0, 400], [20, 28]);
+
+  // Pilih nilai yang tepat SETELAH semua hook dipanggil
+  const bgColor    = isMenuPage ? bgColorStatic   : bgColorScrolled;
+  const borderVal  = isMenuPage ? borderStatic    : borderScrolled;
+  const shadowVal  = isMenuPage ? shadowStatic    : shadowScrolled;
+  const radiusTop  = isMenuPage ? radiusTopStatic : radiusTopScrolled;
+  const radiusBottom = isMenuPage ? radiusBotStatic : radiusBotScrolled;
+  const radiusBtn  = isMenuPage ? radiusBtnStatic : radiusBtnScrolled;
+
   const btnBorderRadius = useMotionTemplate`${radiusBtn}px`;
 
-  // handleNavClick: TIDAK panggil onClose() — biarkan index.jsx yang tutup via
-  // useEffect[location.pathname]. Ini memastikan menu tutup SETELAH router
-  // commit navigasi, bukan sebelumnya (yang bisa menyebabkan race condition).
   const handleNavClick = (itemName) => {
     trackNav(itemName);
-    // onClose() sengaja tidak dipanggil di sini
-    // index.jsx akan menutup via useEffect saat location.pathname berubah
   };
 
   const handleBackdropClick = () => onClose();
@@ -89,7 +107,7 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop — hanya ada saat isOpen, tidak ada di DOM saat tutup */}
+          {/* Backdrop */}
           <motion.div
             key="backdrop"
             initial={{ opacity: 0 }}
@@ -123,16 +141,8 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
               border: borderVal,
               boxShadow: shadowVal,
               overflow: "hidden",
-              // Kunci fix blank: pointer-events mati saat animasi exit berjalan
-              // Framer Motion tidak provide hook untuk ini, jadi kita pakai
-              // CSS pointer-events none pada saat exit via onAnimationComplete
             }}
             className="lg:hidden"
-            // Pastikan tidak ada interaksi saat sedang exit
-            onAnimationStart={(def) => {
-              // 'def' adalah nama animasi yang sedang berjalan
-              // Tidak perlu action — AnimatePresence sudah handle unmount
-            }}
           >
             <ul className="py-2">
               {menuItems.map((item, i) => {
