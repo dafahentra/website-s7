@@ -1,5 +1,5 @@
 // components/Navbar/NavbarMobile.jsx
-import React from "react";
+import React, { useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   motion,
@@ -32,10 +32,8 @@ const itemVariants = {
     opacity: 1, y: 0,
     transition: { delay: i * 0.04, duration: 0.26, ease: [0.25, 0.46, 0.45, 0.94] },
   }),
-  exit: (i) => ({
-    opacity: 0, y: -3,
-    transition: { delay: i * 0.015, duration: 0.16, ease: [0.4, 0, 1, 1] },
-  }),
+  // Exit items lebih cepat agar tidak tabrakan dengan navigasi
+  exit: { opacity: 0, transition: { duration: 0.08 } },
 };
 
 const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) => {
@@ -43,11 +41,14 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
   const { trackNav } = useAnalytics();
   const { scrollY } = useScroll();
 
+  // Track apakah close dipicu oleh navigasi atau tap backdrop
+  // Kalau navigasi: skip exit animation sama sekali
+  const isNavigatingRef = useRef(false);
+
   const mvLeft  = useMotionValue(0);
   const mvWidth = useMotionValue(typeof window !== "undefined" ? window.innerWidth : 390);
   const mvTop   = useMotionValue(80);
 
-  // useAnimationFrame selalu jalan tapi hanya update saat navRef ready
   useAnimationFrame(() => {
     if (!navRef?.current) return;
     const rect = navRef.current.getBoundingClientRect();
@@ -69,40 +70,54 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
     ? useMotionValue("0 0 0 0 rgba(0,0,0,0)")
     : useTransform(scrollY, [0, 400], ["0 0 0 0 rgba(31,38,135,0)", "0 8px 32px 0 rgba(31,38,135,0.1)"]);
 
-  // Radius — no spring, direct dari scrollY
+  // Radius
   const radiusTop    = isMenuPage ? useMotionValue(0)  : useTransform(scrollY, [0, 400], [0, 50]);
   const radiusBottom = isMenuPage ? useMotionValue(0)  : useTransform(scrollY, [0, 400], [0, 36]);
-  // Tombol: mulai dari 20px (rounded), makin bulat saat pill
   const radiusBtn    = isMenuPage ? useMotionValue(20) : useTransform(scrollY, [0, 400], [20, 28]);
-
-  // useMotionTemplate agar borderRadius bisa dipakai di style biasa sebagai string
   const btnBorderRadius = useMotionTemplate`${radiusBtn}px`;
 
   const handleNavClick = (itemName) => {
+    // Tandai bahwa ini adalah navigasi — skip exit animation
+    isNavigatingRef.current = true;
     trackNav(itemName);
+    onClose();
+    // Reset flag setelah render cycle berikutnya
+    setTimeout(() => { isNavigatingRef.current = false; }, 100);
+  };
+
+  const handleBackdropClick = () => {
+    isNavigatingRef.current = false;
     onClose();
   };
 
+  // Exit animation: instant kalau navigasi, normal kalau tutup biasa
+  const dropdownExit = isNavigatingRef.current
+    ? { opacity: 0, transition: { duration: 0 } }
+    : { opacity: 0, scaleY: 0.86, y: -8, transition: { duration: 0.28, ease: [0.4, 0, 1, 1] } };
+
   return (
-    <AnimatePresence>
+    // Fragment — tidak ada elemen permanen di DOM saat menu tutup
+    <AnimatePresence mode="wait">
       {isOpen && (
         <>
+          {/* Backdrop: hanya ada saat isOpen=true, langsung unmount saat false */}
           <motion.div
             key="backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.22 }}
+            exit={{ opacity: 0, transition: { duration: isNavigatingRef.current ? 0 : 0.18 } }}
+            transition={{ duration: 0.18 }}
             className="fixed inset-0 z-[38] lg:hidden"
-            onClick={onClose}
+            // Tidak ada background/blur — murni untuk menangkap klik di luar
+            onClick={handleBackdropClick}
           />
 
           <motion.div
             key="dropdown"
             initial={{ opacity: 0, scaleY: 0.82, y: -10 }}
             animate={{ opacity: 1, scaleY: 1, y: 0 }}
-            exit={{ opacity: 0, scaleY: 0.86, y: -8 }}
-            transition={{ duration: 0.36, ease: [0.32, 0.72, 0, 1] }}
+            exit={dropdownExit}
+            transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
             style={{
               position: "fixed",
               zIndex: 39,
@@ -165,7 +180,6 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
               animate="visible"
               exit="exit"
             >
-              {/* motion.div wrapper agar borderRadius MotionValue bisa bekerja */}
               <motion.div
                 style={{ borderRadius: btnBorderRadius, overflow: "hidden" }}
                 className="w-full shadow-md"
