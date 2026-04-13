@@ -1,19 +1,52 @@
-// components/Navbar/NavbarDesktop.jsx - REFACTORED WITH DESIGN SYSTEM
+// components/Navbar/NavbarDesktop.jsx
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { BsCart3 } from "react-icons/bs";
-import { LuAlignRight } from "react-icons/lu";
 import logo from "../../assets/logo.png";
 import { menuItems, isActiveRoute } from "../../data/navbarData";
 import useAnalytics from "../../hooks/useAnalytics";
 import { TYPOGRAPHY, RADIUS, TRANSITIONS } from "../../styles/designSystem";
 
-const NavbarDesktop = ({ onMenuToggle, isMenuPage }) => {
+// Komponen hamburger → X yang smooth ala Apple
+const MenuIcon = ({ isOpen }) => (
+  <div className="w-[26px] h-[18px] relative flex flex-col justify-between cursor-pointer">
+    {/* Line atas */}
+    <motion.span
+      className="block h-[2px] bg-brand-navy rounded-full origin-center"
+      animate={
+        isOpen
+          ? { rotate: 45, y: 8, width: "100%" }
+          : { rotate: 0, y: 0, width: "100%" }
+      }
+      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+    />
+    {/* Line tengah */}
+    <motion.span
+      className="block h-[2px] bg-brand-navy rounded-full"
+      animate={
+        isOpen
+          ? { opacity: 0, scaleX: 0 }
+          : { opacity: 1, scaleX: 1 }
+      }
+      transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+    />
+    {/* Line bawah */}
+    <motion.span
+      className="block h-[2px] bg-brand-navy rounded-full origin-center"
+      animate={
+        isOpen
+          ? { rotate: -45, y: -8, width: "100%" }
+          : { rotate: 0, y: 0, width: "100%" }
+      }
+      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+    />
+  </div>
+);
+
+const NavbarDesktop = ({ navRef, onMenuToggle, isMenuPage, isTransformed, mobileMenuOpen }) => {
   const location = useLocation();
   const { trackNav } = useAnalytics();
-
-  // Scroll animations — selalu dipanggil agar tidak melanggar Rules of Hooks
   const { scrollY } = useScroll();
 
   const widthAnim = useTransform(scrollY, [0, 400], ["100%", "76%"]);
@@ -31,14 +64,9 @@ const NavbarDesktop = ({ onMenuToggle, isMenuPage }) => {
     "1px solid rgba(255, 255, 255, 0)",
     "1px solid rgba(255, 255, 255, 0.8)",
   ]);
-  const paddingAnim = useTransform(
-    scrollY,
-    [0, 400],
-    ["1.5rem 2rem", "0.8rem 2rem"]
-  );
+  const paddingAnim = useTransform(scrollY, [0, 400], ["1.5rem 2rem", "0.8rem 2rem"]);
   const logoWidthAnim = useTransform(scrollY, [0, 150], [100, 80]);
 
-  // Jika di halaman /menu, gunakan nilai fixed (nilai AWAL sebelum transform)
   const navStyle = isMenuPage
     ? {
         width: "100%",
@@ -59,29 +87,20 @@ const NavbarDesktop = ({ onMenuToggle, isMenuPage }) => {
         padding: paddingAnim,
       };
 
-  const logoStyle = {
-    width: isMenuPage ? 100 : logoWidthAnim,
-  };
-
-  // Handle Navigation Click with Analytics
-  const handleNavClick = (itemName) => {
-    trackNav(itemName);
-  };
+  const handleNavClick = (itemName) => trackNav(itemName);
 
   return (
     <motion.nav
+      ref={navRef}
       style={navStyle}
       className="pointer-events-auto backdrop-blur-md flex items-center justify-between max-w-[1400px]"
     >
-      {/* Logo Section */}
       <Link to="/" onClick={() => handleNavClick("Logo")}>
-        <motion.img src={logo} alt="logo" style={logoStyle} />
+        <motion.img src={logo} alt="logo" style={{ width: isMenuPage ? 100 : logoWidthAnim }} />
       </Link>
 
-      {/* Menu Items (Desktop) */}
-      <ul
-        className={`lg:flex hidden items-center gap-8 ${TYPOGRAPHY.weight.bold} ${TYPOGRAPHY.body.regular} capitalize`}
-      >
+      {/* Desktop menu */}
+      <ul className={`lg:flex hidden items-center gap-8 ${TYPOGRAPHY.weight.bold} ${TYPOGRAPHY.body.regular} capitalize`}>
         {menuItems.map((item) => (
           <li key={item.path}>
             <Link
@@ -97,8 +116,6 @@ const NavbarDesktop = ({ onMenuToggle, isMenuPage }) => {
             </Link>
           </li>
         ))}
-
-        {/* Order Button - single solid orange color */}
         <li>
           <Link
             to="/menu"
@@ -111,12 +128,9 @@ const NavbarDesktop = ({ onMenuToggle, isMenuPage }) => {
         </li>
       </ul>
 
-      {/* Mobile Menu Button */}
-      <div
-        className="lg:hidden flex cursor-pointer text-brand-navy"
-        onClick={onMenuToggle}
-      >
-        <LuAlignRight size={30} />
+      {/* Hamburger → X */}
+      <div className="lg:hidden flex items-center" onClick={onMenuToggle}>
+        <MenuIcon isOpen={mobileMenuOpen} />
       </div>
     </motion.nav>
   );
