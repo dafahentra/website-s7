@@ -2,12 +2,10 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { IoMdClose } from "react-icons/io";
 import { BsCart3 } from "react-icons/bs";
-import logo from "../../assets/logo.png";
 import { menuItems, isActiveRoute } from "../../data/navbarData";
 import useAnalytics from "../../hooks/useAnalytics";
-import { TYPOGRAPHY, RADIUS, TRANSITIONS } from "../../styles/designSystem";
+import { TYPOGRAPHY, TRANSITIONS } from "../../styles/designSystem";
 
 import {
   LuHome,
@@ -27,28 +25,28 @@ const iconMap = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: -6 },
+  hidden: { opacity: 0, y: -5 },
   visible: (i) => ({
     opacity: 1,
     y: 0,
     transition: {
-      delay: i * 0.045,
-      duration: 0.28,
+      delay: i * 0.04,
+      duration: 0.26,
       ease: [0.25, 0.46, 0.45, 0.94],
     },
   }),
   exit: (i) => ({
     opacity: 0,
-    y: -4,
+    y: -3,
     transition: {
-      delay: i * 0.02,
-      duration: 0.18,
+      delay: i * 0.015,
+      duration: 0.16,
       ease: [0.4, 0, 1, 1],
     },
   }),
 };
 
-const NavbarMobile = ({ isOpen, onClose, isTransformed, isMenuPage, anchorRect }) => {
+const NavbarMobile = ({ isOpen, onClose, isTransformed, anchorRect }) => {
   const location = useLocation();
   const { trackNav } = useAnalytics();
 
@@ -57,124 +55,68 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, isMenuPage, anchorRect }
     onClose();
   };
 
-  // ─────────────────────────────────────────────
-  // MODE A: Belum transform ATAU sedang di /menu
-  // → full-screen slide asli
-  // ─────────────────────────────────────────────
-  const useFullScreen = !isTransformed || isMenuPage;
+  // Kalau anchorRect belum tersedia, fallback ke full width di top 0
+  const top = anchorRect ? anchorRect.top + 6 : 80;
+  const left = anchorRect ? anchorRect.left : 0;
+  const width = anchorRect ? anchorRect.width : "100%";
 
-  if (useFullScreen) {
-    return (
-      <>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-black/30 z-[38] lg:hidden"
-            onClick={onClose}
-          />
-        )}
-        <motion.div
-          initial={false}
-          animate={isOpen ? { x: 0 } : { x: "100%" }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="fixed top-0 right-0 w-full min-h-screen bg-brand-nav-mobile z-[40] flex flex-col items-center justify-center lg:hidden overflow-y-auto"
-        >
-          <Link to="/" onClick={() => handleNavClick("Logo")}>
-            <img src={logo} alt="logo" className="mb-10 w-24" />
-          </Link>
-          <ul className={`space-y-8 ${TYPOGRAPHY.weight.bold} ${TYPOGRAPHY.subheading.lg} text-center`}>
-            {menuItems.map((item) => (
-              <li key={item.path}>
-                <Link
-                  to={item.path}
-                  onClick={() => handleNavClick(item.name)}
-                  className={`${
-                    isActiveRoute(location.pathname, item.path)
-                      ? "text-brand-orange"
-                      : "text-brand-navy hover:text-brand-orange"
-                  } ${TRANSITIONS.hover.color}`}
-                >
-                  {item.name}
-                </Link>
-              </li>
-            ))}
-            <li className="pt-4">
-              <Link
-                to="/menu"
-                onClick={() => handleNavClick("Order Now")}
-                className={`inline-flex items-center gap-3 bg-gradient-to-r from-brand-orange to-orange-400 text-white px-8 py-4 ${RADIUS.circle} hover:from-orange-600 hover:to-brand-orange ${TRANSITIONS.fast} shadow-xl ${TYPOGRAPHY.body.default} ${TYPOGRAPHY.weight.bold}`}
-              >
-                <BsCart3 className="text-2xl" />
-                <span>Order Now</span>
-              </Link>
-            </li>
-          </ul>
-          <button
-            onClick={onClose}
-            className={`absolute top-10 right-10 text-gray-800 hover:text-gray-600 ${TRANSITIONS.hover.color}`}
-            aria-label="Close menu"
-          >
-            <IoMdClose size={40} />
-          </button>
-        </motion.div>
-      </>
-    );
-  }
+  // Border radius: saat belum transform navbar masih kotak (0px),
+  // saat sudah transform navbar jadi pill (50px) → dropdown ikut membulat (28px)
+  const dropdownRadius = isTransformed ? "28px" : "0px 0px 24px 24px";
 
-  // ─────────────────────────────────────────────
-  // MODE B: Sudah transform & bukan /menu
-  // → Liquid glass dropdown dari bawah navbar pill
-  // ─────────────────────────────────────────────
-  const dropdownStyle = anchorRect
-    ? {
-        position: "fixed",
-        top: anchorRect.top + 6,
-        left: anchorRect.left,
-        width: anchorRect.width,
-        zIndex: 39,
-        borderRadius: "28px",
-        background: "rgba(255, 255, 255, 0.55)",
-        backdropFilter: "blur(28px) saturate(180%)",
-        WebkitBackdropFilter: "blur(28px) saturate(180%)",
-        border: "1px solid rgba(255, 255, 255, 0.75)",
-        boxShadow:
-          "0 8px 32px rgba(31, 38, 135, 0.10), 0 1.5px 0 0 rgba(255,255,255,0.6) inset, 0 -1px 0 0 rgba(255,255,255,0.2) inset",
-        overflow: "hidden",
-      }
-    : { display: "none" };
+  // Background: liquid glass konsisten di dua state,
+  // bedanya shadow lebih besar saat sudah jadi pill (lebih "melayang")
+  const dropdownShadow = isTransformed
+    ? "0 12px 40px rgba(31, 38, 135, 0.13), 0 1.5px 0 0 rgba(255,255,255,0.65) inset"
+    : "0 8px 24px rgba(31, 38, 135, 0.08), 0 1px 0 0 rgba(255,255,255,0.5) inset";
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* Backdrop */}
           <motion.div
             key="backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.22 }}
             className="fixed inset-0 z-[38] lg:hidden"
             onClick={onClose}
           />
 
+          {/* Dropdown — posisi, lebar, dan radius ikut navbar secara smooth */}
           <motion.div
             key="dropdown"
-            initial={{ opacity: 0, scaleY: 0.85, y: -8 }}
+            initial={{ opacity: 0, scaleY: 0.82, y: -10 }}
             animate={{ opacity: 1, scaleY: 1, y: 0 }}
-            exit={{ opacity: 0, scaleY: 0.88, y: -6 }}
+            exit={{ opacity: 0, scaleY: 0.86, y: -8 }}
             transition={{
-              duration: 0.38,
+              duration: 0.36,
               ease: [0.32, 0.72, 0, 1],
             }}
             style={{
-              ...dropdownStyle,
+              position: "fixed",
+              zIndex: 39,
               transformOrigin: "top center",
+              // Posisi & lebar mengikuti navbar — di-animate agar smooth saat navbar berubah ukuran
+              top,
+              left,
+              width,
+              borderRadius: dropdownRadius,
+              // Liquid glass
+              background: "rgba(255, 255, 255, 0.58)",
+              backdropFilter: "blur(32px) saturate(200%)",
+              WebkitBackdropFilter: "blur(32px) saturate(200%)",
+              border: "1px solid rgba(255, 255, 255, 0.78)",
+              boxShadow: dropdownShadow,
+              overflow: "hidden",
+              // Transisi lebar/posisi/radius saat navbar transform
+              transition: "top 0.4s cubic-bezier(0.32,0.72,0,1), left 0.4s cubic-bezier(0.32,0.72,0,1), width 0.4s cubic-bezier(0.32,0.72,0,1), border-radius 0.4s cubic-bezier(0.32,0.72,0,1), box-shadow 0.4s ease",
             }}
             className="lg:hidden"
           >
+            {/* Menu Items */}
             <ul className="py-2">
               {menuItems.map((item, i) => {
                 const active = isActiveRoute(location.pathname, item.path);
@@ -199,26 +141,37 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, isMenuPage, anchorRect }
                         ${active ? "text-brand-orange" : "text-brand-navy/80 hover:text-brand-navy"}
                       `}
                       style={{
-                        background: active
-                          ? "rgba(234,88,12,0.07)"
-                          : "transparent",
+                        background: active ? "rgba(234,88,12,0.07)" : "transparent",
                       }}
                     >
-                      <span className={`transition-colors duration-150 ${active ? "text-brand-orange" : "text-brand-navy/30"}`}>
+                      <span
+                        className={`transition-colors duration-150 ${
+                          active ? "text-brand-orange" : "text-brand-navy/25"
+                        }`}
+                      >
                         {icon}
                       </span>
                       {item.name}
                     </Link>
+
                     {i < menuItems.length - 1 && (
-                      <div className="mx-6" style={{ height: "0.5px", background: "rgba(0,0,0,0.08)" }} />
+                      <div
+                        className="mx-6"
+                        style={{ height: "0.5px", background: "rgba(0,0,0,0.07)" }}
+                      />
                     )}
                   </motion.li>
                 );
               })}
             </ul>
 
-            <div className="mx-5" style={{ height: "0.5px", background: "rgba(0,0,0,0.1)" }} />
+            {/* Divider */}
+            <div
+              className="mx-5"
+              style={{ height: "0.5px", background: "rgba(0,0,0,0.09)" }}
+            />
 
+            {/* Order Now */}
             <motion.div
               className="px-5 py-4"
               custom={menuItems.length}
