@@ -21,6 +21,11 @@ const Navbar = () => {
     return () => unsubscribe();
   }, [scrollY]);
 
+  // Tutup menu otomatis saat pindah page — fix blank screen bug
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
   const handleMenuToggle = () => setMobileMenuOpen((prev) => !prev);
   const handleMenuClose  = () => setMobileMenuOpen(false);
 
