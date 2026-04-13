@@ -14,7 +14,6 @@ const Navbar = () => {
   const isMenuPage = location.pathname === "/menu";
   const { scrollY } = useScroll();
 
-  // Hanya isTransformed yang masih pakai state — untuk prop boolean sederhana
   useEffect(() => {
     const unsubscribe = scrollY.on("change", (latest) => {
       setIsTransformed(latest >= 400);
@@ -41,12 +40,12 @@ const Navbar = () => {
         />
       </div>
 
-      {/* navRef diteruskan langsung — NavbarMobile baca DOM sendiri setiap frame */}
       <NavbarMobile
         isOpen={mobileMenuOpen}
         onClose={handleMenuClose}
         isTransformed={isTransformed}
         navRef={navRef}
+        isMenuPage={isMenuPage}
       />
     </>
   );
