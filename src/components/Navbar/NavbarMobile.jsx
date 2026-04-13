@@ -4,10 +4,10 @@ import { Link, useLocation } from "react-router-dom";
 import {
   motion,
   AnimatePresence,
-  useSpring,
   useTransform,
   useMotionValue,
   useAnimationFrame,
+  useMotionTemplate,
   useScroll,
 } from "framer-motion";
 import { BsCart3 } from "react-icons/bs";
@@ -38,18 +38,16 @@ const itemVariants = {
   }),
 };
 
-const RADIUS_SPRING = { stiffness: 300, damping: 35, mass: 0.5 };
-
 const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) => {
   const location = useLocation();
   const { trackNav } = useAnalytics();
   const { scrollY } = useScroll();
 
-  // Posisi & ukuran: raw MotionValue tanpa spring — zero lag
   const mvLeft  = useMotionValue(0);
   const mvWidth = useMotionValue(typeof window !== "undefined" ? window.innerWidth : 390);
   const mvTop   = useMotionValue(80);
 
+  // useAnimationFrame selalu jalan tapi hanya update saat navRef ready
   useAnimationFrame(() => {
     if (!navRef?.current) return;
     const rect = navRef.current.getBoundingClientRect();
@@ -58,42 +56,27 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
     mvTop.set(rect.bottom + 2);
   });
 
-  // ── Warna ──────────────────────────────────────────────────────────────────
-  // /menu: navbar flat transparan → dropdown juga flat transparan, persis sama
-  // normal: ikut scroll 0→400, identik dengan NavbarDesktop
+  // Warna
   const bgColor   = isMenuPage
-    ? "rgba(255, 255, 255, 0)"
+    ? useMotionValue("rgba(255,255,255,0)")
     : useTransform(scrollY, [0, 400], ["rgba(255,255,255,0)", "rgba(255,255,255,0.65)"]);
 
   const borderVal = isMenuPage
-    ? "1px solid rgba(255, 255, 255, 0)"
+    ? useMotionValue("1px solid rgba(255,255,255,0)")
     : useTransform(scrollY, [0, 400], ["1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,0.8)"]);
 
   const shadowVal = isMenuPage
-    ? "0 0 0 0 rgba(0,0,0,0)"
+    ? useMotionValue("0 0 0 0 rgba(0,0,0,0)")
     : useTransform(scrollY, [0, 400], ["0 0 0 0 rgba(31,38,135,0)", "0 8px 32px 0 rgba(31,38,135,0.1)"]);
 
-  // ── Border radius — komposisi harmonis ────────────────────────────────────
-  // Konsep: dropdown adalah "child" yang bersarang di dalam navbar pill.
-  // Inner radius = outer radius - gap. Navbar pill = 50px, gap antara
-  // navbar dan dropdown ≈ 2px (mvTop = rect.bottom + 2).
-  //
-  // Top corners: mengikuti navbar persis (50px) — mereka berbagi edge yang sama
-  // Bottom corners: sedikit lebih kecil (36px) — memberikan kesan "contained"
-  // yang harmonis, tidak terlalu bulat sehingga terlihat seperti objek berbeda
-  //
-  // /menu: semua 0 karena navbar flat
+  // Radius — no spring, direct dari scrollY
+  const radiusTop    = isMenuPage ? useMotionValue(0)  : useTransform(scrollY, [0, 400], [0, 50]);
+  const radiusBottom = isMenuPage ? useMotionValue(0)  : useTransform(scrollY, [0, 400], [0, 36]);
+  // Tombol: mulai dari 20px (rounded), makin bulat saat pill
+  const radiusBtn    = isMenuPage ? useMotionValue(20) : useTransform(scrollY, [0, 400], [20, 28]);
 
-  const rawRadiusTop = isMenuPage
-    ? useMotionValue(0)
-    : useTransform(scrollY, [0, 400], [0, 50]); // sama persis dengan navbar
-
-  const rawRadiusBottom = isMenuPage
-    ? useMotionValue(0)
-    : useTransform(scrollY, [0, 400], [0, 36]); // inner radius — harmonis
-
-  const radiusTop    = useSpring(rawRadiusTop,    RADIUS_SPRING);
-  const radiusBottom = useSpring(rawRadiusBottom, RADIUS_SPRING);
+  // useMotionTemplate agar borderRadius bisa dipakai di style biasa sebagai string
+  const btnBorderRadius = useMotionTemplate`${radiusBtn}px`;
 
   const handleNavClick = (itemName) => {
     trackNav(itemName);
@@ -182,14 +165,20 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
               animate="visible"
               exit="exit"
             >
-              <Link
-                to="/menu"
-                onClick={() => handleNavClick("Order Now")}
-                className="flex items-center justify-center gap-2.5 bg-brand-orange text-white px-6 py-3 rounded-2xl w-full font-bold transition-all duration-200 hover:brightness-105 active:scale-[0.98] shadow-md text-[15px]"
+              {/* motion.div wrapper agar borderRadius MotionValue bisa bekerja */}
+              <motion.div
+                style={{ borderRadius: btnBorderRadius, overflow: "hidden" }}
+                className="w-full shadow-md"
               >
-                <BsCart3 size={17} />
-                <span>Order Now</span>
-              </Link>
+                <Link
+                  to="/menu"
+                  onClick={() => handleNavClick("Order Now")}
+                  className="flex items-center justify-center gap-2.5 bg-brand-orange text-white px-6 py-3 w-full font-bold transition-all duration-200 hover:brightness-105 active:scale-[0.98] text-[15px]"
+                >
+                  <BsCart3 size={17} />
+                  <span>Order Now</span>
+                </Link>
+              </motion.div>
             </motion.div>
           </motion.div>
         </>
