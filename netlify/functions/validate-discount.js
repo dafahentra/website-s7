@@ -106,9 +106,9 @@ export const handler = async (event) => {
     // Blokir kode reward loyalty — hanya bisa dipakai offline via kasir
     if (inputCode.startsWith("REWARD_")) {
       return {
-        statusCode: 400,
+        statusCode: 200,
         headers: corsHeaders,
-        body: JSON.stringify({ valid: false, error: "Kode ini hanya berlaku untuk offline order. Tukarkan poin di sectorseven.space/loyalty" }),
+        body: JSON.stringify({ valid: false, error: "Kode ini hanya berlaku untuk offline order. Tukarkan poin di www.sectorseven.space/loyalty/" }),
       };
     }
 
