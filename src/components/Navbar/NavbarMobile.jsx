@@ -38,42 +38,18 @@ const itemVariants = {
   }),
 };
 
-// Spring HANYA untuk border-radius — visual polish, tidak butuh pixel-perfect sync
 const RADIUS_SPRING = { stiffness: 300, damping: 35, mass: 0.5 };
 
-const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef }) => {
+const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) => {
   const location = useLocation();
   const { trackNav } = useAnalytics();
   const { scrollY } = useScroll();
 
-  // Posisi & ukuran: raw MotionValue tanpa spring
-  // Set langsung setiap frame → zero lag, pixel-perfect sync dengan navbar
+  // Posisi & ukuran: raw MotionValue tanpa spring — zero lag
   const mvLeft  = useMotionValue(0);
   const mvWidth = useMotionValue(typeof window !== "undefined" ? window.innerWidth : 390);
   const mvTop   = useMotionValue(80);
 
-  // Warna background: ikut scroll persis seperti navbar
-  // navbar: rgba(255,255,255,0) → rgba(255,255,255,0.65)
-  const bgOpacity = useTransform(scrollY, [0, 400], [0, 0.65]);
-  const bgColor   = useTransform(bgOpacity, (v) => `rgba(255, 255, 255, ${v})`);
-
-  // Border: ikut navbar — rgba(255,255,255,0) → rgba(255,255,255,0.8)
-  const borderOpacity = useTransform(scrollY, [0, 400], [0, 0.8]);
-  const borderColor   = useTransform(borderOpacity, (v) => `1px solid rgba(255, 255, 255, ${v})`);
-
-  // Shadow: ikut navbar
-  const shadowOpacity = useTransform(scrollY, [0, 400], [0, 0.1]);
-  const boxShadow     = useTransform(shadowOpacity, (v) =>
-    `0 8px 32px 0 rgba(31, 38, 135, ${v})`
-  );
-
-  // Border radius — spring OK karena ini pure visual
-  const rawRadiusTop    = useTransform(scrollY, [0, 400], [0, 28]);
-  const rawRadiusBottom = useTransform(scrollY, [0, 400], [0, 28]);
-  const radiusTop    = useSpring(rawRadiusTop,    RADIUS_SPRING);
-  const radiusBottom = useSpring(rawRadiusBottom, RADIUS_SPRING);
-
-  // Baca DOM setiap frame — NO spring, langsung set
   useAnimationFrame(() => {
     if (!navRef?.current) return;
     const rect = navRef.current.getBoundingClientRect();
@@ -81,6 +57,43 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef }) => {
     mvWidth.set(rect.width);
     mvTop.set(rect.bottom + 2);
   });
+
+  // ── Warna ──────────────────────────────────────────────────────────────────
+  // /menu: navbar flat transparan → dropdown juga flat transparan, persis sama
+  // normal: ikut scroll 0→400, identik dengan NavbarDesktop
+  const bgColor   = isMenuPage
+    ? "rgba(255, 255, 255, 0)"
+    : useTransform(scrollY, [0, 400], ["rgba(255,255,255,0)", "rgba(255,255,255,0.65)"]);
+
+  const borderVal = isMenuPage
+    ? "1px solid rgba(255, 255, 255, 0)"
+    : useTransform(scrollY, [0, 400], ["1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,0.8)"]);
+
+  const shadowVal = isMenuPage
+    ? "0 0 0 0 rgba(0,0,0,0)"
+    : useTransform(scrollY, [0, 400], ["0 0 0 0 rgba(31,38,135,0)", "0 8px 32px 0 rgba(31,38,135,0.1)"]);
+
+  // ── Border radius — komposisi harmonis ────────────────────────────────────
+  // Konsep: dropdown adalah "child" yang bersarang di dalam navbar pill.
+  // Inner radius = outer radius - gap. Navbar pill = 50px, gap antara
+  // navbar dan dropdown ≈ 2px (mvTop = rect.bottom + 2).
+  //
+  // Top corners: mengikuti navbar persis (50px) — mereka berbagi edge yang sama
+  // Bottom corners: sedikit lebih kecil (36px) — memberikan kesan "contained"
+  // yang harmonis, tidak terlalu bulat sehingga terlihat seperti objek berbeda
+  //
+  // /menu: semua 0 karena navbar flat
+
+  const rawRadiusTop = isMenuPage
+    ? useMotionValue(0)
+    : useTransform(scrollY, [0, 400], [0, 50]); // sama persis dengan navbar
+
+  const rawRadiusBottom = isMenuPage
+    ? useMotionValue(0)
+    : useTransform(scrollY, [0, 400], [0, 36]); // inner radius — harmonis
+
+  const radiusTop    = useSpring(rawRadiusTop,    RADIUS_SPRING);
+  const radiusBottom = useSpring(rawRadiusBottom, RADIUS_SPRING);
 
   const handleNavClick = (itemName) => {
     trackNav(itemName);
@@ -111,21 +124,18 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef }) => {
               position: "fixed",
               zIndex: 39,
               transformOrigin: "top center",
-              // Posisi & ukuran: raw MotionValue, no spring = no lag
               top: mvTop,
               left: mvLeft,
               width: mvWidth,
-              // Radius: spring untuk visual polish
               borderTopLeftRadius: radiusTop,
               borderTopRightRadius: radiusTop,
               borderBottomLeftRadius: radiusBottom,
               borderBottomRightRadius: radiusBottom,
-              // Visual: semua sync dengan scrollY seperti navbar
               background: bgColor,
               backdropFilter: "blur(32px) saturate(200%)",
               WebkitBackdropFilter: "blur(32px) saturate(200%)",
-              border: borderColor,
-              boxShadow,
+              border: borderVal,
+              boxShadow: shadowVal,
               overflow: "hidden",
             }}
             className="lg:hidden"
