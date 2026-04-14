@@ -189,21 +189,23 @@ const Dashboard = ({ customer: initialCustomer, onBack }) => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full flex flex-col md:items-center relative z-0">
-      <div className="bg-white px-5 py-4 flex items-center gap-3 border-b border-gray-200 w-full md:max-w-[900px] md:rounded-t-[20px]">
-        <button onClick={onBack} className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">
-          <Icons.Back className="w-4 h-4" />
-        </button>
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={THEME.blueGradient}>
-            <Icons.Logo className="w-3.5 h-3.5 text-white" />
-          </div>
-          <span className="text-[14px] font-black text-[#1d3866]">Sector Seven</span>
-        </div>
-      </div>
-
+      
+      {/* Wrapper Utama */}
       <div className="w-full md:max-w-[900px] p-4 md:pt-6">
         
-        {/* Hapus mb-6 disini agar layout desktop & mobile konsisten */}
+        {/* Kontainer Atas (Header) */}
+        <div className="bg-white px-4 py-4 flex items-center gap-3 rounded-[20px] shadow-sm border border-gray-100/50 w-full mb-5">
+          <button onClick={onBack} className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">
+            <Icons.Back className="w-4 h-4" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={THEME.blueGradient}>
+              <Icons.Logo className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="text-[14px] font-black text-[#1d3866]">Sector Seven</span>
+          </div>
+        </div>
+
         <div className="relative md:grid md:grid-cols-2 md:gap-6">
           
           {/* Kolom Kiri */}
@@ -299,7 +301,6 @@ const Dashboard = ({ customer: initialCustomer, onBack }) => {
         </div>
 
         {/* Section Riwayat (History) */}
-        {/* Desktop: Pakai mt-8 untuk mengganti jarak mb-6 yang dihilangkan. Mobile: Pakai mt-5 agar presisi dengan tab sebelahnya. */}
         <div className={`w-full md:border-t border-gray-200/60 md:pt-6 ${activeTab === "history" ? "block mt-5" : "hidden md:block md:mt-8"}`}>
           <div className="text-[11px] font-extrabold text-gray-500 uppercase tracking-widest mb-3">Riwayat Transaksi</div>
           {history.length === 0 ? (
