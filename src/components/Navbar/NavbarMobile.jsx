@@ -70,7 +70,7 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
   const bgColorStatic   = useMotionValue("rgba(255,255,255,0)");
   const bgColorScrolled = useTransform(
     scrollY, [0, 400],
-    ["rgba(255,255,255,0)", "rgba(255,255,255,0.65)"]
+    ["rgba(255,255,255,0)", "rgba(255,255,255,0.75)"]
   );
 
   const borderStatic   = useMotionValue("1px solid rgba(255,255,255,0)");
@@ -141,8 +141,8 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
               borderBottomLeftRadius: radiusBottom,
               borderBottomRightRadius: radiusBottom,
               background: bgColor,
-              backdropFilter: "blur(32px) saturate(200%)",
-              WebkitBackdropFilter: "blur(32px) saturate(200%)",
+              backdropFilter: "blur(32px) saturate(120%)",
+              WebkitBackdropFilter: "blur(32px) saturate(120%)",
               border: borderVal,
               boxShadow: shadowVal,
               overflow: "hidden",
