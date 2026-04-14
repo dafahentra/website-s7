@@ -1,5 +1,5 @@
 // components/Navbar/NavbarMobile.jsx
-import React from "react";
+import React, { useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   motion,
@@ -47,12 +47,24 @@ const NavbarMobile = ({ isOpen, onClose, isTransformed, navRef, isMenuPage }) =>
   const mvWidth = useMotionValue(typeof window !== "undefined" ? window.innerWidth : 390);
   const mvTop   = useMotionValue(80);
 
+  const navBottomAtRest = useRef(null);
+
   useAnimationFrame(() => {
     if (!navRef?.current) return;
     const rect = navRef.current.getBoundingClientRect();
     mvLeft.set(rect.left);
     mvWidth.set(rect.width);
-    mvTop.set(rect.bottom + 2);
+
+    // Simpan posisi "normal" navbar (saat tidak rubber band)
+    // scrollY >= 0 artinya tidak sedang overscroll ke atas
+    if (scrollY.get() >= 0) {
+      navBottomAtRest.current = rect.bottom;
+    }
+
+    // Clamp: jangan biarkan dropdown naik melebihi posisi normalnya
+    const safeBottom = navBottomAtRest.current ?? rect.bottom;
+    const clampedTop = Math.max(rect.bottom, safeBottom) + 2;
+    mvTop.set(clampedTop);
   });
 
   // FIX: Semua hooks HARUS dipanggil tanpa kondisi (Rules of Hooks).
