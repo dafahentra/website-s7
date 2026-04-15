@@ -76,20 +76,19 @@ async function sendWA(phone, message) {
   } catch (e) { console.error("[loyalty-sync] WA error:", e.message); }
 }
 
-// Simpan last_sync di Sheets meta atau gunakan Blobs hanya untuk ini
-// Karena tidak ada Blobs, kita pakai file temporary di /tmp (tidak persisten antar invocation)
-// Solusi: simpan di Sheets sheet "Meta"
+// Simpan last_sync di Sheets sheet "Meta" sebagai ISO 8601 string
+// — human-readable, locale-safe, tidak bergantung pada setting region Sheets
 async function getLastSync() {
   try {
     const data = await sheetsGet({ action: "get_meta", key: "last_sync" });
-    return data?.value ? Number(data.value) : Date.now() - 7 * 24 * 60 * 60 * 1000; // default 7 hari lalu
+    return data?.value ? new Date(data.value).getTime() : Date.now() - 7 * 24 * 60 * 60 * 1000; // default 7 hari lalu
   } catch {
     return Date.now() - 2 * 60 * 1000;
   }
 }
 
 async function setLastSync(epoch) {
-  await sheetsPost({ action: "set_meta", key: "last_sync", value: String(epoch) }).catch(() => {});
+  await sheetsPost({ action: "set_meta", key: "last_sync", value: new Date(epoch).toISOString() }).catch(() => {});
 }
 
 export const handler = async () => {
