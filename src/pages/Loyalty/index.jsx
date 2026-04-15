@@ -61,15 +61,6 @@ const THEME = {
   orangeGradient: { background: COLORS.overlays.brandOrange },
 };
 
-const FontWrapper = ({ children }) => (
-  <div style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
-    <style>
-      {`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');`}
-    </style>
-    {children}
-  </div>
-);
-
 // ── Phone Input ───────────────────────────────────────────────────────────────
 const PhoneInput = ({ onFound }) => {
   const [phone, setPhone] = useState("");
@@ -381,15 +372,13 @@ const Dashboard = ({ customer: initialCustomer, onBack }) => {
 const LoyaltyPage = () => {
   const [customer, setCustomer] = useState(null);
   return (
-    <FontWrapper>
-      <div className="min-h-screen bg-[#f8f9f5] flex items-start justify-center pt-[130px] lg:pt-[120px] pb-12 px-4">
-        <div className="w-full">
-          <AnimatePresence mode="wait">
-            {!customer ? <PhoneInput key="input" onFound={setCustomer} /> : <Dashboard key="dash" customer={customer} onBack={() => setCustomer(null)} />}
-          </AnimatePresence>
-        </div>
+    <div className="min-h-screen bg-[#f8f9f5] flex items-start justify-center pt-[130px] lg:pt-[120px] pb-12 px-4">
+      <div className="w-full">
+        <AnimatePresence mode="wait">
+          {!customer ? <PhoneInput key="input" onFound={setCustomer} /> : <Dashboard key="dash" customer={customer} onBack={() => setCustomer(null)} />}
+        </AnimatePresence>
       </div>
-    </FontWrapper>
+    </div>
   );
 };
 

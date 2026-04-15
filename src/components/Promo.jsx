@@ -1,8 +1,6 @@
 // components/Promo.jsx - HORIZONTAL SCROLL FOR ALL DEVICES
 import React from "react";
 import promo1 from "../assets/promo1.jpg";
-import promo2 from "../assets/promo2.jpg";
-import promo3 from "../assets/promo3.jpg";
 import { TYPOGRAPHY, RADIUS, SHADOWS, SPACING } from "../styles/designSystem";
 
 const Promo = () => {
