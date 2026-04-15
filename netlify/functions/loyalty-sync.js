@@ -81,7 +81,11 @@ async function sendWA(phone, message) {
 async function getLastSync() {
   try {
     const data = await sheetsGet({ action: "get_meta", key: "last_sync" });
-    return data?.value ? new Date(data.value).getTime() : Date.now() - 7 * 24 * 60 * 60 * 1000; // default 7 hari lalu
+    if (data?.value) {
+      const ts = new Date(data.value).getTime();
+      if (!isNaN(ts)) return ts;
+    }
+    return Date.now() - 7 * 24 * 60 * 60 * 1000; // default 7 hari lalu
   } catch {
     return Date.now() - 2 * 60 * 1000;
   }
