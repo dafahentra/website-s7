@@ -47,6 +47,7 @@ async function sheetsGet(params) {
   url.searchParams.set("secret", SHEETS_SECRET);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
   const res = await fetch(url.toString());
+  if (!res.ok) throw new Error(`Sheets GET failed: ${res.status}`);
   return res.json();
 }
 
@@ -81,8 +82,11 @@ async function sendWA(phone, message) {
 // Solusi: simpan di Sheets sheet "Meta"
 async function getLastSync() {
   try {
-    const data = await sheetsGet({ action: "get_meta", key: "last_sync" });
-    return data?.value ? Number(data.value) : Date.now() - 7 * 24 * 60 * 60 * 1000; // default 7 hari lalu
+    const data  = await sheetsGet({ action: "get_meta", key: "last_sync" });
+    const value = Number(data?.value);
+    return (value && !isNaN(value) && value > 0)
+      ? value
+      : Date.now() - 7 * 24 * 60 * 60 * 1000; // default 7 hari lalu
   } catch {
     return Date.now() - 2 * 60 * 1000;
   }
@@ -184,25 +188,26 @@ export const handler = async () => {
           }
         }
       } else if (amount > 0) {
-        // Normal offline transaction — tambah poin
+        // Normal offline transaction — tambah poin (increment_points sudah idempotent via txId)
         const pts = calcPoints(amount);
         if (pts > 0) {
-          const existing = await sheetsGet({ action: "get_customer", phone });
-          const oldPoints = existing?.found ? existing.points : 0;
-          const newPoints = oldPoints + pts;
-          const custName  = name || existing?.name || "";
+          const result = await sheetsPost({
+            action: "increment_points",
+            phone, name, points: pts, addSpend: amount,
+            source: "offline", txId,
+            note: `${pts} pts dari offline order`,
+          });
 
-          await sheetsPost({ action: "upsert_customer", phone, name: custName, points: newPoints, addSpend: amount });
-          await sheetsPost({ action: "add_history", phone, name: custName, type: "earn", points: pts, amount, source: "offline", txId, note: `${pts} pts dari offline order` });
-
-          await sendWA(phone,
-            `Halo *${custName || "Kamu"}*!\n\n` +
-            `Terima kasih sudah ke *Sector Seven*!\n` +
-            `Kamu dapat *+${pts} poin*.\n` +
-            `Total poin: *${newPoints} pts*\n\n` +
-            `Cek & tukar poin: www.sectorseven.space/loyalty/`
-          );
-          earned++;
+          if (result?.ok && !result?.skipped) {
+            await sendWA(phone,
+              `Halo *${name || "Kamu"}*!\n\n` +
+              `Terima kasih sudah ke *Sector Seven*!\n` +
+              `Kamu dapat *+${pts} poin*.\n` +
+              `Total poin: *${result.newPoints} pts*\n\n` +
+              `Cek & tukar poin: www.sectorseven.space/loyalty/`
+            );
+            earned++;
+          }
         }
       }
     }
