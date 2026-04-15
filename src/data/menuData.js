@@ -161,51 +161,5 @@ export const menuItems = {
     price: "25.000",
     image: Wizzie
 },
-],
-"Pastry": [
-{
-    id: 19,
-    name: "Croissant Almond",
-    description: "Meticulously layered pastry with a rich buttery aroma, finished with the nutty crunch of roasted almonds",
-    price: "24.000",
-    image: Kwasong
-},
-{
-    id: 20,
-    name: "Cinnamon Roll",
-    description: "A spiral of soft, pillowy dough, generously laced with aromatic cinnamon and finished with a sweet, lingering glaze",
-    price: "23.000",
-    image: Cinnamon
-},
-{
-    id: 21,
-    name: "Apple Danish",
-    description: "Buttery pastry layers embracing a sweet apple compote, offering a perfect balance of tartness and warmth in every bite",
-    price: "23.000",
-    image: Apple
-},
-],
-"Sourdough": [
-{
-    id: 22,
-    name: "Plain",
-    description: "A rustic, crusty exterior with a light, airy center, boasting that signature tangy soul of slow-fermented sourdough",
-    price: "20.000",
-    image: Plain
-},
-{
-    id: 23,
-    name: "Double Choco",
-    description: "A bold, dark twist on tradition with rich cocoa and loaded with melting chocolate chunks for a deep, bittersweet indulgence",
-    price: "24.000",
-    image: Double
-},
-{
-    id: 24,
-    name: "Blueberry Cream Cheese",
-    description: "A harmonious blend of tangy sourdough, bursting with succulent blueberries and a velvety heart of rich, smooth cream cheese",
-    price: "24.000",
-    image: Blueberry
-}
 ]
 };
