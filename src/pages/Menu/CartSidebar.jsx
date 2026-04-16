@@ -62,7 +62,7 @@ const CustomerInfoModal = React.memo(({
 
         <div className="mb-5">
           <h3 className="text-xl font-black text-gray-900">Detail Pesanan</h3>
-          <p className="text-gray-400 text-xs mt-1">Pembayaran via QRIS / GoPay / Transfer</p>
+          <p className="text-gray-400 text-xs mt-1">Pembayaran via QRIS / GoPay</p>
         </div>
 
         {/* Name */}
