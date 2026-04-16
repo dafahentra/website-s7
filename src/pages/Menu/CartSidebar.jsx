@@ -120,7 +120,7 @@ const CustomerInfoModal = React.memo(({
             </div>
           )}
           <div className="flex justify-between">
-            <span className="text-gray-400">Biaya online order</span>
+            <span className="text-gray-400">Admin fee</span>
             <span className="font-semibold text-gray-500">+Rp{fmt(onlineFee)}</span>
           </div>
           <div className="flex justify-between pt-1.5 border-t border-gray-200">
