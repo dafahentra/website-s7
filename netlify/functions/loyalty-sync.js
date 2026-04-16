@@ -1,5 +1,6 @@
 // netlify/functions/loyalty-sync.js
 // Scheduled — poll Moka tiap 1 menit untuk offline transactions
+// Source of truth: Google Sheets
 //
 // netlify.toml:
 //   [[scheduled_functions]]
@@ -24,15 +25,9 @@ function normalizePhone(phone) {
 
 async function getMokaToken() {
   if (process.env.MOKA_ACCESS_TOKEN) return process.env.MOKA_ACCESS_TOKEN;
-  const res = await fetch(`${MOKA_BASE}/oauth/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      grant_type:    "refresh_token",
-      client_id:     process.env.MOKA_CLIENT_ID,
-      client_secret: process.env.MOKA_SECRET,
-      refresh_token: process.env.MOKA_REFRESH_TOKEN,
-    }),
+  const res  = await fetch(`${MOKA_BASE}/oauth/token`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ grant_type: "refresh_token", client_id: process.env.MOKA_CLIENT_ID, client_secret: process.env.MOKA_SECRET, refresh_token: process.env.MOKA_REFRESH_TOKEN }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(`Token refresh: ${res.status}`);
@@ -58,33 +53,40 @@ async function sheetsGet(params) {
 
 async function sheetsPost(payload) {
   const res = await fetch(SHEETS_URL, {
-    method:  "POST",
-    headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify({ ...payload, secret: SHEETS_SECRET }),
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...payload, secret: SHEETS_SECRET }),
   });
   return res.json();
+}
+
+async function isProcessed(txId) {
+  // Cek di Sheets History apakah txId sudah ada
+  // Cara mudah: coba get_customer dengan txId sebagai marker — tidak ideal
+  // Lebih baik: simpan processed txIds di sheet tersendiri atau cek History
+  // Untuk simplicity, kita rely pada since epoch — transaksi lama tidak akan diambil lagi
+  return false; // Handled by since epoch
 }
 
 async function sendWA(phone, message) {
   if (!FONNTE_TOKEN || !phone) return;
   try {
     await fetch("https://api.fonnte.com/send", {
-      method:  "POST",
-      headers: { Authorization: FONNTE_TOKEN, "Content-Type": "application/json" },
-      body:    JSON.stringify({ target: normalizePhone(phone), message, countryCode: "62" }),
+      method: "POST", headers: { Authorization: FONNTE_TOKEN, "Content-Type": "application/json" },
+      body: JSON.stringify({ target: normalizePhone(phone), message, countryCode: "62" }),
     });
-  } catch (e) {
-    console.error("[loyalty-sync] WA error:", e.message);
-  }
+  } catch (e) { console.error("[loyalty-sync] WA error:", e.message); }
 }
 
+// Simpan last_sync di Sheets meta atau gunakan Blobs hanya untuk ini
+// Karena tidak ada Blobs, kita pakai file temporary di /tmp (tidak persisten antar invocation)
+// Solusi: simpan di Sheets sheet "Meta"
 async function getLastSync() {
   try {
     const data  = await sheetsGet({ action: "get_meta", key: "last_sync" });
     const value = Number(data?.value);
-    return value && !isNaN(value) && value > 0
+    return (value && !isNaN(value) && value > 0)
       ? value
-      : Date.now() - 7 * 24 * 60 * 60 * 1000;
+      : Date.now() - 7 * 24 * 60 * 60 * 1000; // default 7 hari lalu
   } catch {
     return Date.now() - 2 * 60 * 1000;
   }
@@ -101,12 +103,13 @@ export const handler = async () => {
     const sinceEpoch = Math.floor(sinceMs / 1000);
     console.log(`[loyalty-sync] since=${new Date(sinceMs).toISOString()}`);
 
-    // Update last_sync sebelum fetch — hindari double-process transaksi
+    // Update last_sync SEKARANG sebelum fetch — agar tidak fetch ulang transaksi sama
     await setLastSync(Date.now());
 
     const token = await getMokaToken();
     const txs   = await fetchTransactions(token, sinceEpoch);
     console.log(`[loyalty-sync] ${txs.length} transactions since ${new Date(sinceMs).toISOString()}`);
+    txs.forEach(tx => console.log(`[loyalty-sync] tx=${tx.payment_no} type=${tx.payment_type} phone=${tx.customer_phone} total=${tx.total_collected}`));
 
     let earned = 0, redeemed = 0;
 
@@ -126,21 +129,20 @@ export const handler = async () => {
       );
 
       if (rewardDiscount) {
+        // Redemption offline — potong poin
         const match     = rewardDiscount.discount_name.match(/REWARD_(\d+)PTS/);
         const ptsDeduct = match ? parseInt(match[1]) : 0;
 
         if (ptsDeduct > 0) {
           const result = await sheetsPost({
             action: "deduct_points",
-            phone,
-            points: ptsDeduct,
-            note:   `Reward redeem offline: ${rewardDiscount.discount_name}`,
+            phone, points: ptsDeduct,
+            note: `Reward redeem offline: ${rewardDiscount.discount_name}`,
             txId,
           });
 
           if (result?.ok) {
-            await sendWA(
-              phone,
+            await sendWA(phone,
               `Halo *${name || "Kamu"}*! 🎁\n` +
               `Reward kamu sudah digunakan di *Sector Seven*.\n` +
               `Poin berkurang: *${ptsDeduct} pts*\n` +
@@ -150,10 +152,14 @@ export const handler = async () => {
           }
         }
       } else if (tx.payment_refunds?.length > 0) {
+        // Transaksi yang di-refund — pakai refund UUID agar idempotent
         for (const refund of tx.payment_refunds) {
           const refundUUID  = refund.uuid;
           const refundPhone = normalizePhone(refund.customer_phone) || phone;
           if (!refundUUID || !refundPhone) continue;
+
+          // Skip kalau refund ini sudah diproses (cek via txId di History Sheets)
+          // Kita rely pada deduct_points di Apps Script — kalau sudah ada txId sama, tidak akan double
 
           const refundAmt = Number(refund.refund_amount) || 0;
           const pts       = calcPoints(refundAmt);
@@ -168,29 +174,32 @@ export const handler = async () => {
           });
 
           if (result?.ok) {
-            await sendWA(
-              refundPhone,
-              `Halo! ⚠️\n` +
-              `Transaksi kamu di *Sector Seven* telah di-refund.\n` +
-              `Poin dikurangi: *${pts} pts*\n` +
+            await sendWA(refundPhone,
+              `Halo! ⚠️
+
+` +
+              `Transaksi kamu di *Sector Seven* telah di-refund.
+` +
+              `Poin dikurangi: *${pts} pts*
+` +
               `Sisa poin: *${result.newPoints} pts*`
             );
+            // txId sudah tersimpan di History Sheets sebagai idempotency key
           }
         }
       } else if (amount > 0) {
+        // Normal offline transaction — tambah poin (increment_points sudah idempotent via txId)
         const pts = calcPoints(amount);
         if (pts > 0) {
           const result = await sheetsPost({
-            action:    "increment_points",
+            action: "increment_points",
             phone, name, points: pts, addSpend: amount,
-            source:    "offline",
-            txId,
-            note:      `${pts} pts dari offline order`,
+            source: "offline", txId,
+            note: `${pts} pts dari offline order`,
           });
 
           if (result?.ok && !result?.skipped) {
-            await sendWA(
-              phone,
+            await sendWA(phone,
               `Halo *${name || "Kamu"}*!\n\n` +
               `Terima kasih sudah ke *Sector Seven*!\n` +
               `Kamu dapat *+${pts} poin*.\n` +
