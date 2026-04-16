@@ -96,7 +96,7 @@ const CustomerInfoModal = React.memo(({
         {/* Order Note */}
         <div className="mb-5">
           <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-            Catatan <span className="text-gray-300 normal-case font-normal">(opsional)</span>
+            Catatan Pesanan <span className="text-gray-300 normal-case font-normal">(opsional)</span>
           </label>
           <textarea
             value={orderNote}
