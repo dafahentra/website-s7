@@ -1,39 +1,36 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { HelmetProvider } from "react-helmet-async";
-import { lazy, Suspense } from "react";
+import { HelmetProvider } from 'react-helmet-async';
 import usePageTracking from "./hooks/usePageTracking";
 import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import Menu from "./pages/Menu";
+import Store from "./pages/Store";
+import ContactUs from "./pages/ContactUs";
+import NewsPage from "./pages/NewsPage";
+import NewsDetail from "./pages/NewsDetail";
 import ScrollToTop from "./components/ScrollToTop";
+import MokaCallback from "./pages/MokaCallback";
+import LoyaltyPage from "./pages/Loyalty";
 
-const Home        = lazy(() => import("./pages/Home"));
-const About       = lazy(() => import("./pages/About"));
-const Menu        = lazy(() => import("./pages/Menu"));
-const Store       = lazy(() => import("./pages/Store"));
-const ContactUs   = lazy(() => import("./pages/ContactUs"));
-const NewsPage    = lazy(() => import("./pages/NewsPage"));
-const NewsDetail  = lazy(() => import("./pages/NewsDetail"));
-const MokaCallback = lazy(() => import("./pages/MokaCallback"));
-const LoyaltyPage = lazy(() => import("./pages/Loyalty"));
-
+// Component wrapper untuk tracking
 function AppContent() {
-  usePageTracking();
+  usePageTracking(); // Track page views
 
   return (
     <div className="min-h-screen">
       <Navbar />
-      <Suspense fallback={<div className="min-h-screen bg-[#f4f2ef]" />}>
-        <Routes>
-          <Route path="/"           element={<Home />} />
-          <Route path="/about"      element={<About />} />
-          <Route path="/menu"       element={<Menu />} />
-          <Route path="/store"      element={<Store />} />
-          <Route path="/contact-us" element={<ContactUs />} />
-          <Route path="/news"       element={<NewsPage />} />
-          <Route path="/news/:slug" element={<NewsDetail />} />
-          <Route path="/callback"   element={<MokaCallback />} />
-          <Route path="/loyalty"    element={<LoyaltyPage />} />
-        </Routes>
-      </Suspense>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/menu" element={<Menu />} />
+        <Route path="/store" element={<Store />} />
+        <Route path="/contact-us" element={<ContactUs />} />
+        <Route path="/news" element={<NewsPage />} />
+        <Route path="/news/:slug" element={<NewsDetail />} />
+        <Route path="/callback" element={<MokaCallback />} />
+        <Route path="/loyalty" element={<LoyaltyPage />} />
+      </Routes>
     </div>
   );
 }

@@ -1,11 +1,19 @@
 // netlify/functions/validate-discount.js
 // Validasi kode diskon langsung dari Moka — tanpa file config, tanpa database.
+//
+// Cara pakai di Moka Backoffice:
+//   Library → Diskon → Tambah Diskon
+//   Nama diskon  = kode yang diketik customer di website  (misal "SEKTOR10")
+//   Jumlah       = nilai diskon
+//   Tipe         = Persentase / Nominal
+//
+// Hapus diskon di Moka → otomatis tidak bisa dipakai di web.
 
-const MOKA_BASE     = "https://api.mokapos.com";
-const OUTLET_ID     = process.env.MOKA_OUTLET_ID;
-const ACCESS_TOKEN  = process.env.MOKA_ACCESS_TOKEN;
+const MOKA_BASE    = "https://api.mokapos.com";
+const OUTLET_ID    = process.env.MOKA_OUTLET_ID;
+const ACCESS_TOKEN = process.env.MOKA_ACCESS_TOKEN;
 const REFRESH_TOKEN = process.env.MOKA_REFRESH_TOKEN;
-const CLIENT_ID     = process.env.MOKA_CLIENT_ID;
+const CLIENT_ID    = process.env.MOKA_CLIENT_ID;
 const CLIENT_SECRET = process.env.MOKA_SECRET;
 
 const cors = {
@@ -16,6 +24,8 @@ const cors = {
 };
 
 async function getAccessToken() {
+  // Coba pakai access token dari env dulu
+  // Kalau expired, refresh dengan refresh token
   if (ACCESS_TOKEN) return ACCESS_TOKEN;
 
   const res = await fetch(`${MOKA_BASE}/oauth/token`, {
@@ -40,6 +50,7 @@ async function getMokaDiscounts(token) {
     { headers: { Authorization: `Bearer ${token}` } }
   );
 
+  // Kalau 401, coba refresh token
   if (res.status === 401) {
     const refreshRes = await fetch(`${MOKA_BASE}/oauth/token`, {
       method: "POST",
@@ -54,7 +65,7 @@ async function getMokaDiscounts(token) {
     const refreshData = await refreshRes.json();
     if (!refreshRes.ok) throw new Error("Token expired dan gagal direfresh");
 
-    const retryRes  = await fetch(
+    const retryRes = await fetch(
       `${MOKA_BASE}/v1/outlets/${OUTLET_ID}/discounts?per_page=200`,
       { headers: { Authorization: `Bearer ${refreshData.access_token}` } }
     );
@@ -96,19 +107,18 @@ export const handler = async (event) => {
     if (inputCode.startsWith("REWARD_")) {
       return {
         statusCode: 200,
-        headers: cors,
-        body: JSON.stringify({
-          valid: false,
-          error: "Kode ini hanya berlaku untuk offline order. Tukarkan poin di www.sectorseven.space/loyalty/",
-        }),
+        headers: corsHeaders,
+        body: JSON.stringify({ valid: false, error: "Kode ini hanya berlaku untuk offline order. Tukarkan poin di www.sectorseven.space/loyalty/" }),
       };
     }
 
+    // Ambil daftar diskon dari Moka
     const token     = await getAccessToken();
     const discounts = await getMokaDiscounts(token);
 
     console.log(`[validate-discount] Checking code "${inputCode}" against ${discounts.length} Moka discounts`);
 
+    // Cocokkan nama diskon (case-insensitive), skip yang sudah dihapus
     const matched = discounts.find(
       (d) => !d.is_deleted && d.name.trim().toUpperCase() === inputCode
     );
@@ -124,6 +134,8 @@ export const handler = async (event) => {
       };
     }
 
+    // Hitung nilai diskon
+    // Moka: type "cash" = nominal, type "percentage" = persen
     const amount = Number(matched.amount) || 0;
     let discountAmount = 0;
 
@@ -148,7 +160,7 @@ export const handler = async (event) => {
         mokaId:         matched.id,
         mokaGuid:       matched.guid   || null,
         mokaName:       matched.name,
-        mokaType:       matched.type,
+        mokaType:       matched.type,          // "cash" atau "percentage" — untuk dikirim ke Moka order
         type:           matched.type === "percentage" ? "percentage" : "fixed",
         value:          amount,
         discountAmount,
@@ -163,6 +175,7 @@ export const handler = async (event) => {
       body: JSON.stringify({
         valid: false,
         error: "Gagal menghubungi server. Coba lagi.",
+        _debug: err.message, // hanya tampil di Netlify logs
       }),
     };
   }
