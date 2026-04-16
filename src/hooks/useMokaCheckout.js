@@ -6,6 +6,8 @@ import { getMidtransToken, submitOrder } from "../services/mokaApi";
 
 const round = (n) => Math.round(Number(n) || 0);
 
+// Sales type ID untuk "Online Order" di Moka
+// Isi dengan ID dari: https://sectorseven.space/.netlify/functions/moka-get-sales-type
 const ONLINE_ORDER_SALES_TYPE_ID = 602868;
 const NOTIF_BASE = "https://sectorseven.space/.netlify/functions";
 const fmtRp = (n) => `Rp${new Intl.NumberFormat("id-ID").format(n)}`;
@@ -14,21 +16,6 @@ const IS_PRODUCTION = import.meta.env.VITE_MIDTRANS_ENV === "production";
 const SNAP_URL = IS_PRODUCTION
   ? "https://app.midtrans.com/snap/snap.js"
   : "https://app.sandbox.midtrans.com/snap/snap.js";
-
-// ── UUID v4 generator ─────────────────────────────────────────────────────────
-// Moka Advanced Ordering API mengharuskan application_order_id berformat UUID v4
-function generateUUID() {
-  // Gunakan crypto.randomUUID() kalau tersedia (browser modern)
-  if (typeof crypto !== "undefined" && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  // Fallback untuk environment lama
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
 
 function loadSnapScript(clientKey) {
   return new Promise((resolve, reject) => {
@@ -44,6 +31,7 @@ function loadSnapScript(clientKey) {
   });
 }
 
+// Buat ringkasan item untuk WA notification
 function buildItemsSummary(cart, onlineFee = 0) {
   const lines = cart.map((e) => {
     const mods = (e.mokaModifiers ?? [])
@@ -64,6 +52,8 @@ async function sendMokaOrder(cart, {
   const hasDiscount = discountAmount > 0 && discount?.mokaId;
 
   const order_items = cart.map((entry) => {
+    // item_price_library = harga DASAR (tanpa modifier)
+    // Moka menambah modifier price sendiri dari item_modifiers
     const modifierSum = (entry.mokaModifiers ?? [])
       .reduce((s, m) => s + round(m.modifier_option_price ?? 0), 0);
     const basePrice = round(entry.unitPrice) - modifierSum;
@@ -93,6 +83,7 @@ async function sendMokaOrder(cart, {
     return item;
   });
 
+  // Diskon native Moka
   const discountFields = hasDiscount ? {
     discount_id:     discount.mokaId,
     discount_name:   discount.mokaName  || discount.code,
@@ -101,25 +92,25 @@ async function sendMokaOrder(cart, {
     ...(discount.mokaGuid ? { discount_guid: discount.mokaGuid } : {}),
   } : {};
 
-  const noteParts = [orderNote, `Total ${fmtRp(finalPrice)}`].filter(Boolean).join(" | ");
-
-  // Encode phone & name agar aman di URL parameter
-  const encodedPhone = encodeURIComponent(phone);
-  const encodedName  = encodeURIComponent(name);
-  const encodedItems = encodeURIComponent(buildItemsSummary(cart, onlineFee));
+  // Note singkat untuk kasir
+  const noteParts = [
+    orderNote,
+    `Total ${fmtRp(finalPrice)}`,
+  ].filter(Boolean).join(" | ");
 
   await submitOrder({
     application_order_id:  applicationOrderId,
     payment_type:          "online_orders",
     client_created_at:     new Date().toISOString(),
     note:                  noteParts.slice(0, 255),
+    // Moka limits: customer_name max 50 chars, customer_phone_number max 13 digits
     customer_name:         name.trim().slice(0, 50),
-    customer_phone_number: phone.replace(/\s|-|\+/g, "").replace(/^0/, "62").slice(0, 13),
+    customer_phone_number: phone.replace(/\s|-|\+/g, '').replace(/^0/, '62').slice(0, 13),
     sales_type_id:   ONLINE_ORDER_SALES_TYPE_ID,
     sales_type_name: "Online Order",
-    accept_order_notification_url:   `${NOTIF_BASE}/order-notify?event=accepted&order=${applicationOrderId}&phone=${encodedPhone}&name=${encodedName}&total=${finalPrice}&items=${encodedItems}`,
-    complete_order_notification_url: `${NOTIF_BASE}/order-notify?event=completed&order=${applicationOrderId}&phone=${encodedPhone}&name=${encodedName}&total=${finalPrice}&items=${encodedItems}`,
-    cancel_order_notification_url:   `${NOTIF_BASE}/order-notify?event=cancelled&order=${applicationOrderId}&phone=${encodedPhone}&name=${encodedName}`,
+    accept_order_notification_url:   `${NOTIF_BASE}/order-notify?event=accepted&order=${applicationOrderId}&phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}&total=${finalPrice}&items=${encodeURIComponent(buildItemsSummary(cart, onlineFee))}`,
+    complete_order_notification_url: `${NOTIF_BASE}/order-notify?event=completed&order=${applicationOrderId}&phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}&total=${finalPrice}&items=${encodeURIComponent(buildItemsSummary(cart, onlineFee))}`,
+    cancel_order_notification_url:   `${NOTIF_BASE}/order-notify?event=cancelled&order=${applicationOrderId}&phone=${encodeURIComponent(phone)}&name=${encodeURIComponent(name)}`,
     ...discountFields,
     order_items,
   });
@@ -133,8 +124,7 @@ export function useMokaCheckout() {
     setSubmitting(true);
 
     try {
-      // UUID v4 sebagai application_order_id — sesuai requirement Moka API
-      const applicationOrderId = generateUUID();
+      const applicationOrderId = `S7-${Date.now()}`;
 
       const {
         name           = "Customer",
@@ -147,12 +137,10 @@ export function useMokaCheckout() {
         finalPrice     = Math.max(0, subtotal - discountAmount) + (onlineFee || 0),
       } = customerInfo;
 
-      const mokaPayload = {
-        applicationOrderId, name, phone, orderNote,
-        discount, discountAmount, onlineFee, finalPrice,
-      };
+      const mokaPayload = { applicationOrderId, name, phone, orderNote, discount, discountAmount, onlineFee, finalPrice };
 
-      // ── Kasus khusus: diskon 100% — skip Midtrans ─────────────────────────
+      // ── KASUS KHUSUS: diskon 100% (finalPrice = 0) ───────────────────────────
+      // Midtrans menolak amount = 0, jadi langsung submit ke Moka tanpa payment
       if (finalPrice <= 0) {
         try {
           await sendMokaOrder(cart, mokaPayload);
@@ -162,7 +150,7 @@ export function useMokaCheckout() {
         }
       }
 
-      // ── Midtrans item list ────────────────────────────────────────────────
+      // ── Midtrans item list ───────────────────────────────────────────────────
       const midtransItems = [
         ...cart.map((e) => ({
           id:       String(e.mokaVariantId || e.mokaItemId || "item"),
@@ -171,17 +159,16 @@ export function useMokaCheckout() {
           name:     [e.itemName, e.mokaVariantName].filter(Boolean).join(" - ").slice(0, 50),
         })),
         ...(discountAmount > 0 && discount ? [{
-          id:       "DISCOUNT",
-          price:    -discountAmount,
-          quantity: 1,
-          name:     (discount.description || `Diskon ${discount.code}`).slice(0, 50),
+          id: "DISCOUNT", price: -discountAmount, quantity: 1,
+          name: (discount.description || `Diskon ${discount.code}`).slice(0, 50),
         }] : []),
         ...(onlineFee > 0 ? [{
-          id: "ONLINE_FEE", price: onlineFee, quantity: 1, name: "Biaya Online Order",
+          id: "ONLINE_FEE", price: onlineFee, quantity: 1,
+          name: "Biaya Online Order",
         }] : []),
       ];
 
-      // ── 1. Midtrans token ─────────────────────────────────────────────────
+      // ── 1. Midtrans token ────────────────────────────────────────────────────
       const { token } = await getMidtransToken({
         order_id: applicationOrderId,
         amount:   round(finalPrice),
@@ -189,12 +176,12 @@ export function useMokaCheckout() {
         items:    midtransItems,
       });
 
-      // ── 2. Load Snap.js ───────────────────────────────────────────────────
+      // ── 2. Load Snap.js ──────────────────────────────────────────────────────
       const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY;
       if (!clientKey) throw new Error("VITE_MIDTRANS_CLIENT_KEY tidak ditemukan.");
       await loadSnapScript(clientKey);
 
-      // ── 3. Buka popup Midtrans ────────────────────────────────────────────
+      // ── 3. Buka popup ────────────────────────────────────────────────────────
       return new Promise((resolve, reject) => {
         window.snap.pay(token, {
 
