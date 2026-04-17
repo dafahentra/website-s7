@@ -44,7 +44,7 @@ const Story = () => {
             
             <div className="flex justify-center lg:justify-start mt-8">
               <Link to="/about">
-                <AnimatedButton className="w-[180px]">
+                <AnimatedButton className="w-36 sm:w-40 lg:w-44">
                   See More
                 </AnimatedButton>
               </Link>
