@@ -2,6 +2,11 @@
 import React, { useEffect, useState } from "react";
 import instagram from "../assets/instagram.png";
 import { TYPOGRAPHY, RADIUS, TRANSITIONS, SPACING } from "../styles/designSystem";
+import AnimatedButton from "./ui/AnimatedButton";
+
+const InstagramIcon = () => (
+  <img src={instagram} alt="instagram" className="w-5 h-5 sm:w-6 sm:h-6" />
+);
 
 const Follow = () => {
   const [posts, setPosts] = useState([]);
@@ -11,7 +16,6 @@ const Follow = () => {
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
-          // Ambil 3 post pertama, sesuai layout grid yang ada
           setPosts(
             data.slice(0, 9).map((p) => ({
               id:       p.id,
@@ -38,19 +42,20 @@ const Follow = () => {
           @sectorseven.yk
         </span>
 
-        {/* Follow Button */}
-        <a
+        {/* Follow Button - pakai AnimatedButton variant outline */}
+        <AnimatedButton
           href="https://www.instagram.com/sectorseven.yk/"
           target="_blank"
           rel="noopener noreferrer"
-          className={`flex text-brand-navy md:hover:bg-brand-navy md:hover:text-white md:${TRANSITIONS.hover.color} border-2 border-brand-navy py-2 px-4 sm:py-2.5 sm:px-5 ${RADIUS.circle} w-36 sm:w-40 lg:w-44 ${TYPOGRAPHY.weight.bold} ${TYPOGRAPHY.body.small} sm:${TYPOGRAPHY.body.regular} lg:${TYPOGRAPHY.body.default} items-center justify-center gap-1 sm:gap-2 group`}
+          variant="outline"
+          icon={<InstagramIcon />}
+          className="w-36 sm:w-40 lg:w-44"
         >
-          <img src={instagram} alt="instagram" className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10" />
-          <span>Follow</span>
-        </a>
+          Follow
+        </AnimatedButton>
       </div>
 
-      {/* Instagram Feed Grid — layout persis sama seperti sebelumnya */}
+      {/* Instagram Feed Grid */}
       <div className={`grid grid-cols-3 gap-1 ${SPACING.container.padding}`}>
         {posts.map((post) => (
           <a
@@ -80,28 +85,20 @@ const Follow = () => {
               </div>
             </div>
 
-            {/* VIDEO — kotak putih rounded dengan segitiga cutout rounded */}
+            {/* VIDEO icon */}
             {post.type === "VIDEO" && (
               <div className="absolute top-1 right-1 md:top-2 md:right-2 pointer-events-none">
                 <svg className="w-7 h-7 md:w-12 md:h-12 drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]" viewBox="0 0 24 24">
                   <mask id={`play-${post.id}`}>
-                    {/* Kotak lebih rounded */}
                     <rect x="1" y="1" width="22" height="22" rx="7" fill="white"/>
-                    {/* Segitiga di tengah, sedikit geser kanan supaya ada ilusi kosong di kiri */}
-                    <path
-                      d="M8.5 7 L18 12 L8.5 17 Z"
-                      fill="black"
-                      stroke="black"
-                      strokeWidth="1.5"
-                      strokeLinejoin="round"
-                      strokeLinecap="round"
-                    />
+                    <path d="M8.5 7 L18 12 L8.5 17 Z" fill="black" stroke="black" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
                   </mask>
                   <rect x="1" y="1" width="22" height="22" rx="7" fill="white" mask={`url(#play-${post.id})`}/>
                 </svg>
               </div>
             )}
-            {/* CAROUSEL — ikon pojok kanan atas */}
+
+            {/* CAROUSEL icon */}
             {post.type === "CAROUSEL_ALBUM" && (
               <div className="absolute top-1 right-1 md:top-2 md:right-2 pointer-events-none">
                 <svg className="w-7 h-7 md:w-12 md:h-12 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]" viewBox="0 0 24 24" fill="none">
