@@ -21,6 +21,18 @@ const MOKA_EMAIL = process.env.MOKA_EMAIL;
 const MOKA_PASSWORD = process.env.MOKA_PASSWORD;
 const FONNTE_TOKEN = process.env.FONNTE_TOKEN;
 
+// Netlify Blobs config
+const NETLIFY_SITE_ID   = process.env.NETLIFY_SITE_ID;
+const NETLIFY_API_TOKEN = process.env.NETLIFY_API_TOKEN;
+
+// Helper: get Blobs store dengan manual config sebagai fallback
+function getBlobsStore(name) {
+  if (NETLIFY_SITE_ID && NETLIFY_API_TOKEN) {
+    return getStore({ name, siteID: NETLIFY_SITE_ID, token: NETLIFY_API_TOKEN });
+  }
+  return getStore(name);
+}
+
 // ID grup WA admin — sama dengan REFUND_GROUP_ID di moka-callback & fonnte-incoming
 const REFUND_GROUP_ID = process.env.REFUND_GROUP_ID;
 
@@ -184,7 +196,7 @@ function generateRetryToken(orderId) {
 
 async function savePendingOrder(orderId, orderData, errorMsg) {
   try {
-    const store = getStore("pending-orders");
+    const store = getBlobsStore("pending-orders");
     await store.setJSON(orderId, {
       orderId,
       orderData,
@@ -251,7 +263,7 @@ export const handler = async (event) => {
   let orderItems = [];
 
   try {
-    const store = getStore("pending-orders");
+    const store = getBlobsStore("pending-orders");
     pendingData = await store.get(order_id, { type: "json" });
 
     if (pendingData) {
@@ -310,7 +322,7 @@ export const handler = async (event) => {
 
   // Pastikan grossAmount tersimpan di Blobs untuk kebutuhan moka-callback (pesan refund)
   try {
-    const store = getStore("pending-orders");
+    const store = getBlobsStore("pending-orders");
     const existing = await store.get(order_id, { type: "json" });
     if (existing && !existing.grossAmount) {
       await store.setJSON(order_id, { ...existing, grossAmount: gross_amount });
@@ -348,7 +360,7 @@ export const handler = async (event) => {
 
   // ── 7. Sukses — hapus dari pending Blobs ──────────────────────────────────────
   try {
-    const store = getStore("pending-orders");
+    const store = getBlobsStore("pending-orders");
     await store.delete(order_id);
     console.log(`[Blobs] Pending order ${order_id} dihapus`);
   } catch (err) {

@@ -7,6 +7,16 @@
 
 import { getStore } from "@netlify/blobs";
 
+const NETLIFY_SITE_ID   = process.env.NETLIFY_SITE_ID;
+const NETLIFY_API_TOKEN = process.env.NETLIFY_API_TOKEN;
+
+function getBlobsStore(name) {
+  if (NETLIFY_SITE_ID && NETLIFY_API_TOKEN) {
+    return getStore({ name, siteID: NETLIFY_SITE_ID, token: NETLIFY_API_TOKEN });
+  }
+  return getStore(name);
+}
+
 export const handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method Not Allowed" };
@@ -28,7 +38,7 @@ export const handler = async (event) => {
       };
     }
 
-    const store = getStore("pending-orders");
+    const store = getBlobsStore("pending-orders");
 
     // Simpan sebagai objek JSON langsung (bukan double-stringify)
     // agar midtrans-notify bisa baca dengan { type: "json" }
