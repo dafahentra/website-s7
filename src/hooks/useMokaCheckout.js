@@ -168,7 +168,12 @@ export function useMokaCheckout() {
         }] : []),
       ];
 
-      // ── 1. Midtrans token ────────────────────────────────────────────────────
+      // ── 1. Submit order ke Moka DULU (sebelum buka SNAP) ───────────────────
+      // Penting: save-pending-order harus selesai sebelum customer bayar
+      // agar midtrans-notify bisa baca customerPhone dari Blobs saat settlement
+      await sendMokaOrder(cart, mokaPayload);
+
+      // ── 2. Midtrans token ────────────────────────────────────────────────────
       const { token } = await getMidtransToken({
         order_id: applicationOrderId,
         amount:   round(finalPrice),
@@ -176,27 +181,16 @@ export function useMokaCheckout() {
         items:    midtransItems,
       });
 
-      // ── 2. Load Snap.js ──────────────────────────────────────────────────────
+      // ── 3. Load Snap.js ──────────────────────────────────────────────────────
       const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY;
       if (!clientKey) throw new Error("VITE_MIDTRANS_CLIENT_KEY tidak ditemukan.");
       await loadSnapScript(clientKey);
 
-      // ── 3. Buka popup ────────────────────────────────────────────────────────
+      // ── 4. Buka popup ────────────────────────────────────────────────────────
       return new Promise((resolve, reject) => {
         window.snap.pay(token, {
 
-          onSuccess: async () => {
-            try {
-              await sendMokaOrder(cart, mokaPayload);
-              resolve({ success: true, order_id: applicationOrderId });
-            } catch (mokaErr) {
-              console.error("[checkout] Moka GAGAL:", mokaErr.message);
-              reject(new Error(
-                `Pembayaran berhasil (${applicationOrderId}) tapi order gagal masuk sistem. ` +
-                `Tunjukkan kode ini ke kasir: ${applicationOrderId}`
-              ));
-            }
-          },
+          onSuccess: () => resolve({ success: true, order_id: applicationOrderId }),
 
           onPending: () => resolve({ success: false, pending: true }),
           onError:   () => reject(new Error("Pembayaran gagal. Silakan coba lagi.")),
