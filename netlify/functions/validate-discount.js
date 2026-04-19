@@ -107,7 +107,7 @@ export const handler = async (event) => {
     if (inputCode.startsWith("REWARD_")) {
       return {
         statusCode: 200,
-        headers: corsHeaders,
+        headers: cors,
         body: JSON.stringify({ valid: false, error: "Kode ini hanya berlaku untuk offline order. Tukarkan poin di www.sectorseven.space/loyalty/" }),
       };
     }
