@@ -112,7 +112,7 @@ export const handler = async (event) => {
 
     // Simpan pending order ke Blobs untuk dipakai midtrans-notify saat settlement
     const siteUrl = process.env.URL || "https://sectorseven.space";
-    fetch(`${siteUrl}/.netlify/functions/save-pending-order`, {
+    await fetch(`${siteUrl}/.netlify/functions/save-pending-order`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
