@@ -10,6 +10,15 @@
 
 import crypto from "crypto";
 import { getStore } from "@netlify/blobs";
+const NETLIFY_SITE_ID   = process.env.NETLIFY_SITE_ID;
+const NETLIFY_API_TOKEN = process.env.NETLIFY_API_TOKEN;
+
+function getBlobsStore(name) {
+  if (NETLIFY_SITE_ID && NETLIFY_API_TOKEN) {
+    return getStore({ name, siteID: NETLIFY_SITE_ID, token: NETLIFY_API_TOKEN });
+  }
+  return getStore(name);
+}
 
 const MOKA_OUTLET_ID = process.env.MOKA_OUTLET_ID;
 const MOKA_EMAIL = process.env.MOKA_EMAIL;
@@ -157,7 +166,7 @@ export const handler = async (event) => {
   // Ambil data dari Blobs
   let pendingData;
   try {
-    const store = getStore("pending-orders");
+    const store = getBlobsStore("pending-orders");
     pendingData = await store.get(orderId, { type: "json" });
   } catch (err) {
     return {
@@ -184,7 +193,7 @@ export const handler = async (event) => {
     await submitOrderToMoka(pendingData.orderData);
 
     // Sukses — hapus dari Blobs
-    const store = getStore("pending-orders");
+    const store = getBlobsStore("pending-orders");
     await store.delete(orderId);
 
     // Notif ke grup admin
@@ -207,7 +216,7 @@ export const handler = async (event) => {
   } catch (err) {
     // Gagal — update retry count di Blobs
     try {
-      const store = getStore("pending-orders");
+      const store = getBlobsStore("pending-orders");
       await store.setJSON(orderId, {
         ...pendingData,
         retryCount: (pendingData.retryCount || 0) + 1,

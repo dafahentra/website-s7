@@ -14,6 +14,15 @@
  */
 
 import { getStore } from "@netlify/blobs";
+const NETLIFY_SITE_ID   = process.env.NETLIFY_SITE_ID;
+const NETLIFY_API_TOKEN = process.env.NETLIFY_API_TOKEN;
+
+function getBlobsStore(name) {
+  if (NETLIFY_SITE_ID && NETLIFY_API_TOKEN) {
+    return getStore({ name, siteID: NETLIFY_SITE_ID, token: NETLIFY_API_TOKEN });
+  }
+  return getStore(name);
+}
 
 const FONNTE_TOKEN = process.env.FONNTE_TOKEN;
 const REFUND_GROUP_ID = process.env.REFUND_GROUP_ID; // ID grup WA admin, contoh: 120363407944490567@g.us
@@ -75,7 +84,7 @@ export const handler = async (event) => {
   // ── Ambil data order dari Netlify Blobs ───────────────────────────────────────
   let pendingData = null;
   try {
-    const store = getStore("pending-orders");
+    const store = getBlobsStore("pending-orders");
     pendingData = await store.get(application_order_id, { type: "json" });
   } catch (err) {
     console.warn(`[Blobs] Tidak bisa ambil data order ${application_order_id}: ${err.message}`);
