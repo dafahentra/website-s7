@@ -41,7 +41,6 @@ function buildItemsSummary(cart, onlineFee = 0) {
     const line = `${e.qty}x ${e.itemName}${e.mokaVariantName && e.mokaVariantName !== "Regular" ? ` (${e.mokaVariantName})` : ""}`;
     return mods ? `${line} - ${mods}` : line;
   });
-  if (onlineFee > 0) lines.push(`Biaya online +${new Intl.NumberFormat("id-ID").format(onlineFee)}`);
   return lines.join("|");
 }
 
