@@ -7,9 +7,9 @@ const SHEETS_SECRET = process.env.LOYALTY_SHEETS_SECRET || "s7loyalty2026";
 const FONNTE_TOKEN  = process.env.FONNTE_TOKEN;
 
 const REWARDS = [
-  { id: "discount_3k",  points: 50,  label: "Diskon Rp3.000",     mokaDiscountName: "REWARD_50PTS"  },
-  { id: "free_regular", points: 80,  label: "Free Regular Drink", mokaDiscountName: "REWARD_80PTS"  },
-  { id: "free_large",   points: 100, label: "Free Large Drink",   mokaDiscountName: "REWARD_100PTS" },
+  { id: "free_regular",  points: 100,  label: "Claim 1 free any regular-sized beverage",     mokaDiscountName: "REWARD_100PTS"  },
+  { id: "free_large", points: 120,  label: "Claim 1 free any large-sized beverage", mokaDiscountName: "REWARD_120PTS"  },
+  { id: "free_combo",   points: 180, label: "Claim 2 regular drinks OR 1 regular drink + pastry",   mokaDiscountName: "REWARD_180PTS" },
 ];
 
 function normalizePhone(phone) {
