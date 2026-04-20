@@ -7,9 +7,9 @@ const SHEETS_SECRET = process.env.LOYALTY_SHEETS_SECRET || "s7loyalty2026";
 const FONNTE_TOKEN  = process.env.FONNTE_TOKEN;
 
 const REWARDS = [
-  { id: "free_regular",  points: 100,  label: "Claim 1 free any regular-sized beverage",     mokaDiscountName: "REWARD_100PTS"  },
-  { id: "free_large", points: 120,  label: "Claim 1 free any large-sized beverage", mokaDiscountName: "REWARD_120PTS"  },
-  { id: "free_combo",   points: 180, label: "Claim 2 regular drinks OR 1 regular drink + pastry",   mokaDiscountName: "REWARD_180PTS" },
+  { id: "free_regular",  points: 100,  label: "Free regular drink",     mokaDiscountName: "REWARD_100PTS"  },
+  { id: "free_large", points: 120,  label: "Free large drink", mokaDiscountName: "REWARD_120PTS"  },
+  { id: "free_combo",   points: 180, label: "Free combo",   mokaDiscountName: "REWARD_180PTS" },
 ];
 
 function normalizePhone(phone) {
