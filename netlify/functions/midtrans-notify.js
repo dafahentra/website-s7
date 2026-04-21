@@ -1,27 +1,25 @@
 /**
  * midtrans-notify.js
- * Netlify Function — Webhook handler untuk notifikasi pembayaran dari Midtrans
+ * Netlify Function — Webhook handler notifikasi pembayaran dari Midtrans
  *
  * Flow:
- * 1. Terima webhook Midtrans → validasi signature
- * 2. Cek status === 'settlement'
- * 3. Baca customerPhone dari Netlify Blobs (disimpan saat checkout di moka-checkout.js)
- * 4. Kirim WA receipt ke customer
- *
- * Note: Order sudah masuk ke Moka saat checkout (moka-checkout.js).
- * midtrans-notify TIDAK perlu submit ke Moka lagi.
+ *   1. Terima webhook → validasi signature
+ *   2. Cek settlement / capture+accept
+ *   3. Baca orderData dari Blobs (key = orderData, disimpan oleh save-pending-order.js)
+ *   4. Submit order ke Moka via moka-checkout
+ *   5. Simpan grossAmount ke Blobs (dipakai moka-callback saat rejected)
+ *   6. Kirim WA receipt ke customer
  */
 
 import crypto from "crypto";
 import { getStore } from "@netlify/blobs";
-
-// ─── Config ────────────────────────────────────────────────────────────────────
 
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 const FONNTE_TOKEN        = process.env.FONNTE_TOKEN;
 const REFUND_GROUP_ID     = process.env.REFUND_GROUP_ID;
 const NETLIFY_SITE_ID     = process.env.NETLIFY_SITE_ID;
 const NETLIFY_API_TOKEN   = process.env.NETLIFY_API_TOKEN;
+const SITE_URL            = process.env.URL || "https://sectorseven.space";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -32,47 +30,41 @@ function getBlobsStore(name) {
   return getStore(name);
 }
 
-function formatWaktuWIB(dateStr) {
-  let date;
-  if (!dateStr) {
-    date = new Date();
-  } else {
-    // Midtrans transaction_time: "2024-01-15 14:32:00" — sudah WIB tapi tanpa timezone
-    // Tambah +07:00 agar Node tidak parse sebagai UTC
-    const normalized = dateStr.replace(" ", "T") + "+07:00";
-    date = new Date(normalized);
-  }
-  return date.toLocaleTimeString("id-ID", {
-    timeZone: "Asia/Jakarta",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }) + " WIB";
-}
-
-function formatRupiah(amount) {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  }).format(amount);
-}
-
 function validateSignature(orderId, statusCode, grossAmount, signatureKey) {
   const raw  = orderId + statusCode + grossAmount + MIDTRANS_SERVER_KEY;
   const hash = crypto.createHash("sha512").update(raw).digest("hex");
   return hash === signatureKey;
 }
 
+function formatWaktuWIB(dateStr) {
+  const date = dateStr
+    ? new Date(dateStr.replace(" ", "T") + "+07:00")
+    : new Date();
+  return date.toLocaleString("id-ID", {
+    timeZone: "Asia/Jakarta",
+    day:      "2-digit",
+    month:    "long",
+    year:     "numeric",
+    hour:     "2-digit",
+    minute:   "2-digit",
+    hour12:   false,
+  }) + " WIB";
+}
+
+function formatRupiah(amount) {
+  return new Intl.NumberFormat("id-ID", {
+    style:                "currency",
+    currency:             "IDR",
+    minimumFractionDigits: 0,
+  }).format(amount);
+}
+
 async function sendWA(target, message) {
   try {
     const res = await fetch("https://api.fonnte.com/send", {
-      method: "POST",
-      headers: {
-        Authorization: FONNTE_TOKEN,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ target, message, countryCode: "62" }),
+      method:  "POST",
+      headers: { Authorization: FONNTE_TOKEN, "Content-Type": "application/json" },
+      body:    JSON.stringify({ target, message, countryCode: "62" }),
     });
     const result = await res.json();
     console.log(`[sendWA] → ${target} | status: ${result?.status}`);
@@ -81,6 +73,18 @@ async function sendWA(target, message) {
     console.error("[sendWA] Error:", err.message);
     return null;
   }
+}
+
+async function submitOrderToMoka(orderData) {
+  const res = await fetch(`${SITE_URL}/.netlify/functions/moka-checkout`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({ order: orderData }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error || `moka-checkout error ${res.status}`);
+  console.log("[midtrans-notify] Order masuk ke Moka");
+  return data;
 }
 
 // ─── Handler ───────────────────────────────────────────────────────────────────
@@ -107,52 +111,85 @@ export const handler = async (event) => {
     transaction_time,
   } = notification;
 
-  console.log(`[Webhook] ${order_id} — status: ${transaction_status}`);
+  console.log(`[midtrans-notify] ${order_id} — status: ${transaction_status}`);
 
-  // ── 1. Validasi Signature ──────────────────────────────────────────────────
+  // ── 1. Validasi signature ─────────────────────────────────────────────────────
   if (!validateSignature(order_id, status_code, gross_amount, signature_key)) {
-    console.error("[Webhook] Signature tidak valid!");
+    console.error("[midtrans-notify] Signature tidak valid!");
     return { statusCode: 403, body: "Invalid signature" };
   }
 
-  // ── 2. Cek settlement ──────────────────────────────────────────────────────
+  // ── 2. Cek settlement ─────────────────────────────────────────────────────────
   const isSettled =
     transaction_status === "settlement" ||
     (transaction_status === "capture" && fraud_status === "accept");
 
   if (!isSettled) {
-    console.log(`[Webhook] Status ${transaction_status} — skip`);
+    console.log(`[midtrans-notify] Status ${transaction_status} — skip`);
     return { statusCode: 200, body: "OK" };
   }
 
-  // ── 3. Baca data dari Blobs ────────────────────────────────────────────────
+  // ── 3. Baca data dari Blobs ───────────────────────────────────────────────────
+  let pendingData   = null;
   let customerPhone = null;
   let customerName  = "Pelanggan";
   let orderItems    = [];
+  let orderData     = null; // key di Blobs adalah "orderData" (dari save-pending-order.js)
 
   try {
-    const store       = getBlobsStore("pending-orders");
-    const pendingData = await store.get(order_id, { type: "json" });
+    const store = getBlobsStore("pending-orders");
+    pendingData = await store.get(order_id, { type: "json" });
 
     if (pendingData) {
-      customerPhone = pendingData.customerPhone  || null;
-      customerName  = pendingData.customerName   || "Pelanggan";
-      orderItems    = pendingData.items          || [];
-
-      // Simpan grossAmount untuk dipakai moka-callback saat reject
-      if (!pendingData.grossAmount) {
-        await store.setJSON(order_id, { ...pendingData, grossAmount: gross_amount });
-      }
-
-      console.log(`[Blobs] Data ditemukan — phone: ${customerPhone}`);
+      customerPhone = pendingData.customerPhone || null;
+      customerName  = pendingData.customerName  || "Pelanggan";
+      orderItems    = pendingData.items         || [];
+      // save-pending-order.js menyimpan payload dengan key "orderData"
+      orderData     = pendingData.orderData     || null;
+      console.log(`[Blobs] Data ditemukan — phone: ${customerPhone} | orderData: ${!!orderData}`);
     } else {
-      console.warn(`[Blobs] Tidak ada data untuk order ${order_id}`);
+      console.warn(`[Blobs] Tidak ada data untuk ${order_id}`);
     }
   } catch (err) {
     console.error(`[Blobs] Error: ${err.message}`);
   }
 
-  // ── 4. Kirim WA Receipt ────────────────────────────────────────────────────
+  // ── 4. Submit order ke Moka ───────────────────────────────────────────────────
+  if (orderData) {
+    try {
+      await submitOrderToMoka(orderData);
+    } catch (err) {
+      console.error("[midtrans-notify] Moka submit gagal:", err.message);
+      if (REFUND_GROUP_ID) {
+        await sendWA(
+          REFUND_GROUP_ID,
+          `⚠️ *MOKA SUBMIT GAGAL*\n\n` +
+          `Order ID : ${order_id}\n` +
+          `Total    : ${formatRupiah(gross_amount)}\n` +
+          `Error    : ${err.message}\n\n` +
+          `Pembayaran settle di Midtrans. Input manual ke Moka.`
+        );
+      }
+    }
+  } else {
+    console.warn(`[midtrans-notify] orderData null untuk ${order_id} — skip Moka submit`);
+  }
+
+  // ── 5. Simpan grossAmount ke Blobs ────────────────────────────────────────────
+  // Dipakai moka-callback.js saat status rejected untuk tampilkan nominal refund
+  if (pendingData) {
+    try {
+      const store = getBlobsStore("pending-orders");
+      await store.setJSON(order_id, {
+        ...pendingData,
+        grossAmount: gross_amount,
+      });
+    } catch (err) {
+      console.error("[Blobs] Gagal simpan grossAmount:", err.message);
+    }
+  }
+
+  // ── 6. Kirim WA receipt ke customer ──────────────────────────────────────────
   if (customerPhone) {
     const itemList = orderItems.length > 0
       ? orderItems.map((i) => `  • ${i.name} x${i.qty}`).join("\n")
@@ -171,7 +208,7 @@ export const handler = async (event) => {
     await sendWA(customerPhone, msg);
     console.log(`[WA] Receipt terkirim ke ${customerPhone}`);
   } else {
-    console.warn(`[WA] customerPhone tidak ditemukan untuk order ${order_id}`);
+    console.warn(`[WA] customerPhone tidak ditemukan untuk ${order_id}`);
     if (REFUND_GROUP_ID) {
       await sendWA(
         REFUND_GROUP_ID,
@@ -179,11 +216,10 @@ export const handler = async (event) => {
         `Order ID : ${order_id}\n` +
         `Total    : ${formatRupiah(gross_amount)}\n` +
         `Waktu    : ${formatWaktuWIB(transaction_time)}\n\n` +
-        `Customer tidak bisa dihubungi via WA. Cek manual.`
+        `Cek manual.`
       );
     }
   }
 
-  console.log(`[Handler] Order ${order_id} selesai`);
   return { statusCode: 200, body: "OK" };
 };

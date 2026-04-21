@@ -1,9 +1,7 @@
 // netlify/functions/save-pending-order.js
 // Simpan order payload ke Netlify Blobs sebelum Midtrans dibuka.
-// Data ini digunakan oleh midtrans-notify sebagai safety net
-// kalau onSuccess callback tidak terpanggil.
-//
-// Order data otomatis expire setelah 24 jam (TTL Blobs).
+// Dipanggil oleh useMokaCheckout.js (frontend) sebelum buka SNAP.
+// Data dibaca oleh midtrans-notify.js setelah settlement untuk submit ke Moka.
 
 import { getStore } from "@netlify/blobs";
 
@@ -23,15 +21,21 @@ export const handler = async (event) => {
   }
 
   try {
+    const body = JSON.parse(event.body || "{}");
+
     const {
       orderId,
-      orderPayload,   // data Moka (wajib)
-      customerPhone,  // nomor WA customer, contoh: "6281234567890" (wajib untuk WA receipt)
-      customerName,   // nama customer (opsional, fallback ke "Pelanggan")
-      items,          // array ringkasan item untuk WA receipt, contoh: [{name, qty}]
-    } = JSON.parse(event.body || "{}");
+      customerPhone,
+      customerName,
+      grossAmount,
+      orderTimestamp,
+      items,
+    } = body;
 
-    if (!orderId || !orderPayload) {
+    // Support dua nama field: orderPayload (dari frontend baru) atau orderData (legacy)
+    const orderData = body.orderPayload || body.orderData || null;
+
+    if (!orderId || !orderData) {
       return {
         statusCode: 400,
         body: JSON.stringify({ error: "Missing orderId or orderPayload" }),
@@ -40,17 +44,18 @@ export const handler = async (event) => {
 
     const store = getBlobsStore("pending-orders");
 
-    // Simpan sebagai objek JSON langsung (bukan double-stringify)
-    // agar midtrans-notify bisa baca dengan { type: "json" }
+    // Simpan dengan key "orderData" — konsisten dengan midtrans-notify.js dan retry-order.js
     await store.setJSON(
       orderId,
       {
         orderId,
-        orderData: orderPayload,   // rename jadi orderData agar konsisten dengan midtrans-notify
-        customerPhone: customerPhone || null,
-        customerName: customerName || "Pelanggan",
-        items: items || [],
-        savedAt: new Date().toISOString(),
+        orderData,
+        customerPhone:  customerPhone  || null,
+        customerName:   customerName   || "Pelanggan",
+        grossAmount:    grossAmount    || null,
+        orderTimestamp: orderTimestamp || new Date().toISOString(),
+        items:          items          || [],
+        savedAt:        new Date().toISOString(),
       },
       { ttl: 86400 } // 24 jam
     );
