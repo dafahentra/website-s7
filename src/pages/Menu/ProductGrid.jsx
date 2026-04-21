@@ -6,6 +6,7 @@ import { TYPOGRAPHY } from "../../styles/designSystem";
 const ProductGrid = React.memo(({
   items, activeCategory, onProductClick,
   isMobile = false, cart, onAddToCart, onIncrement, onDecrement,
+  isOpen = true, isItemUnavailable,
 }) => {
   const gridCols    = isMobile ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
   const padding     = isMobile ? "px-6 py-8"   : "px-12 py-10";
@@ -15,7 +16,6 @@ const ProductGrid = React.memo(({
 
   const handleClick = useCallback((id) => onProductClick(id), [onProductClick]);
 
-  // Total qty across all variants of an item
   const getQty = (itemId) =>
     cart.filter((e) => String(e.itemId) === String(itemId)).reduce((s, e) => s + e.qty, 0);
 
@@ -36,6 +36,7 @@ const ProductGrid = React.memo(({
             onAddToCart={onAddToCart}
             onIncrement={onIncrement}
             onDecrement={onDecrement}
+            isUnavailable={!isOpen || (isItemUnavailable?.(item.id) ?? false)}
           />
         ))}
       </div>

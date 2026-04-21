@@ -12,6 +12,7 @@ import { menuCategories } from "../../data/menuCategories";
 import { menuItems } from "../../data/menuData";
 import { useMokaData } from "../../hooks/useMokaData";
 import { useMokaCheckout } from "../../hooks/useMokaCheckout";
+import { useStoreStatus } from "../../hooks/useStoreStatus";
 
 const fmt = (n) => new Intl.NumberFormat("id-ID").format(n);
 
@@ -58,12 +59,20 @@ const Menu = () => {
 
   const { mokaMap, loading: mokaLoading, error: mokaError } = useMokaData();
   const { checkout, submitting } = useMokaCheckout();
+  const { isOpen, unavailableItems } = useStoreStatus();
+
+  const isItemUnavailable = useCallback((localId) => {
+    const mokaId = mokaMap[localId]?.id;
+    if (!mokaId) return false;
+    return unavailableItems.includes(String(mokaId));
+  }, [mokaMap, unavailableItems]);
 
   const currentItems = useMemo(() => menuItems[activeCategory] || [], [activeCategory]);
 
   const handleAddToCart = useCallback((item) => {
+    if (!isOpen || isItemUnavailable(item.id)) return;
     setPendingItem(item);
-  }, []);
+  }, [isOpen, isItemUnavailable]);
 
   const handleConfirmAdd = useCallback(({
     item, mokaItemId, mokaVariantId, mokaVariantName, mokaVariantSku,
@@ -112,9 +121,11 @@ const Menu = () => {
     setCart((prev) => prev.filter((e) => e.key !== key));
   }, []);
 
-  // ── handleCheckout — terima full payload dari CartSidebar ──────────────────
-  // CartSidebar mengirim: { name, phone, orderNote, discount, subtotal, discountAmount, finalPrice }
   const handleCheckout = useCallback(async (customerInfo = {}) => {
+    if (!isOpen) {
+      alert("Toko sedang tutup. Order tidak dapat diproses.");
+      return;
+    }
     try {
       const result = await checkout(cart, customerInfo);
       if (result?.success) {
@@ -124,14 +135,10 @@ const Menu = () => {
     } catch (e) {
       const msg = e.message || "";
       if (msg.includes("dibatalkan")) return;
-      if (msg.includes("tapi order gagal masuk")) {
-        // Bayar sukses tapi Moka reject — jangan kosongkan cart
-        alert(msg);
-        return;
-      }
+      if (msg.includes("tapi order gagal masuk")) { alert(msg); return; }
       alert(`Pembayaran gagal: ${msg}`);
     }
-  }, [cart, checkout]);
+  }, [cart, checkout, isOpen]);
 
   const { cartTotalItems, cartTotalPrice } = useMemo(() => ({
     cartTotalItems: cart.reduce((s, e) => s + e.qty, 0),
@@ -157,6 +164,8 @@ const Menu = () => {
     cart,
     onAddToCart: handleAddToCart,
     onDecrement: handleDecrement,
+    isOpen,
+    isItemUnavailable,
   };
 
   return (
@@ -191,7 +200,9 @@ const Menu = () => {
         </div>
       </div>
 
-      <FloatingCartButton totalItems={cartTotalItems} totalPrice={cartTotalPrice} onClick={() => setCartOpen(true)} />
+      {isOpen && (
+        <FloatingCartButton totalItems={cartTotalItems} totalPrice={cartTotalPrice} onClick={() => setCartOpen(true)} />
+      )}
 
       <AnimatePresence>
         {cartOpen && (
