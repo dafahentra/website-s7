@@ -194,6 +194,25 @@ export const handler = async (event) => {
 
         await sendWA(customerPhone, msg);
         console.log(`[moka-callback] WA completed terkirim ke ${customerPhone}`);
+
+        // ── Loyalty points ────────────────────────────────────────────────────
+        if (grossAmount) {
+          const siteUrl = process.env.URL || "https://sectorseven.space";
+          fetch(`${siteUrl}/.netlify/functions/loyalty-add`, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              phone:     customerPhone,
+              name:      customerName,
+              amountIDR: grossAmount,
+              source:    "online",
+              txId:      `completed-${application_order_id}`,
+            }),
+          })
+          .then((r) => r.json())
+          .then((d) => console.log(`[moka-callback] loyalty-add: ${JSON.stringify(d)}`))
+          .catch((e) => console.error(`[moka-callback] loyalty-add failed: ${e.message}`));
+        }
       }
       break;
     }
@@ -252,21 +271,6 @@ export const handler = async (event) => {
             `_Sector Seven Coffee_`;
 
         await sendWA(customerPhone, msg1);
-
-        // ── Bubble 2: Form refund — hanya tampil jika auto refund gagal ──────────
-        if (!refundSuccess) {
-          const msg2 =
-            `💸 *Form Refund*\n\n` +
-            `Salin dan isi format berikut, lalu kirim balik ke sini:\n\n` +
-            `REFUND ${application_order_id}\n` +
-            `Nama: [nama lengkap]\n` +
-            `No HP: [nomor HP kamu]\n` +
-            `Metode: [GoPay / OVO / Dana / BCA / BRI / dll]\n` +
-            `No Rekening: [nomor rekening atau e-wallet]\n` +
-            `Atas Nama: [nama di rekening / e-wallet]`;
-
-          await sendWA(customerPhone, msg2);
-        }
 
         console.log(`[moka-callback] Rejected flow selesai — refundSuccess: ${refundSuccess}`);
 

@@ -1,152 +1,61 @@
 // netlify/functions/order-notify.js
-// Menerima webhook dari Moka saat status order berubah,
-// lalu kirim WA ke customer via Fonnte dengan detail menu dan receipt.
+// STUB — backward compat untuk order lama yang callback URL-nya masih ke sini.
+// Forward semua event ke moka-callback.js dengan format yang kompatibel.
+// Order baru sudah langsung pakai moka-callback.js.
 
-const FONNTE_TOKEN = process.env.FONNTE_TOKEN;
-const BASE_URL     = process.env.URL || "https://sectorseven.space";
-const STORE_NAME   = "Sector Seven";
+import { getStore } from "@netlify/blobs";
 
-const fmt = (n) => `Rp${new Intl.NumberFormat("id-ID").format(Number(n) || 0)}`;
+const NETLIFY_SITE_ID   = process.env.NETLIFY_SITE_ID;
+const NETLIFY_API_TOKEN = process.env.NETLIFY_API_TOKEN;
+const SITE_URL          = process.env.URL || "https://sectorseven.space";
 
-// Parse items summary dari query param: "2x Latte (Hot) - Less Sugar|1x Americano"
-function parseItems(itemsParam) {
-  if (!itemsParam) return [];
-  return decodeURIComponent(itemsParam).split("|").filter(Boolean);
-}
-
-function buildItemLines(items) {
-  return items.map((item) => `  • ${item}`).join("\n");
-}
-
-function buildMessages(name, orderId, items, total) {
-  const hasItems = items.length > 0;
-  const itemLines = hasItems ? buildItemLines(items) : "";
-  const totalLine = total ? `\n *Total:* ${fmt(total)}` : "";
-
-  return {
-    accepted: (
-      `*${STORE_NAME}* Online Order Notification \n\n` +
-      `Halo *${name}*!\n\n` +
-      `Pesanan kamu sudah diterima dan sedang diproses barista kami.\n\n` +
-      `*Detail Pesanan (${orderId}):*\n` +
-      (hasItems ? `${itemLines}\n` : "") +
-      `${totalLine}\n\n` +
-      `Mohon ditunggu sebentar`
-    ),
-
-    completed: (
-      `*${STORE_NAME}* Online Order Notification \n\n` +
-      `Halo *${name}*!\n\n` +
-      `Pesanan kamu sudah selesai dan siap diambil!\n\n` +
-      `*Receipt (${orderId}):*\n` +
-      (hasItems ? `${itemLines}\n` : "") +
-      `${totalLine}\n\n` +
-      `Silakan ambil di kasir. Terima kasih sudah order di *${STORE_NAME}*!`
-    ),
-
-    cancelled: (
-      `*${STORE_NAME}* Online Order Notification \n\n` +
-      `Halo *${name}*. \n\n` +
-      `Maaf, pesanan kamu (*${orderId}*) telah dibatalkan.\n\n` +
-      `Silakan hubungi kami langsung di kasir. Terima kasih.`
-    ),
-  };
-}
-
-async function sendWhatsApp(phone, message) {
-  if (!FONNTE_TOKEN) {
-    console.warn("[order-notify] FONNTE_TOKEN not set — skipping");
-    return { skipped: true };
+function getBlobsStore(name) {
+  if (NETLIFY_SITE_ID && NETLIFY_API_TOKEN) {
+    return getStore({ name, siteID: NETLIFY_SITE_ID, token: NETLIFY_API_TOKEN });
   }
-
-  const normalized = phone
-    .replace(/[\s\-]/g, "")
-    .replace(/^\+/, "")
-    .replace(/^0/, "62");
-
-  console.log(`[order-notify] Sending WA to ${normalized}`);
-
-  const res  = await fetch("https://api.fonnte.com/send", {
-    method: "POST",
-    headers: { "Authorization": FONNTE_TOKEN, "Content-Type": "application/json" },
-    body: JSON.stringify({ target: normalized, message, countryCode: "62" }),
-  });
-
-  const data = await res.json().catch(() => ({}));
-  console.log("[order-notify] Fonnte:", JSON.stringify(data));
-  return data;
+  return getStore(name);
 }
 
 export const handler = async (event) => {
-  const headers = {
-    "Access-Control-Allow-Origin": "*",
-    "Content-Type": "application/json",
-  };
+  const headers = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
+  if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers, body: "" };
 
-  if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 200, headers, body: "" };
+  const q         = event.queryStringParameters || {};
+  const eventType = q.event || "unknown";
+  const orderId   = q.order || "";
+
+  // Map order-notify event → moka-callback status
+  const statusMap = { accepted: "accepted", completed: "completed", cancelled: "rejected" };
+  const status    = statusMap[eventType];
+
+  if (!status || !orderId) {
+    return { statusCode: 200, headers, body: JSON.stringify({ ok: true, skipped: true }) };
   }
 
-  try {
-    const q = event.queryStringParameters || {};
+  console.log(`[order-notify] forward ${eventType} → moka-callback status=${status} order=${orderId}`);
 
-    const eventType = q.event || "unknown";
-    const orderId   = q.order || "-";
-    const phone     = q.phone ? decodeURIComponent(q.phone) : "";
-    const name      = q.name  ? decodeURIComponent(q.name)  : "Pelanggan";
-    const total     = q.total || "";
-    const items     = parseItems(q.items);
-
-    console.log(`[order-notify] event=${eventType} order=${orderId} phone=${phone} name=${name} items=${items.length}`);
-
-    const messages = buildMessages(name, orderId, items, total);
-    const message  = messages[eventType];
-
-    if (!message) {
-      console.warn("[order-notify] Unknown event:", eventType);
-      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, skipped: true, reason: "unknown_event" }) };
-    }
-
-    if (!phone) {
-      console.warn("[order-notify] No phone");
-      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, skipped: true, reason: "no_phone" }) };
-    }
-
-    // Jalankan WA notif + loyalty-add secara paralel
-    const promises = [sendWhatsApp(phone, message)];
-
-    if (eventType === "completed" && phone) {
-      const total = Number(q.total) || 0;
-      if (total > 0) {
-        promises.push(
-          fetch(`${BASE_URL}/.netlify/functions/loyalty-add`, {
-            method:  "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              phone,
-              name:      decodeURIComponent(q.name || ""),
-              amountIDR: total,
-              source:    "online",
-              txId:      `completed-${orderId}`,
-            }),
-          })
-          .then((r) => r.json())
-          .then((d) => console.log("[order-notify] loyalty-add:", JSON.stringify(d)))
-          .catch((e) => console.error("[order-notify] loyalty-add failed:", e.message))
-        );
+  // Assicurarsi che grossAmount sia nel Blobs (viene da query param ?total=)
+  const total = Number(q.total) || 0;
+  if (total > 0) {
+    try {
+      const store      = getBlobsStore("pending-orders");
+      const blobsData  = await store.get(orderId, { type: "json" }).catch(() => null);
+      if (blobsData && !blobsData.grossAmount) {
+        await store.setJSON(orderId, { ...blobsData, grossAmount: total });
       }
-    }
-
-    const [waResult] = await Promise.all(promises);
-
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ ok: true, event: eventType, order: orderId, wa: waResult }),
-    };
-
-  } catch (err) {
-    console.error("[order-notify] Error:", err.message);
-    return { statusCode: 200, headers, body: JSON.stringify({ ok: false, error: err.message }) };
+    } catch { /* skip */ }
   }
+
+  // Forward ke moka-callback via internal fetch
+  try {
+    await fetch(`${SITE_URL}/.netlify/functions/moka-callback`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ application_order_id: orderId, status }),
+    });
+  } catch (err) {
+    console.error("[order-notify] forward gagal:", err.message);
+  }
+
+  return { statusCode: 200, headers, body: JSON.stringify({ ok: true, forwarded: true }) };
 };
