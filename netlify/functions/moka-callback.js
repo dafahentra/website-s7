@@ -224,7 +224,7 @@ export const handler = async (event) => {
         // ── Bubble 1: Info pesanan ditolak + status refund ───────────────────────
         const msg1 = refundSuccess
           ? `😔 *Pesananmu tidak bisa diproses*\n\n` +
-            `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini — kemungkinan bahan sedang habis.\n\n` +
+            `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini.\n\n` +
             `Order ID: *${application_order_id}*\n` +
             `Waktu: ${timestampText}\n` +
             `Menu:\n${menuText}\n` +
@@ -232,7 +232,7 @@ export const handler = async (event) => {
             `✅ *Refund sudah otomatis diproses ke metode pembayaran kamu.*\n` +
             `Dana akan kembali dalam beberapa menit hingga 1 hari kerja tergantung metode pembayaran.\n\n`
           : `😔 *Pesananmu tidak bisa diproses*\n\n` +
-            `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini — kemungkinan bahan sedang habis.\n\n` +
+            `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini.\n\n` +
             `Order ID: *${application_order_id}*\n` +
             `Waktu: ${timestampText}\n` +
             `Menu:\n${menuText}\n` +
