@@ -218,7 +218,7 @@ const ProductSlider = React.memo(({
           {isCurrentUnavailable && (
             <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
               <span className="bg-black/60 text-white text-sm font-bold px-4 py-1.5 rounded-full">
-                {!isOpen ? "Toko Tutup" : "Habis"}
+                {!isOpen ? "Closed" : "Sold Out"}
               </span>
             </div>
           )}
