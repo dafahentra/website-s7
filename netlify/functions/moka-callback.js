@@ -168,14 +168,11 @@ export const handler = async (event) => {
         const msg1 =
           `😔 *Pesananmu tidak bisa diproses*\n\n` +
           `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini — kemungkinan bahan sedang habis.\n\n` +
-          `━━━━━━━━━━━━━━━━━\n` +
-          `🧾 *Detail Pesanan*\n` +
-          `Order ID    : *${application_order_id}*\n` +
-          `Waktu Order : ${timestampText}\n` +
-          `Menu        :\n${menuText}\n` +
-          `Nominal     : *${nominalText}*\n` +
-          `━━━━━━━━━━━━━━━━━\n\n` +
-          `Pembayaran akan kami kembalikan dalam 1×24 jam.\n` +
+          `🔖 Order ID: *${application_order_id}*\n` +
+          `🕐 Waktu: ${timestampText}\n` +
+          `☕ Menu:\n${menuText}\n` +
+          `💰 Nominal: *${nominalText}*\n\n` +
+          `Refund akan kami proses dalam *2 jam*.\n` +
           `Silakan kirim data refund kamu di pesan berikutnya 👇\n\n` +
           `_Sector Seven Coffee_`;
 

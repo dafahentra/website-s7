@@ -131,6 +131,12 @@ export const handler = async (event) => {
 
   const sender = senderRaw.replace(/@.*/, "").replace(/\D/g, "");
 
+  // ── DONE command dari admin grup ─────────────────────────────────────────────
+  if (message.toUpperCase().startsWith("DONE ")) {
+    await handleDoneCommand(body);
+    return OK;
+  }
+
   // ── Deteksi REFUND ────────────────────────────────────────────────────────────
   if (!message.toUpperCase().includes("REFUND ")) {
     console.log("[fonnte-incoming] Bukan REFUND — skip");
@@ -164,7 +170,7 @@ export const handler = async (event) => {
     const existing = await refundStore.get(orderId, { type: "json" });
     if (existing) {
       await sendWA(sender,
-        `ℹ️ Refund untuk order *${orderId}* sudah kami terima sebelumnya.\nMohon tunggu 1×24 jam 🙏`
+        `ℹ️ Refund untuk order *${orderId}* sudah kami terima sebelumnya.\nMohon tunggu maksimal 2 jam 🙏`
       );
       return OK;
     }
@@ -231,9 +237,73 @@ export const handler = async (event) => {
     `✅ *Permintaan refund diterima!*\n\n` +
     `Order ID : *${orderId}*\n` +
     `Nominal  : ${nominal}\n\n` +
-    `Data kamu sudah kami teruskan ke tim. Refund diproses dalam 1×24 jam.\n\n` +
+    `Data kamu sudah kami teruskan ke tim. Refund diproses dalam *2 jam*.\n\n` +
     `_Sector Seven Coffee_ ☕`
   );
 
   return OK;
 };
+
+// ─── Handler DONE command dari admin di grup TEST ───────────────────────────────
+// Admin ketik: DONE S7-xxx
+// Bot kirim WA ke customer bahwa refund sudah diproses.
+export async function handleDoneCommand(body) {
+  const message   = (body.message || body.text || "").trim();
+  const senderRaw = (body.sender  || body.from || "").toString().trim();
+
+  // Hanya proses pesan dari REFUND_GROUP_ID
+  if (!REFUND_GROUP_ID || senderRaw !== REFUND_GROUP_ID) return;
+  if (!message.toUpperCase().startsWith("DONE ")) return;
+
+  const orderId = message.split(/\s+/)[1]?.trim();
+  if (!orderId) return;
+
+  console.log(`[fonnte-incoming] DONE command — orderId=${orderId}`);
+
+  // Ambil data customer dari refund-submissions
+  let customerPhone = null;
+  let nominal       = "[cek manual]";
+  let metode        = "[cek manual]";
+
+  try {
+    const refundStore = getBlobsStore("refund-submissions");
+    const refundData  = await refundStore.get(orderId, { type: "json" });
+    if (refundData) {
+      customerPhone = refundData.sender || null;
+      metode        = refundData.fields?.["metode"]    || metode;
+      nominal       = refundData.fields?.["nominal"]   || nominal;
+    }
+  } catch (err) {
+    console.warn("[fonnte-incoming] DONE — Blobs lookup gagal:", err.message);
+  }
+
+  // Fallback: coba ambil dari pending-orders
+  if (!nominal || nominal === "[cek manual]") {
+    try {
+      const orderStore = getBlobsStore("pending-orders");
+      const orderData  = await orderStore.get(orderId, { type: "json" });
+      if (orderData?.grossAmount) {
+        nominal = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(orderData.grossAmount);
+      }
+    } catch { /* skip */ }
+  }
+
+  if (!customerPhone) {
+    console.warn(`[fonnte-incoming] DONE — customer phone tidak ditemukan untuk ${orderId}`);
+    await sendWA(REFUND_GROUP_ID,
+      `⚠️ Gagal kirim notif ke customer.\nPhone tidak ditemukan untuk order ${orderId}.\nKirim manual.`
+    );
+    return;
+  }
+
+  await sendWA(customerPhone,
+    `✅ *Refund berhasil diproses!*\n\n` +
+    `Order ID : *${orderId}*\n` +
+    `Nominal  : ${nominal}\n` +
+    `Metode   : ${metode}\n\n` +
+    `Dana sudah kami kirimkan. Mohon cek dalam beberapa menit ya 🙏\n\n` +
+    `_Sector Seven Coffee_ ☕`
+  );
+
+  console.log(`[fonnte-incoming] Notif DONE terkirim ke ${customerPhone}`);
+}
