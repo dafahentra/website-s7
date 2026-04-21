@@ -56,7 +56,7 @@ const ProductCard = React.memo(({
         {isUnavailable && (
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="bg-black/60 text-white text-xs font-bold px-3 py-1 rounded-full">
-              {!isOpen ? "Toko Tutup" : "Habis"}
+              {!isOpen ? "Closed" : "Sold Out"}
             </span>
           </div>
         )}

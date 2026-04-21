@@ -243,7 +243,7 @@ const CartRow = React.memo(({ entry, onIncrement, onDecrement, onRemove, isUnava
   if (!item) return null;
 
   const tags        = [mokaVariantName, ...(mokaModifiers ?? []).map((m) => m.modifier_option_name)].filter(Boolean);
-  const unavailLabel = !isOpen ? "Toko Tutup" : "Habis";
+  const unavailLabel = !isOpen ? "Closed" : "Sold Out";
 
   return (
     <motion.div
