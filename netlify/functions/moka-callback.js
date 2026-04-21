@@ -192,27 +192,31 @@ export const handler = async (event) => {
           `\nSilakan diambil di counter ya! 😊\n\n` +
           `_Sector Seven Coffee_`;
 
-        await sendWA(customerPhone, msg);
-        console.log(`[moka-callback] WA completed terkirim ke ${customerPhone}`);
+        // ── WA + Loyalty paralel (keduanya di-await) ─────────────────────────
+        const siteUrl  = process.env.URL || "https://sectorseven.space";
+        const tasks    = [sendWA(customerPhone, msg)];
 
-        // ── Loyalty points ────────────────────────────────────────────────────
         if (grossAmount) {
-          const siteUrl = process.env.URL || "https://sectorseven.space";
-          fetch(`${siteUrl}/.netlify/functions/loyalty-add`, {
-            method:  "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              phone:     customerPhone,
-              name:      customerName,
-              amountIDR: grossAmount,
-              source:    "online",
-              txId:      `completed-${application_order_id}`,
-            }),
-          })
-          .then((r) => r.json())
-          .then((d) => console.log(`[moka-callback] loyalty-add: ${JSON.stringify(d)}`))
-          .catch((e) => console.error(`[moka-callback] loyalty-add failed: ${e.message}`));
+          tasks.push(
+            fetch(`${siteUrl}/.netlify/functions/loyalty-add`, {
+              method:  "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                phone:     customerPhone,
+                name:      customerName,
+                amountIDR: grossAmount,
+                source:    "online",
+                txId:      `completed-${application_order_id}`,
+              }),
+            })
+            .then((r) => r.json())
+            .then((d) => console.log(`[moka-callback] loyalty-add: ${JSON.stringify(d)}`))
+            .catch((e) => console.error(`[moka-callback] loyalty-add failed: ${e.message}`))
+          );
         }
+
+        await Promise.allSettled(tasks);
+        console.log(`[moka-callback] WA + loyalty selesai untuk ${customerPhone}`);
       }
       break;
     }
