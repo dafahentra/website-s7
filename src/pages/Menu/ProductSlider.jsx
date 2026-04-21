@@ -83,7 +83,7 @@ SliderCartPill.displayName = "SliderCartPill";
 // ── Product Info Panel ────────────────────────────────────────────────────────
 const ProductInfo = React.memo(({
   currentItem, activeCategory, isMobile,
-  cartQty, onAddToCart, onDecrement,
+  cartQty, onAddToCart, onDecrement, isUnavailable = false,
 }) => {
   const catSize   = isMobile ? TYPOGRAPHY.body.small        : TYPOGRAPHY.body.default;
   const nameSize  = isMobile ? TYPOGRAPHY.subheading.tablet : TYPOGRAPHY.subheading.desktop;
@@ -94,7 +94,7 @@ const ProductInfo = React.memo(({
     <motion.div
       key={currentItem.id}
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{ opacity: isUnavailable ? 0.5 : 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
     >
@@ -118,12 +118,14 @@ const ProductInfo = React.memo(({
         <span className={`${priceSize} ${TYPOGRAPHY.weight.bold} text-gray-900 whitespace-nowrap`}>
           Rp{currentItem.price}
         </span>
-        <SliderCartPill
-          item={currentItem}
-          cartQty={cartQty}
-          onAddToCart={onAddToCart}
-          onDecrement={onDecrement}
-        />
+        {!isUnavailable && (
+          <SliderCartPill
+            item={currentItem}
+            cartQty={cartQty}
+            onAddToCart={onAddToCart}
+            onDecrement={onDecrement}
+          />
+        )}
       </div>
     </motion.div>
   );
@@ -151,8 +153,11 @@ const ProductSlider = React.memo(({
   items, currentIndex, activeCategory, direction,
   onNext, onPrev, onIndexChange, onDirectionChange,
   isMobile = false, cart, onAddToCart, onDecrement,
+  isOpen = true, isItemUnavailable,
 }) => {
   const currentItem = items[currentIndex] || items[0];
+
+  const isCurrentUnavailable = !isOpen || (currentItem ? (isItemUnavailable?.(currentItem.id) ?? false) : false);
 
   const cartQty = currentItem
     ? cart.filter((e) => String(e.itemId) === String(currentItem.id)).reduce((s, e) => s + e.qty, 0)
@@ -175,7 +180,7 @@ const ProductSlider = React.memo(({
     : "px-12 pt-32 pb-8 border-b border-gray-200";
   const imageSize = isMobile ? "w-64 h-64" : "w-72 h-72";
 
-  const commonProps = { currentItem, activeCategory, cartQty, onAddToCart, onDecrement };
+  const commonProps = { currentItem, activeCategory, cartQty, onAddToCart, onDecrement, isUnavailable: isCurrentUnavailable };
 
   return (
     <div className={containerClass}>
@@ -197,15 +202,26 @@ const ProductSlider = React.memo(({
                 animate="center"
                 exit="exit"
                 transition={{ x: { type: "spring", stiffness: 300, damping: 30 }, opacity: { duration: 0.2 } }}
-                drag="x"
+                drag={isCurrentUnavailable ? false : "x"}
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={1}
                 onDragEnd={handleDragEnd}
+                style={{
+                  filter: isCurrentUnavailable ? "grayscale(100%)" : "none",
+                  opacity: isCurrentUnavailable ? 0.5 : 1,
+                }}
                 className="absolute w-full h-full object-cover cursor-grab active:cursor-grabbing"
                 loading="lazy"
               />
             )}
           </AnimatePresence>
+          {isCurrentUnavailable && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+              <span className="bg-black/60 text-white text-sm font-bold px-4 py-1.5 rounded-full">
+                {!isOpen ? "Toko Tutup" : "Habis"}
+              </span>
+            </div>
+          )}
         </div>
 
         {items.length > 1 && <NavButton onClick={onNext} direction="next" isMobile={isMobile} />}

@@ -37,6 +37,7 @@ const ProductGrid = React.memo(({
             onIncrement={onIncrement}
             onDecrement={onDecrement}
             isUnavailable={!isOpen || (isItemUnavailable?.(item.id) ?? false)}
+            isOpen={isOpen}
           />
         ))}
       </div>

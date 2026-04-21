@@ -11,6 +11,7 @@ const ProductCard = React.memo(({
   onAddToCart,
   onDecrement,
   isUnavailable = false,
+  isOpen        = true,
 }) => {
   const padding = isMobile ? "px-3 pb-3 pt-2" : "px-4 pb-4 pt-2.5";
   const stop = (e, fn) => { e.stopPropagation(); fn?.(); };
@@ -55,7 +56,7 @@ const ProductCard = React.memo(({
         {isUnavailable && (
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="bg-black/60 text-white text-xs font-bold px-3 py-1 rounded-full">
-              Habis
+              {!isOpen ? "Toko Tutup" : "Habis"}
             </span>
           </div>
         )}
