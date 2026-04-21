@@ -170,11 +170,10 @@ export const handler = async (event) => {
     case "accepted": {
       if (customerPhone) {
         const msg =
-          `☕ *Pesananmu dikonfirmasi!*\n\n` +
+          `☕ *Pesanan dikonfirmasi!*\n\n` +
           `Halo ${customerName}, pesananmu sedang kami buat sekarang.\n` +
           (itemList ? `\n*Pesanan:*\n${itemList}\n` : "") +
-          `\nSilakan tunggu sebentar ya 🙏\n\n` +
-          `_Sector Seven Coffee_`;
+          `\nSilakan tunggu sebentar ya 🙏`;
 
         await sendWA(customerPhone, msg);
         console.log(`[moka-callback] WA accepted terkirim ke ${customerPhone}`);
@@ -186,11 +185,10 @@ export const handler = async (event) => {
     case "completed": {
       if (customerPhone) {
         const msg =
-          `✅ *Pesananmu sudah siap!*\n\n` +
+          `✅ *Pesanan sudah siap!*\n\n` +
           `Halo ${customerName}, pesananmu sudah selesai dibuat.\n` +
           (itemList ? `\n*Pesanan:*\n${itemList}\n` : "") +
-          `\nSilakan diambil di counter ya! 😊\n\n` +
-          `_Sector Seven Coffee_`;
+          `\nSilakan diambil di counter ya! 😊`;
 
         // ── WA + Loyalty paralel (keduanya di-await) ─────────────────────────
         const siteUrl  = process.env.URL || "https://sectorseven.space";
@@ -255,22 +253,21 @@ export const handler = async (event) => {
 
         // ── Bubble 1: Info pesanan ditolak + status refund ───────────────────────
         const msg1 = refundSuccess
-          ? `😔 *Pesananmu tidak bisa diproses*\n\n` +
-            `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini — kemungkinan bahan sedang habis.\n\n` +
-            `🔖 Order ID: *${application_order_id}*\n` +
-            `🕐 Waktu: ${timestampText}\n` +
-            `☕ Menu:\n${menuText}\n` +
-            `💰 Nominal: *${nominalText}*\n\n` +
+          ? `😔 *Pesanan tidak bisa diproses*\n\n` +
+            `Halo ${customerName}, pesanan tidak bisa kami proses saat ini.\n\n` +
+            `Order ID: *${application_order_id}*\n` +
+            `Waktu: ${timestampText}\n` +
+            `Menu:\n${menuText}\n` +
+            `Nominal: *${nominalText}*\n\n` +
             `✅ *Refund sudah otomatis diproses ke metode pembayaran kamu.*\n` +
-            `Dana akan kembali dalam beberapa menit hingga 1 hari kerja tergantung metode pembayaran.\n\n` +
-            `_Sector Seven Coffee_`
-          : `😔 *Pesananmu tidak bisa diproses*\n\n` +
-            `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini — kemungkinan bahan sedang habis.\n\n` +
-            `🔖 Order ID: *${application_order_id}*\n` +
-            `🕐 Waktu: ${timestampText}\n` +
-            `☕ Menu:\n${menuText}\n` +
-            `💰 Nominal: *${nominalText}*\n\n` +
-            `Tim kami akan memproses refund dalam *2 jam*.\n` +
+            `Dana akan kembali dalam beberapa menit hingga 1 hari kerja tergantung metode pembayaran.`
+          : `😔 *Pesanan tidak bisa diproses*\n\n` +
+            `Halo ${customerName}, pesanan tidak bisa kami proses saat ini — kemungkinan bahan sedang habis.\n\n` +
+            `Order ID: *${application_order_id}*\n` +
+            `Waktu: ${timestampText}\n` +
+            `Menu:\n${menuText}\n` +
+            `Nominal: *${nominalText}*\n\n` +
+            `Tim kami akan memproses refund dalam *1 jam*.\n` +
             `Silakan kirim data refund kamu di pesan berikutnya 👇\n\n` +
             `_Sector Seven Coffee_`;
 
