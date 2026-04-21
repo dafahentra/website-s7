@@ -166,6 +166,20 @@ export const handler = async (event) => {
   if (orderData) {
     try {
       await submitOrderToMoka(orderData);
+      // Simpan timestamp submit ke Moka — dipakai check-expired-orders untuk deteksi EXPIRED
+      if (pendingData) {
+        try {
+          const store = getBlobsStore("pending-orders");
+          await store.setJSON(order_id, {
+            ...pendingData,
+            grossAmount:     gross_amount,
+            mokaSubmittedAt: new Date().toISOString(),
+            mokaStatus:      "submitted",
+          });
+        } catch (e) {
+          console.error("[midtrans-notify] Gagal update mokaSubmittedAt:", e.message);
+        }
+      }
     } catch (err) {
       console.error("[midtrans-notify] Moka submit gagal:", err.message);
       if (REFUND_GROUP_ID) {
