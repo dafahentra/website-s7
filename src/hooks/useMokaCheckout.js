@@ -96,10 +96,10 @@ function buildMokaOrderPayload({
     ...(hasDiscount
       ? {
           discount_id:     discount.mokaId,
-          discount_type:   discount.discountType || (discount.type === "percentage" ? "percentage" : "cash"),
-          discount_amount: String(discountAmount),
-          discount_guid:   discount.guid || "",
-          discount_name:   (discount.description || discount.code || "").slice(0, 50),
+          discount_type:   discount.mokaType || (discount.type === "percentage" ? "percentage" : "cash"),
+          discount_amount: discount.value,
+          discount_name:   (discount.mokaName || discount.description || discount.code || "").slice(0, 50),
+          ...(discount.mokaGuid ? { discount_guid: discount.mokaGuid } : {}),
         }
       : {}),
 

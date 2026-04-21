@@ -164,7 +164,8 @@ export const handler = async (event) => {
         const timestampText = formatTimestamp(orderTimestamp) || "—";
         const menuText      = itemList || "—";
 
-        const msg =
+        // ── Bubble 1: Info pesanan ditolak ──────────────────────────────────────
+        const msg1 =
           `😔 *Pesananmu tidak bisa diproses*\n\n` +
           `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini — kemungkinan bahan sedang habis.\n\n` +
           `━━━━━━━━━━━━━━━━━\n` +
@@ -174,19 +175,35 @@ export const handler = async (event) => {
           `Menu        :\n${menuText}\n` +
           `Nominal     : *${nominalText}*\n` +
           `━━━━━━━━━━━━━━━━━\n\n` +
-          `Untuk pengembalian dana, balas pesan ini dengan format berikut:\n\n` +
-          `REFUND ${application_order_id}\n` +
-          `Nama: [nama lengkap kamu]\n` +
-          `No HP: [nomor HP kamu]\n` +
-          `Metode: [GoPay / OVO / Dana / BCA / BRI / dll]\n` +
-          `No Rekening: [nomor rekening atau e-wallet]\n` +
-          `Atas Nama: [nama di rekening / e-wallet]\n\n` +
-          `⚠️ Kirim format di atas *persis* seperti contoh, termasuk tulisan *REFUND ${application_order_id}* di baris pertama.\n\n` +
-          `Dana dikembalikan dalam 1×24 jam 🙏\n\n` +
+          `Pembayaran akan kami kembalikan dalam 1×24 jam.\n` +
+          `Silakan kirim data refund kamu di pesan berikutnya 👇\n\n` +
           `_Sector Seven Coffee_`;
 
-        await sendWA(customerPhone, msg);
-        console.log(`[moka-callback] WA refund form terkirim ke ${customerPhone}`);
+        await sendWA(customerPhone, msg1);
+
+        // ── Bubble 2: Template form refund ──────────────────────────────────────
+        const msg2 =
+          `💸 *Form Refund*\n\n` +
+          `Balas pesan ini dengan mengisi format di bawah:\n\n` +
+          `REFUND ${application_order_id}\n` +
+          `Nama: \n` +
+          `No HP: \n` +
+          `Metode: \n` +
+          `No Rekening: \n` +
+          `Atas Nama: \n\n` +
+          `Contoh pengisian:\n` +
+          `━━━━━━━━━━━━━━━━━\n` +
+          `REFUND ${application_order_id}\n` +
+          `Nama: Budi Santoso\n` +
+          `No HP: 08123456789\n` +
+          `Metode: GoPay\n` +
+          `No Rekening: 08123456789\n` +
+          `Atas Nama: Budi Santoso\n` +
+          `━━━━━━━━━━━━━━━━━\n\n` +
+          `⚠️ Baris pertama *wajib* diawali *REFUND ${application_order_id}*`;
+
+        await sendWA(customerPhone, msg2);
+        console.log(`[moka-callback] WA refund 2 bubble terkirim ke ${customerPhone}`);
 
       } else {
         // Tidak ada nomor customer — alert langsung ke grup TEST

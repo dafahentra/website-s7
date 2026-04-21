@@ -101,7 +101,7 @@ function formatTimestamp(isoString) {
  */
 function parseRefundMessage(message) {
   const lines = message.trim().split("\n").map((l) => l.trim()).filter(Boolean);
-  if (!lines[0]?.toUpperCase().startsWith("REFUND ")) return null;
+  if (!lines[0]?.trim().toUpperCase().startsWith("REFUND ")) return null;
 
   const orderId = lines[0].split(/\s+/)[1]?.trim();
   if (!orderId) return null;
@@ -151,7 +151,8 @@ export const handler = async (event) => {
   }
 
   // ── 1. Deteksi format REFUND ──────────────────────────────────────────────────
-  if (!message.toUpperCase().startsWith("REFUND ")) {
+  // Toleran: trim dulu, case-insensitive
+  if (!message.trim().toUpperCase().startsWith("REFUND ")) {
     return { statusCode: 200, body: "OK — not refund" };
   }
 
