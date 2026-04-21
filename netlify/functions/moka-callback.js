@@ -184,23 +184,13 @@ export const handler = async (event) => {
         // ── Bubble 2: Template form refund ──────────────────────────────────────
         const msg2 =
           `💸 *Form Refund*\n\n` +
-          `Balas pesan ini dengan mengisi format di bawah:\n\n` +
+          `Salin dan isi format berikut, lalu kirim balik ke sini:\n\n` +
           `REFUND ${application_order_id}\n` +
-          `Nama: \n` +
-          `No HP: \n` +
-          `Metode: \n` +
-          `No Rekening: \n` +
-          `Atas Nama: \n\n` +
-          `Contoh pengisian:\n` +
-          `━━━━━━━━━━━━━━━━━\n` +
-          `REFUND ${application_order_id}\n` +
-          `Nama: Budi Santoso\n` +
-          `No HP: 08123456789\n` +
-          `Metode: GoPay\n` +
-          `No Rekening: 08123456789\n` +
-          `Atas Nama: Budi Santoso\n` +
-          `━━━━━━━━━━━━━━━━━\n\n` +
-          `⚠️ Baris pertama *wajib* diawali *REFUND ${application_order_id}*`;
+          `Nama: [nama lengkap]\n` +
+          `No HP: [nomor HP kamu]\n` +
+          `Metode: [GoPay / OVO / Dana / BCA / BRI / dll]\n` +
+          `No Rekening: [nomor rekening atau e-wallet]\n` +
+          `Atas Nama: [nama di rekening / e-wallet]`;
 
         await sendWA(customerPhone, msg2);
         console.log(`[moka-callback] WA refund 2 bubble terkirim ke ${customerPhone}`);
