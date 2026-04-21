@@ -3,19 +3,30 @@
  * Netlify Function — Menerima webhook status order dari Moka (Advanced Ordering)
  *
  * Dipasang sebagai callback URL saat submit order ke Moka:
- *   cancel_order_notification_url  → https://sectorseven.space/.netlify/functions/moka-callback
- *   accept_order_notification_url  → https://sectorseven.space/.netlify/functions/moka-callback
+ *   cancel_order_notification_url   → https://sectorseven.space/.netlify/functions/moka-callback
+ *   accept_order_notification_url   → https://sectorseven.space/.netlify/functions/moka-callback
  *   complete_order_notification_url → https://sectorseven.space/.netlify/functions/moka-callback
  *
  * Flow per status:
  *   accepted  → kirim WA ke customer: pesanan dikonfirmasi, sedang dibuat
- *   rejected  → kirim WA ke customer: berisi template form refund via WA
+ *   rejected  → kirim WA ke customer: detail order + template form refund lengkap
  *   completed → kirim WA ke customer: pesanan selesai, silakan ambil
+ *
+ * ENV yang dibutuhkan:
+ *   FONNTE_TOKEN
+ *   REFUND_GROUP_ID   — ID grup WA TEST, cth: 120363xxxxxx@g.us
+ *   NETLIFY_SITE_ID
+ *   NETLIFY_API_TOKEN
  */
 
 import { getStore } from "@netlify/blobs";
+
 const NETLIFY_SITE_ID   = process.env.NETLIFY_SITE_ID;
 const NETLIFY_API_TOKEN = process.env.NETLIFY_API_TOKEN;
+const FONNTE_TOKEN      = process.env.FONNTE_TOKEN;
+const REFUND_GROUP_ID   = process.env.REFUND_GROUP_ID;
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
 
 function getBlobsStore(name) {
   if (NETLIFY_SITE_ID && NETLIFY_API_TOKEN) {
@@ -23,11 +34,6 @@ function getBlobsStore(name) {
   }
   return getStore(name);
 }
-
-const FONNTE_TOKEN = process.env.FONNTE_TOKEN;
-const REFUND_GROUP_ID = process.env.REFUND_GROUP_ID; // ID grup WA admin, contoh: 120363407944490567@g.us
-
-// ─── Utility: Kirim WA via Fonnte ──────────────────────────────────────────────
 
 async function sendWA(target, message) {
   try {
@@ -48,8 +54,6 @@ async function sendWA(target, message) {
   }
 }
 
-// ─── Utility: Format Rupiah ────────────────────────────────────────────────────
-
 function formatRupiah(amount) {
   if (!amount) return "Rp -";
   return new Intl.NumberFormat("id-ID", {
@@ -57,6 +61,23 @@ function formatRupiah(amount) {
     currency: "IDR",
     minimumFractionDigits: 0,
   }).format(amount);
+}
+
+function formatTimestamp(isoString) {
+  if (!isoString) return null;
+  try {
+    return new Date(isoString).toLocaleString("id-ID", {
+      timeZone: "Asia/Jakarta",
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }) + " WIB";
+  } catch {
+    return null;
+  }
 }
 
 // ─── Handler ───────────────────────────────────────────────────────────────────
@@ -91,20 +112,20 @@ export const handler = async (event) => {
   }
 
   const customerPhone = pendingData?.customerPhone || null;
-  const customerName = pendingData?.customerName || "Kak";
-  const grossAmount = pendingData?.grossAmount || null;
-  const items = pendingData?.items || [];
+  const customerName  = pendingData?.customerName  || "Kak";
+  const grossAmount   = pendingData?.grossAmount   || null;
+  const items         = pendingData?.items         || [];
+  const orderTimestamp = pendingData?.orderTimestamp || null;
 
-  const itemList =
-    items.length > 0
-      ? items.map((i) => `  • ${i.name} x${i.qty}`).join("\n")
-      : "";
+  const itemList = items.length > 0
+    ? items.map((i) => `  • ${i.name} x${i.qty}`).join("\n")
+    : "";
 
   // ── Handle per status ─────────────────────────────────────────────────────────
 
   switch (status) {
 
-    // ── ACCEPTED: Kasir terima order ────────────────────────────────────────────
+    // ── ACCEPTED ────────────────────────────────────────────────────────────────
     case "accepted": {
       if (customerPhone) {
         const msg =
@@ -120,7 +141,7 @@ export const handler = async (event) => {
       break;
     }
 
-    // ── COMPLETED: Kasir selesaikan order ───────────────────────────────────────
+    // ── COMPLETED ───────────────────────────────────────────────────────────────
     case "completed": {
       if (customerPhone) {
         const msg =
@@ -136,31 +157,39 @@ export const handler = async (event) => {
       break;
     }
 
-    // ── REJECTED: Kasir tolak order ─────────────────────────────────────────────
+    // ── REJECTED ────────────────────────────────────────────────────────────────
     case "rejected": {
       if (customerPhone) {
-        const nominalText = grossAmount ? formatRupiah(grossAmount) : "[nominal]";
+        const nominalText   = formatRupiah(grossAmount);
+        const timestampText = formatTimestamp(orderTimestamp) || "—";
+        const menuText      = itemList || "—";
 
         const msg =
           `😔 *Pesananmu tidak bisa diproses*\n\n` +
-          `Halo ${customerName}, mohon maaf pesananmu dengan ID *${application_order_id}* ` +
-          `tidak bisa kami proses saat ini — kemungkinan bahan sedang habis.\n\n` +
-          `Pembayaran sebesar *${nominalText}* akan kami kembalikan.\n\n` +
+          `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini — kemungkinan bahan sedang habis.\n\n` +
           `━━━━━━━━━━━━━━━━━\n` +
-          `Untuk proses pengembalian dana, balas pesan ini dengan format berikut:\n\n` +
-          `REFUND ${application_order_id}\n` +
-          `Nama: \n` +
-          `Metode: (GoPay / OVO / Dana / Transfer Bank)\n` +
-          `Nomor: \n` +
-          `Atas Nama: \n` +
+          `🧾 *Detail Pesanan*\n` +
+          `Order ID    : *${application_order_id}*\n` +
+          `Waktu Order : ${timestampText}\n` +
+          `Menu        :\n${menuText}\n` +
+          `Nominal     : *${nominalText}*\n` +
           `━━━━━━━━━━━━━━━━━\n\n` +
-          `Tim kami akan memproses dalam 1x24 jam 🙏\n\n` +
+          `Untuk pengembalian dana, balas pesan ini dengan format berikut:\n\n` +
+          `REFUND ${application_order_id}\n` +
+          `Nama: [nama lengkap kamu]\n` +
+          `No HP: [nomor HP kamu]\n` +
+          `Metode: [GoPay / OVO / Dana / BCA / BRI / dll]\n` +
+          `No Rekening: [nomor rekening atau e-wallet]\n` +
+          `Atas Nama: [nama di rekening / e-wallet]\n\n` +
+          `⚠️ Kirim format di atas *persis* seperti contoh, termasuk tulisan *REFUND ${application_order_id}* di baris pertama.\n\n` +
+          `Dana dikembalikan dalam 1×24 jam 🙏\n\n` +
           `_Sector Seven Coffee_`;
 
         await sendWA(customerPhone, msg);
         console.log(`[moka-callback] WA refund form terkirim ke ${customerPhone}`);
+
       } else {
-        // Jika nomor customer tidak ditemukan, langsung alert ke grup
+        // Tidak ada nomor customer — alert langsung ke grup TEST
         console.warn(`[moka-callback] customerPhone tidak ada untuk ${application_order_id}`);
         if (REFUND_GROUP_ID) {
           await sendWA(
