@@ -200,9 +200,8 @@ const Menu = () => {
         </div>
       </div>
 
-      {isOpen && (
-        <FloatingCartButton totalItems={cartTotalItems} totalPrice={cartTotalPrice} onClick={() => setCartOpen(true)} />
-      )}
+      {/* Floating cart — tetap muncul meski toko tutup supaya pelanggan bisa lihat/hapus cart */}
+      <FloatingCartButton totalItems={cartTotalItems} totalPrice={cartTotalPrice} onClick={() => setCartOpen(true)} />
 
       <AnimatePresence>
         {cartOpen && (
@@ -213,6 +212,8 @@ const Menu = () => {
             onDecrement={handleDecrement}
             onRemove={handleRemove}
             onCheckout={handleCheckout}
+            isOpen={isOpen}
+            isItemUnavailable={isItemUnavailable}
             submitting={submitting}
           />
         )}
