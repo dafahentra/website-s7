@@ -245,18 +245,16 @@ export const handler = async (event) => {
 };
 
 // ─── Handler DONE command dari admin di grup TEST ───────────────────────────────
-// Admin ketik: DONE S7-xxx
+// Admin ketik di grup TEST: DONE S7-xxx
 // Bot kirim WA ke customer bahwa refund sudah diproses.
 export async function handleDoneCommand(body) {
-  const message   = (body.message || body.text || "").trim();
-  const senderRaw = (body.sender  || body.from || "").toString().trim();
-
-  // Hanya proses pesan dari REFUND_GROUP_ID
-  if (!REFUND_GROUP_ID || senderRaw !== REFUND_GROUP_ID) return;
+  const message = (body.message || body.text || "").trim();
   if (!message.toUpperCase().startsWith("DONE ")) return;
 
   const orderId = message.split(/\s+/)[1]?.trim();
   if (!orderId) return;
+
+  console.log(`[fonnte-incoming] DONE command diterima — orderId=${orderId}`);
 
   console.log(`[fonnte-incoming] DONE command — orderId=${orderId}`);
 
