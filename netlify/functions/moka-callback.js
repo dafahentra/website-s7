@@ -80,6 +80,38 @@ function formatTimestamp(isoString) {
   }
 }
 
+// ─── Midtrans Auto Refund ─────────────────────────────────────────────────────
+
+async function refundMidtrans(orderId, amount) {
+  const serverKey = process.env.MIDTRANS_SERVER_KEY;
+  if (!serverKey) throw new Error("MIDTRANS_SERVER_KEY tidak diset");
+
+  const auth = Buffer.from(`${serverKey}:`).toString("base64");
+
+  const res = await fetch(`https://api.midtrans.com/v2/${orderId}/refund`, {
+    method:  "POST",
+    headers: {
+      "Accept":        "application/json",
+      "Content-Type":  "application/json",
+      "Authorization": `Basic ${auth}`,
+    },
+    body: JSON.stringify({
+      refund_key: `refund-${orderId}`,
+      amount:     Number(amount),
+      reason:     "Pesanan tidak dapat diproses oleh kasir",
+    }),
+  });
+
+  const data = await res.json();
+  console.log(`[refundMidtrans] ${orderId} → status: ${data.status_code} | ${data.status_message}`);
+
+  if (data.status_code !== "200") {
+    throw new Error(data.status_message || `Refund gagal: ${data.status_code}`);
+  }
+
+  return data;
+}
+
 // ─── Handler ───────────────────────────────────────────────────────────────────
 
 export const handler = async (event) => {
@@ -164,33 +196,70 @@ export const handler = async (event) => {
         const timestampText = formatTimestamp(orderTimestamp) || "—";
         const menuText      = itemList || "—";
 
-        // ── Bubble 1: Info pesanan ditolak ──────────────────────────────────────
-        const msg1 =
-          `😔 *Pesananmu tidak bisa diproses*\n\n` +
-          `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini — kemungkinan bahan sedang habis.\n\n` +
-          `🔖 Order ID: *${application_order_id}*\n` +
-          `🕐 Waktu: ${timestampText}\n` +
-          `☕ Menu:\n${menuText}\n` +
-          `💰 Nominal: *${nominalText}*\n\n` +
-          `Refund akan kami proses dalam *2 jam*.\n` +
-          `Silakan kirim data refund kamu di pesan berikutnya 👇\n\n` +
-          `_Sector Seven Coffee_`;
+        // ── Auto refund ke Midtrans ─────────────────────────────────────────────
+        let refundSuccess = false;
+        let refundError   = "";
+
+        if (grossAmount) {
+          try {
+            await refundMidtrans(application_order_id, grossAmount);
+            refundSuccess = true;
+            console.log(`[moka-callback] Auto refund berhasil: ${application_order_id}`);
+          } catch (err) {
+            refundError = err.message;
+            console.error(`[moka-callback] Auto refund gagal: ${err.message}`);
+            // Alert ke grup jika refund gagal
+            if (REFUND_GROUP_ID) {
+              await sendWA(REFUND_GROUP_ID,
+                `⚠️ *AUTO REFUND GAGAL*\n\n` +
+                `Order ID : ${application_order_id}\n` +
+                `Nominal  : ${nominalText}\n` +
+                `Error    : ${refundError}\n\n` +
+                `Proses refund manual via Midtrans dashboard.`
+              );
+            }
+          }
+        }
+
+        // ── Bubble 1: Info pesanan ditolak + status refund ───────────────────────
+        const msg1 = refundSuccess
+          ? `😔 *Pesananmu tidak bisa diproses*\n\n` +
+            `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini — kemungkinan bahan sedang habis.\n\n` +
+            `🔖 Order ID: *${application_order_id}*\n` +
+            `🕐 Waktu: ${timestampText}\n` +
+            `☕ Menu:\n${menuText}\n` +
+            `💰 Nominal: *${nominalText}*\n\n` +
+            `✅ *Refund sudah otomatis diproses ke metode pembayaran kamu.*\n` +
+            `Dana akan kembali dalam beberapa menit hingga 1 hari kerja tergantung metode pembayaran.\n\n` +
+            `_Sector Seven Coffee_`
+          : `😔 *Pesananmu tidak bisa diproses*\n\n` +
+            `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini — kemungkinan bahan sedang habis.\n\n` +
+            `🔖 Order ID: *${application_order_id}*\n` +
+            `🕐 Waktu: ${timestampText}\n` +
+            `☕ Menu:\n${menuText}\n` +
+            `💰 Nominal: *${nominalText}*\n\n` +
+            `Tim kami akan memproses refund dalam *2 jam*.\n` +
+            `Silakan kirim data refund kamu di pesan berikutnya 👇\n\n` +
+            `_Sector Seven Coffee_`;
 
         await sendWA(customerPhone, msg1);
 
-        // ── Bubble 2: Template form refund ──────────────────────────────────────
-        const msg2 =
-          `💸 *Form Refund*\n\n` +
-          `Salin dan isi format berikut, lalu kirim balik ke sini:\n\n` +
-          `REFUND ${application_order_id}\n` +
-          `Nama: [nama lengkap]\n` +
-          `No HP: [nomor HP kamu]\n` +
-          `Metode: [GoPay / OVO / Dana / BCA / BRI / dll]\n` +
-          `No Rekening: [nomor rekening atau e-wallet]\n` +
-          `Atas Nama: [nama di rekening / e-wallet]`;
+        // ── Bubble 2: Form refund — hanya tampil jika auto refund gagal ──────────
+        if (!refundSuccess) {
+          const msg2 =
+            `💸 *Form Refund*\n\n` +
+            `Salin dan isi format berikut, lalu kirim balik ke sini:\n\n` +
+            `REFUND ${application_order_id}\n` +
+            `Nama: [nama lengkap]\n` +
+            `No HP: [nomor HP kamu]\n` +
+            `Metode: [GoPay / OVO / Dana / BCA / BRI / dll]\n` +
+            `No Rekening: [nomor rekening atau e-wallet]\n` +
+            `Atas Nama: [nama di rekening / e-wallet]`;
 
-        await sendWA(customerPhone, msg2);
-        console.log(`[moka-callback] WA refund 2 bubble terkirim ke ${customerPhone}`);
+          await sendWA(customerPhone, msg2);
+        }
+
+        console.log(`[moka-callback] Rejected flow selesai — refundSuccess: ${refundSuccess}`);
 
       } else {
         // Tidak ada nomor customer — alert langsung ke grup TEST
