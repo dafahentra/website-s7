@@ -60,7 +60,7 @@ function buildMokaOrderPayload({
       item_name:          entry.itemName,
       item_price_library: basePrice,
       quantity:           entry.qty,
-      ...(entry.mokaVariantId ? { variant_id: entry.mokaVariantId } : {}),
+      ...(entry.mokaVariantId ? { item_variant_id: entry.mokaVariantId } : {}),
       ...(entry.mokaModifiers?.length
         ? {
             item_modifiers: entry.mokaModifiers.map((m) => ({
