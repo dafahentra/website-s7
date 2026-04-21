@@ -55,24 +55,29 @@ function buildMokaOrderPayload({
       .reduce((s, m) => s + round(m.modifier_option_price ?? 0), 0);
     const basePrice = round(entry.unitPrice) - modifierSum;
 
-    return {
+    const mokaItem = {
       item_id:            entry.mokaItemId,
       item_name:          entry.itemName,
       item_price_library: basePrice,
       quantity:           entry.qty,
-      ...(entry.mokaVariantId ? { item_variant_id: entry.mokaVariantId } : {}),
-      ...(entry.mokaModifiers?.length
-        ? {
-            item_modifiers: entry.mokaModifiers.map((m) => ({
-              modifier_id:           m.modifier_id,
-              modifier_option_id:    m.modifier_option_id,
-              modifier_option_name:  m.modifier_option_name,
-              modifier_option_price: round(m.modifier_option_price ?? 0),
-            })),
-          }
-        : {}),
-      ...(entry.itemNote ? { note: entry.itemNote } : {}),
+      item_variant_id:    entry.mokaVariantId   || null,
+      item_variant_name:  entry.mokaVariantName || "Regular",
+      category_id:        entry.mokaCategoryId  || null,
+      category_name:      entry.mokaCategoryName || "",
+      note:               entry.itemNote || "",
     };
+
+    if (entry.mokaModifiers?.length) {
+      mokaItem.item_modifiers = entry.mokaModifiers.map((m) => ({
+        item_modifier_id:           m.modifier_id,
+        item_modifier_name:         m.modifier_name         || "",
+        item_modifier_option_id:    m.modifier_option_id,
+        item_modifier_option_name:  m.modifier_option_name  || "",
+        item_modifier_option_price: round(m.modifier_option_price ?? 0),
+      }));
+    }
+
+    return mokaItem;
   });
 
   return {
@@ -91,7 +96,7 @@ function buildMokaOrderPayload({
     ...(hasDiscount
       ? {
           discount_id:     discount.mokaId,
-          discount_type:   discount.discountType || "nominal",
+          discount_type:   discount.discountType || (discount.type === "percentage" ? "percentage" : "cash"),
           discount_amount: String(discountAmount),
           discount_guid:   discount.guid || "",
           discount_name:   (discount.description || discount.code || "").slice(0, 50),
