@@ -105,6 +105,15 @@ async function refundMidtrans(orderId, amount) {
   const data = await res.json();
   console.log(`[refundMidtrans] ${orderId} → status: ${data.status_code} | ${data.status_message}`);
 
+  // 200 = sukses, 412 = duplicate refund key (sudah pernah direfund) → treat sukses
+  const isDuplicate = data.status_code === "412" ||
+    (data.status_message || "").toLowerCase().includes("duplicate");
+
+  if (isDuplicate) {
+    console.log(`[refundMidtrans] Duplicate refund key — sudah pernah direfund sebelumnya, skip`);
+    return data;
+  }
+
   if (data.status_code !== "200") {
     throw new Error(data.status_message || `Refund gagal: ${data.status_code}`);
   }
@@ -224,21 +233,23 @@ export const handler = async (event) => {
         // ── Bubble 1: Info pesanan ditolak + status refund ───────────────────────
         const msg1 = refundSuccess
           ? `😔 *Pesananmu tidak bisa diproses*\n\n` +
-            `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini.\n\n` +
-            `Order ID: *${application_order_id}*\n` +
-            `Waktu: ${timestampText}\n` +
-            `Menu:\n${menuText}\n` +
-            `Nominal: *${nominalText}*\n\n` +
+            `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini — kemungkinan bahan sedang habis.\n\n` +
+            `🔖 Order ID: *${application_order_id}*\n` +
+            `🕐 Waktu: ${timestampText}\n` +
+            `☕ Menu:\n${menuText}\n` +
+            `💰 Nominal: *${nominalText}*\n\n` +
             `✅ *Refund sudah otomatis diproses ke metode pembayaran kamu.*\n` +
-            `Dana akan kembali dalam beberapa menit hingga 1 hari kerja tergantung metode pembayaran.\n\n`
+            `Dana akan kembali dalam beberapa menit hingga 1 hari kerja tergantung metode pembayaran.\n\n` +
+            `_Sector Seven Coffee_`
           : `😔 *Pesananmu tidak bisa diproses*\n\n` +
-            `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini.\n\n` +
-            `Order ID: *${application_order_id}*\n` +
-            `Waktu: ${timestampText}\n` +
-            `Menu:\n${menuText}\n` +
-            `Nominal: *${nominalText}*\n\n` +
+            `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini — kemungkinan bahan sedang habis.\n\n` +
+            `🔖 Order ID: *${application_order_id}*\n` +
+            `🕐 Waktu: ${timestampText}\n` +
+            `☕ Menu:\n${menuText}\n` +
+            `💰 Nominal: *${nominalText}*\n\n` +
             `Tim kami akan memproses refund dalam *2 jam*.\n` +
-            `Silakan kirim data refund kamu di pesan berikutnya 👇\n\n`;
+            `Silakan kirim data refund kamu di pesan berikutnya 👇\n\n` +
+            `_Sector Seven Coffee_`;
 
         await sendWA(customerPhone, msg1);
 

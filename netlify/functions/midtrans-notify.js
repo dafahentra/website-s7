@@ -82,7 +82,15 @@ async function submitOrderToMoka(orderData) {
     body:    JSON.stringify({ order: orderData }),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data?.error || `moka-checkout error ${res.status}`);
+
+  // Duplicate = order sudah ada di Moka sebelumnya → treat sebagai sukses
+  const errMsg = data?.error || "";
+  if (!res.ok && errMsg.toLowerCase().includes("duplicate")) {
+    console.log("[midtrans-notify] Order sudah ada di Moka (duplicate) — skip, lanjut");
+    return data;
+  }
+
+  if (!res.ok) throw new Error(errMsg || `moka-checkout error ${res.status}`);
   console.log("[midtrans-notify] Order masuk ke Moka");
   return data;
 }
