@@ -135,6 +135,30 @@ export const handler = async (event) => {
       };
     }
 
+    // ── Toggle seluruh kategori (1 request) ───────────────────────────────
+    if (action === "toggleCategory") {
+      const { itemIds, available } = body;
+      if (!Array.isArray(itemIds) || itemIds.length === 0) {
+        return { statusCode: 400, headers: cors, body: JSON.stringify({ success: false, message: "itemIds diperlukan" }) };
+      }
+
+      let unavailableItems = current.unavailableItems || [];
+      const ids = itemIds.map(String);
+
+      if (available) {
+        unavailableItems = unavailableItems.filter((id) => !ids.includes(id));
+      } else {
+        ids.forEach((id) => { if (!unavailableItems.includes(id)) unavailableItems.push(id); });
+      }
+
+      await writeStatus({ ...current, unavailableItems });
+      return {
+        statusCode: 200,
+        headers: cors,
+        body: JSON.stringify({ success: true, unavailableItems }),
+      };
+    }
+
     return {
       statusCode: 400,
       headers: cors,
