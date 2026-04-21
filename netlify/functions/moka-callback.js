@@ -225,22 +225,20 @@ export const handler = async (event) => {
         const msg1 = refundSuccess
           ? `😔 *Pesananmu tidak bisa diproses*\n\n` +
             `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini — kemungkinan bahan sedang habis.\n\n` +
-            `🔖 Order ID: *${application_order_id}*\n` +
-            `🕐 Waktu: ${timestampText}\n` +
-            `☕ Menu:\n${menuText}\n` +
-            `💰 Nominal: *${nominalText}*\n\n` +
+            `Order ID: *${application_order_id}*\n` +
+            `Waktu: ${timestampText}\n` +
+            `Menu:\n${menuText}\n` +
+            `Nominal: *${nominalText}*\n\n` +
             `✅ *Refund sudah otomatis diproses ke metode pembayaran kamu.*\n` +
-            `Dana akan kembali dalam beberapa menit hingga 1 hari kerja tergantung metode pembayaran.\n\n` +
-            `_Sector Seven Coffee_`
+            `Dana akan kembali dalam beberapa menit hingga 1 hari kerja tergantung metode pembayaran.\n\n`
           : `😔 *Pesananmu tidak bisa diproses*\n\n` +
             `Halo ${customerName}, pesananmu tidak bisa kami proses saat ini — kemungkinan bahan sedang habis.\n\n` +
-            `🔖 Order ID: *${application_order_id}*\n` +
-            `🕐 Waktu: ${timestampText}\n` +
-            `☕ Menu:\n${menuText}\n` +
-            `💰 Nominal: *${nominalText}*\n\n` +
+            `Order ID: *${application_order_id}*\n` +
+            `Waktu: ${timestampText}\n` +
+            `Menu:\n${menuText}\n` +
+            `Nominal: *${nominalText}*\n\n` +
             `Tim kami akan memproses refund dalam *2 jam*.\n` +
-            `Silakan kirim data refund kamu di pesan berikutnya 👇\n\n` +
-            `_Sector Seven Coffee_`;
+            `Silakan kirim data refund kamu di pesan berikutnya 👇\n\n`;
 
         await sendWA(customerPhone, msg1);
 
