@@ -6,10 +6,11 @@ import { TYPOGRAPHY, SHADOWS } from "../../styles/designSystem";
 const ProductCard = React.memo(({
   item,
   onClick,
-  isMobile    = false,
-  cartQty     = 0,
+  isMobile      = false,
+  cartQty       = 0,
   onAddToCart,
   onDecrement,
+  isUnavailable = false,
 }) => {
   const padding = isMobile ? "px-3 pb-3 pt-2" : "px-4 pb-4 pt-2.5";
   const stop = (e, fn) => { e.stopPropagation(); fn?.(); };
@@ -19,23 +20,27 @@ const ProductCard = React.memo(({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      onClick={onClick}
-      className={`bg-white rounded-2xl overflow-hidden ${SHADOWS.card.small} cursor-pointer border-2 transition-all duration-300 ${
-        cartQty > 0
-          ? "border-brand-orange"
-          : "border-transparent hover:border-brand-orange hover:shadow-card-lg"
-      } ${isMobile ? "active:border-brand-orange" : ""}`}
+      onClick={isUnavailable ? undefined : onClick}
+      style={{ opacity: isUnavailable ? 0.5 : 1 }}
+      className={`bg-white rounded-2xl overflow-hidden ${SHADOWS.card.small} border-2 transition-all duration-300 ${
+        isUnavailable
+          ? "border-transparent cursor-not-allowed"
+          : cartQty > 0
+            ? "border-brand-orange cursor-pointer"
+            : "border-transparent cursor-pointer hover:border-brand-orange hover:shadow-card-lg"
+      } ${isMobile && !isUnavailable ? "active:border-brand-orange" : ""}`}
     >
-      {/* ── Image ── */}
+      {/* Image */}
       <div className="aspect-square overflow-hidden relative">
         <img
           src={item.image}
           alt={item.name}
+          style={{ filter: isUnavailable ? "grayscale(100%)" : "none" }}
           className="w-full h-full object-cover"
           loading="lazy"
         />
         <AnimatePresence>
-          {cartQty > 0 && (
+          {cartQty > 0 && !isUnavailable && (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -47,79 +52,76 @@ const ProductCard = React.memo(({
             </motion.div>
           )}
         </AnimatePresence>
+        {isUnavailable && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="bg-black/60 text-white text-xs font-bold px-3 py-1 rounded-full">
+              Habis
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* ── Info block ── */}
+      {/* Info */}
       <div
         className={`${padding} flex flex-col items-center gap-2`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Name */}
         <p className={`${TYPOGRAPHY.body.default} ${TYPOGRAPHY.weight.bold} text-brand-navy truncate w-full text-center`}>
           {item.name}
         </p>
 
-        {/* Price + button — width of both determined by price text */}
         <div className="inline-flex flex-col items-stretch gap-2">
-          {/* Price */}
           <p className={`${TYPOGRAPHY.body.default} ${TYPOGRAPHY.weight.bold} text-brand-orange text-center whitespace-nowrap`}>
             Rp{item.price}
           </p>
 
-          {/* Cart control — w-full fills the inline-flex container */}
-          <div className="relative h-10 w-full">
-            <AnimatePresence mode="wait" initial={false}>
-              {cartQty === 0 ? (
-                <motion.button
-                  key="add"
-                  initial={{ opacity: 0, scale: 0.92 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.92 }}
-                  transition={{ duration: 0.12 }}
-                  onClick={(e) => stop(e, () => onAddToCart?.(item))}
-                  className={`absolute inset-0 w-full flex items-center justify-center rounded-full bg-brand-orange text-white ${TYPOGRAPHY.body.small} ${TYPOGRAPHY.weight.semibold} border-2 border-brand-orange hover:bg-transparent hover:text-brand-orange active:scale-95 transition-all`}
-                  aria-label="Add to cart"
-                >
-                  Add
-                </motion.button>
-              ) : (
-                <motion.div
-                  key="qty"
-                  initial={{ opacity: 0, scale: 0.92 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.92 }}
-                  transition={{ duration: 0.12 }}
-                  className="absolute inset-0 flex items-center justify-between rounded-full bg-brand-orange px-1.5"
-                >
-                  <button
-                    onClick={(e) => stop(e, () => onDecrement?.(item))}
-                    className="w-7 h-7 rounded-full bg-white/25 text-white flex items-center justify-center active:scale-90 transition-transform"
-                  >
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" d="M5 12h14"/>
-                    </svg>
-                  </button>
-                  <motion.span
-                    key={cartQty}
-                    initial={{ scale: 1.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 18 }}
-                    className="text-white font-black text-xs leading-none"
-                  >
-                    {cartQty}
-                  </motion.span>
-                  <button
+          {/* Tombol Add — hidden kalau unavailable */}
+          {!isUnavailable && (
+            <div className="relative h-10 w-full">
+              <AnimatePresence mode="wait" initial={false}>
+                {cartQty === 0 ? (
+                  <motion.button
+                    key="add"
+                    initial={{ opacity: 0, scale: 0.92 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.92 }}
+                    transition={{ duration: 0.12 }}
                     onClick={(e) => stop(e, () => onAddToCart?.(item))}
-                    className="w-7 h-7 rounded-full bg-white/25 text-white flex items-center justify-center active:scale-90 transition-transform"
+                    className={`absolute inset-0 w-full flex items-center justify-center rounded-full bg-brand-orange text-white ${TYPOGRAPHY.body.small} ${TYPOGRAPHY.weight.semibold} border-2 border-brand-orange hover:bg-transparent hover:text-brand-orange active:scale-95 transition-all`}
                   >
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" d="M12 5v14M5 12h14"/>
-                    </svg>
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                    Add
+                  </motion.button>
+                ) : (
+                  <motion.div
+                    key="qty"
+                    initial={{ opacity: 0, scale: 0.92 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.92 }}
+                    transition={{ duration: 0.12 }}
+                    className="absolute inset-0 flex items-center justify-between rounded-full bg-brand-orange px-1.5"
+                  >
+                    <button
+                      onClick={(e) => stop(e, () => onDecrement?.(item))}
+                      className="w-7 h-7 rounded-full bg-white/25 text-white flex items-center justify-center active:scale-90 transition-transform"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" d="M5 12h14"/></svg>
+                    </button>
+                    <motion.span key={cartQty} initial={{ scale: 1.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 18 }}
+                      className="text-white font-black text-xs leading-none">
+                      {cartQty}
+                    </motion.span>
+                    <button
+                      onClick={(e) => stop(e, () => onAddToCart?.(item))}
+                      className="w-7 h-7 rounded-full bg-white/25 text-white flex items-center justify-center active:scale-90 transition-transform"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
         </div>
       </div>
     </motion.div>
