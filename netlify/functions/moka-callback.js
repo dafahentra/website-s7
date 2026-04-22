@@ -268,8 +268,7 @@ export const handler = async (event) => {
             `Menu:\n${menuText}\n` +
             `Nominal: *${nominalText}*\n\n` +
             `Tim kami akan memproses refund dalam *1 jam*.\n` +
-            `Silakan kirim data refund kamu di pesan berikutnya 👇\n\n` +
-            `_Sector Seven Coffee_`;
+            `Silakan kirim data refund kamu di pesan berikutnya 👇`;
 
         await sendWA(customerPhone, msg1);
 

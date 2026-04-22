@@ -3,18 +3,10 @@
  * Netlify Function — HTTP endpoint, dipanggil cron-job.org setiap 5 menit
  *
  * Setup cron-job.org:
- *   URL  : https://sectorseven.space/.netlify/functions/check-expired-orders
- *   Method: GET
- *   Interval: setiap 5 menit
- *
- * Security: pakai secret header agar tidak bisa dipanggil sembarangan
- *   Header: x-cron-secret: <CRON_SECRET env var>
- *
- * Flow:
- *   1. List semua key di Blobs "pending-orders"
- *   2. Filter: mokaStatus = "submitted" dan mokaSubmittedAt > 12 menit lalu
- *   3. Cek status order di Moka API
- *   4. Kalau EXPIRED (status "4") → auto-refund Midtrans → WA customer → update Blobs
+ *   URL    : https://sectorseven.space/.netlify/functions/check-expired-orders
+ *   Method : GET
+ *   Header : x-cron-secret: <CRON_SECRET>
+ *   Every  : 5 minutes
  *
  * ENV: CRON_SECRET, MOKA_OUTLET_ID, MOKA_ACCESS_TOKEN, MOKA_REFRESH_TOKEN,
  *      MOKA_CLIENT_ID, MOKA_SECRET, MIDTRANS_SERVER_KEY, FONNTE_TOKEN,
@@ -32,9 +24,8 @@ const REFUND_GROUP_ID     = process.env.REFUND_GROUP_ID;
 const MOKA_OUTLET_ID      = process.env.MOKA_OUTLET_ID;
 const CRON_SECRET         = process.env.CRON_SECRET;
 
-const EXPIRED_THRESHOLD_MS = 12 * 60 * 1000; // 12 menit
-
-// ─── Helpers ───────────────────────────────────────────────────────────────────
+// 12 menit — Moka expire setelah 10 menit, tambah 2 menit buffer
+const EXPIRED_THRESHOLD_MS = 12 * 60 * 1000;
 
 function getBlobsStore(name) {
   if (NETLIFY_SITE_ID && NETLIFY_API_TOKEN) {
@@ -112,10 +103,8 @@ function formatRupiah(amount) {
   }).format(amount);
 }
 
-// ─── Handler ───────────────────────────────────────────────────────────────────
-
 export const handler = async (event) => {
-  // ── Security: validasi secret ──────────────────────────────────────────────
+  // ── Security ────────────────────────────────────────────────────────────────
   const incomingSecret = event.headers["x-cron-secret"] || event.queryStringParameters?.secret;
   if (CRON_SECRET && incomingSecret !== CRON_SECRET) {
     return { statusCode: 401, body: "Unauthorized" };
@@ -125,7 +114,6 @@ export const handler = async (event) => {
 
   const store = getBlobsStore("pending-orders");
 
-  // List semua keys
   let keys = [];
   try {
     const result = await store.list();
@@ -135,21 +123,32 @@ export const handler = async (event) => {
     return { statusCode: 500, body: "Blobs list error" };
   }
 
-  // Filter kandidat: mokaStatus = submitted & sudah > 12 menit
   const now        = Date.now();
   const candidates = [];
 
   for (const key of keys) {
     try {
       const data = await store.get(key, { type: "json" });
-      if (!data?.mokaStatus || data.mokaStatus !== "submitted") continue;
-      if (!data.mokaSubmittedAt) continue;
-      if (now - new Date(data.mokaSubmittedAt).getTime() < EXPIRED_THRESHOLD_MS) continue;
-      candidates.push({ orderId: key, data });
+      if (!data) continue;
+
+      // Skip yang sudah final
+      if (["expired", "completed", "rejected"].includes(data.mokaStatus)) continue;
+
+      // Gunakan mokaSubmittedAt jika ada, fallback ke savedAt (order lama)
+      const refTs = data.mokaSubmittedAt || data.savedAt || data.orderTimestamp;
+      if (!refTs) continue;
+
+      const agems = now - new Date(refTs).getTime();
+      if (agems < EXPIRED_THRESHOLD_MS) continue;
+
+      // Harus punya grossAmount untuk bisa refund
+      if (!data.grossAmount) continue;
+
+      candidates.push({ orderId: key, data, agems });
     } catch { /* skip */ }
   }
 
-  console.log(`[check-expired-orders] Kandidat: ${candidates.length} dari ${keys.length} orders`);
+  console.log(`[check-expired-orders] Kandidat: ${candidates.length} dari ${keys.length}`);
 
   if (!candidates.length) {
     return { statusCode: 200, body: JSON.stringify({ checked: keys.length, candidates: 0 }) };
@@ -168,52 +167,49 @@ export const handler = async (event) => {
   for (const { orderId, data } of candidates) {
     try {
       const mokaStatus = await getMokaOrderStatus(mokaToken, orderId);
-      console.log(`[check-expired-orders] ${orderId} → status Moka: ${mokaStatus}`);
+      console.log(`[check-expired-orders] ${orderId} → Moka status: ${mokaStatus}`);
 
-      if (mokaStatus !== "4") continue; // Bukan EXPIRED
+      // "4" = EXPIRED, null/error = tidak ketemu di Moka (mungkin tidak pernah masuk)
+      // Keduanya perlu direfund karena customer sudah bayar
+      const shouldRefund = mokaStatus === "4" || mokaStatus === null;
+      if (!shouldRefund) continue;
 
-      const grossAmount   = data.grossAmount;
-      const customerPhone = data.customerPhone;
-      const nominalText   = grossAmount ? formatRupiah(grossAmount) : "[cek manual]";
+      const { grossAmount, customerPhone, customerName } = data;
+      const nominalText = formatRupiah(grossAmount);
 
-      // Auto refund
       let refundSuccess = false;
-      if (grossAmount) {
-        try {
-          await refundMidtrans(orderId, grossAmount);
-          refundSuccess = true;
-          console.log(`[check-expired-orders] Refund OK: ${orderId}`);
-        } catch (err) {
-          console.error(`[check-expired-orders] Refund gagal ${orderId}: ${err.message}`);
-          if (REFUND_GROUP_ID) {
-            await sendWA(REFUND_GROUP_ID,
-              `⚠️ *ORDER EXPIRED — REFUND GAGAL*\n\n` +
-              `Order ID : ${orderId}\n` +
-              `Nominal  : ${nominalText}\n` +
-              `Error    : ${err.message}\n\n` +
-              `Proses manual via Midtrans dashboard.`
-            );
-          }
+      try {
+        await refundMidtrans(orderId, grossAmount);
+        refundSuccess = true;
+        console.log(`[check-expired-orders] Refund OK: ${orderId}`);
+      } catch (err) {
+        console.error(`[check-expired-orders] Refund gagal ${orderId}: ${err.message}`);
+        if (REFUND_GROUP_ID) {
+          await sendWA(REFUND_GROUP_ID,
+            `⚠️ *ORDER EXPIRED — REFUND GAGAL*\n\n` +
+            `Order ID : ${orderId}\n` +
+            `Nominal  : ${nominalText}\n` +
+            `Error    : ${err.message}\n\n` +
+            `Proses manual via Midtrans dashboard.`
+          );
         }
       }
 
-      // WA customer
       if (customerPhone) {
-        const msg = refundSuccess
-          ? `😔 *Pesananmu kadaluarsa*\n\n` +
-            `Halo ${data.customerName || "Kak"}, pesananmu *${orderId}* tidak sempat diproses kasir.\n\n` +
-            `✅ *Refund ${nominalText} sudah otomatis diproses.*\n` +
-            `Dana kembali dalam beberapa menit hingga 1 hari kerja.\n\n` +
-            `_Sector Seven Coffee_`
-          : `😔 *Pesananmu kadaluarsa*\n\n` +
-            `Halo ${data.customerName || "Kak"}, pesananmu *${orderId}* tidak sempat diproses kasir.\n\n` +
-            `Refund ${nominalText} akan kami proses dalam 2 jam 🙏\n\n` +
-            `_Sector Seven Coffee_`;
-
-        await sendWA(customerPhone, msg);
+        await sendWA(customerPhone,
+          refundSuccess
+            ? `😔 *Pesananmu kadaluarsa*\n\n` +
+              `Halo ${customerName || "Kak"}, pesananmu *${orderId}* tidak sempat diproses kasir.\n\n` +
+              `✅ *Refund ${nominalText} sudah otomatis diproses.*\n` +
+              `Dana kembali dalam beberapa menit hingga 1 hari kerja.\n\n` +
+              `_Sector Seven Coffee_`
+            : `😔 *Pesananmu kadaluarsa*\n\n` +
+              `Halo ${customerName || "Kak"}, pesananmu *${orderId}* tidak sempat diproses kasir.\n\n` +
+              `Refund ${nominalText} akan kami proses dalam 2 jam 🙏\n\n` +
+              `_Sector Seven Coffee_`
+        );
       }
 
-      // Update Blobs — mark expired agar tidak diproses ulang
       await store.setJSON(orderId, {
         ...data,
         mokaStatus:   "expired",

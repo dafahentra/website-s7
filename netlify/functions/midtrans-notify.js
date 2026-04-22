@@ -224,8 +224,7 @@ export const handler = async (event) => {
       `Waktu   : ${formatWaktuWIB(transaction_time)}\n` +
       (itemList ? `\n*Pesanan:*\n${itemList}\n` : "") +
       `\nPesananmu sedang kami konfirmasi dulu ya 🙏\n` +
-      `Kami akan kabarin kamu segera setelah pesanan mulai diproses!\n\n` +
-      `_Sector Seven Coffee_ ☕`;
+      `Kami akan kabarin kamu segera setelah pesanan mulai diproses!`;
 
     await sendWA(customerPhone, msg);
     console.log(`[WA] Receipt terkirim ke ${customerPhone}`);

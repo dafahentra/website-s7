@@ -111,8 +111,7 @@ export const handler = async (event) => {
     `Order ID : *${orderId}*\n` +
     `Nominal  : ${nominal}\n\n` +
     `Dana sudah kami kembalikan ke metode pembayaran kamu.\n` +
-    `Mohon cek dalam beberapa menit ya 🙏\n\n` +
-    `_Sector Seven Coffee_ ☕`
+    `Mohon cek dalam beberapa menit ya 🙏`
   );
 
   console.log(`[fonnte-incoming] Notif DONE terkirim ke ${customerPhone}`);
