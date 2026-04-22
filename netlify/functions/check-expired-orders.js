@@ -1,13 +1,7 @@
 /**
  * check-expired-orders.js
- * Netlify Function — dipanggil cron-job.org setiap 5 menit
- *
- * KEAMANAN BERLAPIS:
- *   Layer 1 — Blobs mokaStatus: skip kalau "completed", "rejected", "refunded", "expired"
- *   Layer 2 — Midtrans API: hanya proses kalau status = settlement
- *   Layer 3 — Moka API: hanya refund kalau status = "4" (EXPIRED) atau "3" (CANCELLED)
- *
- * Order yang completed/accepted di Moka TIDAK AKAN direfund.
+ * Cek order expired — ALERT SAJA ke grup, tidak auto-refund
+ * Refund dilakukan manual oleh admin via Midtrans dashboard
  */
 
 import { getStore } from "@netlify/blobs";
@@ -21,12 +15,7 @@ const REFUND_GROUP_ID     = process.env.REFUND_GROUP_ID;
 const MOKA_OUTLET_ID      = process.env.MOKA_OUTLET_ID;
 const CRON_SECRET         = process.env.CRON_SECRET;
 
-const EXPIRED_MS = 12 * 60 * 1000; // 12 menit
-
-// Status Moka yang AMAN untuk direfund
-const REFUNDABLE_MOKA_STATUS = ["4", "3"]; // EXPIRED, CANCELLED
-// Status Moka yang TIDAK BOLEH direfund
-const SAFE_MOKA_STATUS = ["0", "1", "2", "6"]; // INCOMING, ACCEPTED, COMPLETED, DELIVERED
+const EXPIRED_MS = 12 * 60 * 1000;
 
 function getBlobsStore(name) {
   if (NETLIFY_SITE_ID && NETLIFY_API_TOKEN) {
@@ -60,240 +49,78 @@ async function getMidtransStatus(orderId) {
     headers: { Accept: "application/json", Authorization: "Basic " + auth },
   });
   const text = await res.text();
-  try {
-    return text ? JSON.parse(text) : {};
-  } catch (e) {
-    console.warn("[midtrans] bad JSON for " + orderId);
-    return { transaction_status: "unknown" };
-  }
-}
-
-async function getMokaToken() {
-  if (process.env.MOKA_ACCESS_TOKEN) return process.env.MOKA_ACCESS_TOKEN;
-  const res = await fetch(MOKA_BASE + "/oauth/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      grant_type: "refresh_token",
-      client_id: process.env.MOKA_CLIENT_ID,
-      client_secret: process.env.MOKA_SECRET,
-      refresh_token: process.env.MOKA_REFRESH_TOKEN,
-    }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error("Moka token gagal: " + res.status);
-  return data.access_token;
-}
-
-async function getMokaOrderStatus(token, orderId) {
-  const url = MOKA_BASE + "/v1/outlets/" + MOKA_OUTLET_ID + "/advanced_orderings/orders/" + orderId;
-  const res  = await fetch(url, { headers: { Authorization: "Bearer " + token } });
-  const text = await res.text();
-  let data = {};
-  try { data = text ? JSON.parse(text) : {}; } catch (e) {}
-  if (!res.ok) return "http_error_" + res.status;
-  const code = data?.data?.[0]?.status_code
-    || data?.data?.status_code
-    || data?.data?.[0]?.status
-    || data?.data?.status
-    || "unknown";
-  console.log("[moka] " + orderId + " status=" + code);
-  return String(code);
-}
-
-async function refundMidtrans(orderId, amount) {
-  const auth = Buffer.from(MIDTRANS_SERVER_KEY + ":").toString("base64");
-  const res  = await fetch("https://api.midtrans.com/v2/" + orderId + "/refund", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      Authorization: "Basic " + auth,
-    },
-    body: JSON.stringify({
-      refund_key: "refund-" + orderId,
-      amount: Number(amount),
-      reason: "Order kadaluarsa — tidak direspons kasir dalam 10 menit",
-    }),
-  });
-  const data = await res.json();
-  const isDup = data.status_code === "412" ||
-    (data.status_message || "").toLowerCase().includes("duplicate");
-  if (isDup) return Object.assign({}, data, { alreadyRefunded: true });
-  if (data.status_code !== "200") throw new Error(data.status_message || "status " + data.status_code);
-  return data;
+  try { return text ? JSON.parse(text) : {}; }
+  catch (e) { return { transaction_status: "unknown" }; }
 }
 
 export const handler = async (event) => {
-  // Wajib ada CRON_SECRET di env — kalau tidak ada, tolak semua request
-  if (!CRON_SECRET) {
-    console.error("[check-expired] CRON_SECRET tidak diset di env!");
-    return { statusCode: 500, body: "Server misconfigured" };
-  }
-  // Header only — jangan terima dari query param (query param masuk ke logs)
+  if (!CRON_SECRET) return { statusCode: 500, body: "CRON_SECRET tidak diset" };
   const secret = (event.headers || {})["x-cron-secret"];
-  if (secret !== CRON_SECRET) {
-    console.warn("[check-expired] Unauthorized request");
-    return { statusCode: 401, body: "Unauthorized" };
-  }
+  if (secret !== CRON_SECRET) return { statusCode: 401, body: "Unauthorized" };
 
-  console.log("[check-expired] Start");
   const store = getBlobsStore("pending-orders");
-
   let keys = [];
   try {
     const result = await store.list();
-    keys = (result.blobs || []).map(function(b) { return b.key; });
+    keys = (result.blobs || []).map((b) => b.key);
   } catch (err) {
-    console.error("[check-expired] list blobs gagal:", err.message);
     return { statusCode: 500, body: "Blobs error" };
   }
 
   const now = Date.now();
-  const candidates = [];
+  const needsAttention = [];
 
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i];
+  for (const key of keys) {
     try {
       const data = await store.get(key, { type: "json" });
       if (!data) continue;
-
-      // Layer 1: Skip kalau Blobs sudah menandai status final
-      const safeStatuses = ["completed", "rejected", "refunded", "expired"];
-      if (safeStatuses.includes(data.mokaStatus)) continue;
-
+      if (["completed", "rejected", "refunded", "expired", "alerted"].includes(data.mokaStatus)) continue;
       if (!data.grossAmount) continue;
 
       const ts = data.mokaSubmittedAt || data.savedAt || data.orderTimestamp;
       if (!ts) continue;
       if (now - new Date(ts).getTime() < EXPIRED_MS) continue;
 
-      candidates.push({ orderId: key, data: data });
-    } catch (err) {
-      console.warn("[check-expired] skip " + key + ":", err.message);
-    }
-  }
-
-  console.log("[check-expired] kandidat=" + candidates.length + " dari " + keys.length);
-  if (!candidates.length) {
-    return { statusCode: 200, body: JSON.stringify({ checked: keys.length, candidates: 0 }) };
-  }
-
-  let mokaToken = "";
-  try {
-    mokaToken = await getMokaToken();
-  } catch (err) {
-    console.error("[check-expired] moka token:", err.message);
-    return { statusCode: 500, body: "Moka auth error" };
-  }
-
-  let processed = 0;
-  let skipped   = 0;
-
-  for (let i = 0; i < candidates.length; i++) {
-    const orderId = candidates[i].orderId;
-    const data    = candidates[i].data;
-    try {
-      // Layer 2: Cek Midtrans — hanya settlement yang diproses
-      const mt       = await getMidtransStatus(orderId);
+      // Cek Midtrans — hanya alert kalau sudah settlement
+      const mt = await getMidtransStatus(key);
       const txStatus = mt.transaction_status || "unknown";
 
-      if (txStatus !== "settlement" && !(txStatus === "capture" && mt.fraud_status === "accept")) {
-        console.log("[check-expired] skip " + orderId + " midtrans=" + txStatus);
-        if (["expire", "cancel", "pending"].includes(txStatus)) {
-          await store.setJSON(orderId, Object.assign({}, data, {
-            mokaStatus: "expired",
-            expiredAt: new Date().toISOString(),
-            midtransStatus: txStatus,
-          }));
-        }
-        if (txStatus === "refund" || txStatus === "partial_refund") {
-          await store.setJSON(orderId, Object.assign({}, data, { mokaStatus: "refunded" }));
-        }
-        skipped++;
-        continue;
-      }
+      if (txStatus !== "settlement" && !(txStatus === "capture" && mt.fraud_status === "accept")) continue;
 
-      // Layer 3: Cek Moka — HANYA refund kalau status EXPIRED atau CANCELLED
-      const mokaStatus = await getMokaOrderStatus(mokaToken, orderId);
-
-      if (SAFE_MOKA_STATUS.includes(mokaStatus)) {
-        console.log("[check-expired] AMAN — skip " + orderId + " moka=" + mokaStatus + " (order masih aktif/selesai)");
-        // Update Blobs kalau completed
-        if (mokaStatus === "2") {
-          await store.setJSON(orderId, Object.assign({}, data, { mokaStatus: "completed" }));
-        }
-        skipped++;
-        continue;
-      }
-
-      // http_error_404 = Moka tidak kenal order ini via Advanced Ordering API
-      // Kemungkinan order lama atau tidak pernah masuk Moka → refund
-      if (mokaStatus.startsWith("http_error_404")) {
-        console.log("[check-expired] Moka 404 — order tidak ditemukan di Moka, lanjut refund: " + orderId);
-        // lanjut ke refund di bawah
-      } else if (!REFUNDABLE_MOKA_STATUS.includes(mokaStatus)) {
-        console.log("[check-expired] skip " + orderId + " moka status tidak dikenal=" + mokaStatus);
-        skipped++;
-        continue;
-      }
-
-      // Semua layer lolos → refund
-      console.log("[check-expired] REFUND " + orderId + " moka=" + mokaStatus);
-      const nominal = formatRupiah(data.grossAmount);
-      let refundOk  = false;
-
-      try {
-        const r = await refundMidtrans(orderId, data.grossAmount);
-        refundOk = true;
-        if (r.alreadyRefunded) {
-          console.log("[check-expired] " + orderId + " sudah pernah direfund");
-        }
-      } catch (err) {
-        console.error("[check-expired] refund gagal " + orderId + ":", err.message);
-        if (REFUND_GROUP_ID) {
-          await sendWA(REFUND_GROUP_ID,
-            "⚠️ *ORDER EXPIRED — REFUND GAGAL*\n\n" +
-            "Order ID : " + orderId + "\n" +
-            "Nominal  : " + nominal + "\n" +
-            "Error    : " + err.message + "\n\n" +
-            "Proses manual via Midtrans dashboard."
-          );
-        }
-      }
-
-      if (data.customerPhone) {
-        await sendWA(data.customerPhone,
-          refundOk
-            ? "😔 *Pesananmu kadaluarsa*\n\n" +
-              "Halo " + (data.customerName || "Kak") + ", pesananmu *" + orderId + "* tidak sempat diproses kasir dalam 10 menit.\n\n" +
-              "✅ *Refund " + nominal + " sudah otomatis diproses.*\n" +
-              "Dana kembali dalam beberapa menit hingga 1 hari kerja.\n\n" +
-              "_Sector Seven Coffee_"
-            : "😔 *Pesananmu kadaluarsa*\n\n" +
-              "Halo " + (data.customerName || "Kak") + ", pesananmu *" + orderId + "* tidak sempat diproses kasir.\n\n" +
-              "Refund " + nominal + " akan kami proses dalam 2 jam 🙏\n\n" +
-              "_Sector Seven Coffee_"
-        );
-      }
-
-      await store.setJSON(orderId, Object.assign({}, data, {
-        mokaStatus: "expired",
-        expiredAt: new Date().toISOString(),
-        refundSuccess: refundOk,
-        mokaStatusCode: mokaStatus,
-      }));
-
-      processed++;
+      needsAttention.push({ orderId: key, data, nominal: formatRupiah(data.grossAmount) });
 
     } catch (err) {
-      console.error("[check-expired] gagal " + orderId + ":", err.message);
+      console.error("[check-expired] error " + key + ":", err.message);
     }
   }
 
-  console.log("[check-expired] done processed=" + processed + " skipped=" + skipped);
+  console.log("[check-expired] perlu perhatian=" + needsAttention.length);
+
+  if (needsAttention.length > 0 && REFUND_GROUP_ID) {
+    const lines = needsAttention.map((o) =>
+      "• " + o.orderId + " — " + o.nominal + " — " + (o.data.customerName || "-") + " (" + (o.data.customerPhone || "-") + ")"
+    ).join("\n");
+
+    await sendWA(REFUND_GROUP_ID,
+      "⚠️ *ORDER EXPIRED — PERLU REFUND MANUAL*\n\n" +
+      "Order berikut sudah bayar tapi tidak masuk/expired di Moka:\n\n" +
+      lines + "\n\n" +
+      "Refund via Midtrans dashboard → cari order ID → klik Refund."
+    );
+
+    // Mark sebagai sudah di-alert agar tidak alert ulang
+    for (const { orderId, data } of needsAttention) {
+      try {
+        await store.setJSON(orderId, Object.assign({}, data, {
+          mokaStatus: "alerted",
+          alertedAt: new Date().toISOString(),
+        }));
+      } catch (e) {}
+    }
+  }
+
   return {
     statusCode: 200,
-    body: JSON.stringify({ checked: keys.length, candidates: candidates.length, processed: processed, skipped: skipped }),
+    body: JSON.stringify({ checked: keys.length, needsAttention: needsAttention.length }),
   };
 };
