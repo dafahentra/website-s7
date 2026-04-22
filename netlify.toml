@@ -5,6 +5,9 @@
   publish   = "dist"           # Vite; change to "build" for CRA
   functions = "netlify/functions"
 
+[functions]
+  node_bundler = "esbuild"
+
 # Serve the one-time setup tool
 [[redirects]]
   from   = "/moka-setup"
