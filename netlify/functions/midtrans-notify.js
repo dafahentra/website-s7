@@ -165,6 +165,13 @@ export const handler = async (event) => {
   // ── 4. Submit order ke Moka ───────────────────────────────────────────────────
   if (orderData) {
     try {
+      // Validasi item_id tidak boleh null/blank
+      const invalidItems = (orderData.order_items || []).filter((i) => !i.item_id);
+      if (invalidItems.length > 0) {
+        throw new Error(
+          "item_id null untuk: " + invalidItems.map((i) => i.item_name || "?").join(", ")
+        );
+      }
       await submitOrderToMoka(orderData);
       // Simpan timestamp submit ke Moka — dipakai check-expired-orders untuk deteksi EXPIRED
       if (pendingData) {
@@ -182,6 +189,38 @@ export const handler = async (event) => {
       }
     } catch (err) {
       console.error("[midtrans-notify] Moka submit gagal:", err.message);
+
+      // ── Auto-refund ke Midtrans karena order tidak bisa masuk Moka ───────────
+      let refundSuccess = false;
+      try {
+        const auth = Buffer.from(`${MIDTRANS_SERVER_KEY}:`).toString("base64");
+        const refundRes = await fetch(`https://api.midtrans.com/v2/${order_id}/refund`, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Basic ${auth}`,
+          },
+          body: JSON.stringify({
+            refund_key: `refund-${order_id}`,
+            amount:     Number(gross_amount),
+            reason:     "Pesanan gagal diproses sistem — refund otomatis",
+          }),
+        });
+        const refundData = await refundRes.json();
+        const isDuplicate = refundData.status_code === "412" ||
+          (refundData.status_message || "").toLowerCase().includes("duplicate");
+        if (isDuplicate || refundData.status_code === "200") {
+          refundSuccess = true;
+          console.log(`[midtrans-notify] Auto refund OK untuk ${order_id}`);
+        } else {
+          throw new Error(refundData.status_message || `status ${refundData.status_code}`);
+        }
+      } catch (refundErr) {
+        console.error("[midtrans-notify] Auto refund gagal:", refundErr.message);
+      }
+
+      // Alert ke grup
       if (REFUND_GROUP_ID) {
         await sendWA(
           REFUND_GROUP_ID,
@@ -189,7 +228,25 @@ export const handler = async (event) => {
           `Order ID : ${order_id}\n` +
           `Total    : ${formatRupiah(gross_amount)}\n` +
           `Error    : ${err.message}\n\n` +
-          `Pembayaran settle di Midtrans. Input manual ke Moka.`
+          (refundSuccess
+            ? `✅ Refund sudah otomatis diproses ke customer.`
+            : `❌ Auto refund juga gagal. Proses manual via Midtrans dashboard.`)
+        );
+      }
+
+      // WA ke customer
+      if (customerPhone) {
+        await sendWA(customerPhone,
+          refundSuccess
+            ? `😔 *Pesananmu tidak bisa diproses*\n\n` +
+              `Halo ${customerName}, terjadi kendala teknis saat memproses pesananmu.\n\n` +
+              `✅ *Refund ${formatRupiah(gross_amount)} sudah otomatis diproses.*\n` +
+              `Dana kembali dalam beberapa menit hingga 1 hari kerja.\n\n` +
+              `_Sector Seven Coffee_`
+            : `😔 *Pesananmu tidak bisa diproses*\n\n` +
+              `Halo ${customerName}, terjadi kendala teknis saat memproses pesananmu.\n\n` +
+              `Tim kami akan memproses refund ${formatRupiah(gross_amount)} dalam 2 jam 🙏\n\n` +
+              `_Sector Seven Coffee_`
         );
       }
     }
@@ -224,7 +281,8 @@ export const handler = async (event) => {
       `Waktu   : ${formatWaktuWIB(transaction_time)}\n` +
       (itemList ? `\n*Pesanan:*\n${itemList}\n` : "") +
       `\nPesananmu sedang kami konfirmasi dulu ya 🙏\n` +
-      `Kami akan kabarin kamu segera setelah pesanan mulai diproses!`;
+      `Kami akan kabarin kamu segera setelah pesanan mulai diproses!\n\n` +
+      `_Sector Seven Coffee_ ☕`;
 
     await sendWA(customerPhone, msg);
     console.log(`[WA] Receipt terkirim ke ${customerPhone}`);
