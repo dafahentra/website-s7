@@ -35,10 +35,17 @@ function getBlobsStore(name) {
 // ── Midtrans: cek status transaksi ────────────────────────────────────────────
 async function getMidtransStatus(orderId) {
   const auth = Buffer.from(`${MIDTRANS_SERVER_KEY}:`).toString("base64");
-  const res = await fetch(`https://api.midtrans.com/v2/${orderId}/status`, {
+  const res  = await fetch(`https://api.midtrans.com/v2/${orderId}/status`, {
     headers: { Accept: "application/json", Authorization: `Basic ${auth}` },
   });
-  const data = await res.json();
+  const text = await res.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    console.warn(`[midtrans-status] ${orderId} — response bukan JSON: ${text.slice(0, 100)}`);
+    data = { transaction_status: "unknown" };
+  }
   console.log(`[midtrans-status] ${orderId} → ${data.transaction_status} | fraud: ${data.fraud_status}`);
   return data;
 }
