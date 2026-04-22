@@ -69,15 +69,19 @@ async function getMokaToken() {
 }
 
 async function getMokaOrderStatus(token, orderId) {
-  const res = await fetch(
+  const res  = await fetch(
     `${MOKA_BASE}/v1/outlets/${MOKA_OUTLET_ID}/advanced_orderings/orders/${orderId}`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
-  const data = await res.json();
-  // Log raw untuk debug
-  console.log(`[moka-status] ${orderId} → raw: ${JSON.stringify(data).slice(0, 200)}`);
+  const text = await res.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    console.warn(`[moka-status] ${orderId} — response bukan JSON: ${text.slice(0, 100)}`);
+  }
+  console.log(`[moka-status] ${orderId} → http ${res.status} | raw: ${JSON.stringify(data).slice(0, 200)}`);
   if (!res.ok) return `http_error_${res.status}`;
-  // Moka bisa return data sebagai array atau object
   const statusCode = data?.data?.[0]?.status_code
     || data?.data?.status_code
     || data?.data?.[0]?.status
