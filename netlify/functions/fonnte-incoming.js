@@ -81,6 +81,16 @@ export const handler = async (event) => {
   // ── DONE command ──────────────────────────────────────────────────────────────
   if (!message.toUpperCase().startsWith("DONE ")) return OK;
 
+  // Validasi: DONE hanya boleh dari grup TEST (REFUND_GROUP_ID)
+  // Cek apakah pesan berasal dari grup yang benar
+  const senderRaw = (body.sender || body.from || "").toString().trim();
+  const chatId    = body.chat_id || body.group_id || body.sender || "";
+  const REFUND_GROUP_ID = process.env.REFUND_GROUP_ID;
+  if (REFUND_GROUP_ID && !chatId.includes(REFUND_GROUP_ID.replace("@g.us", ""))) {
+    console.log("[fonnte-incoming] DONE dari bukan grup TEST — skip");
+    return OK;
+  }
+
   const orderId = message.split(/\s+/)[1]?.trim();
   if (!orderId) return OK;
 

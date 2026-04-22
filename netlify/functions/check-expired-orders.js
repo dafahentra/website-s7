@@ -125,8 +125,15 @@ async function refundMidtrans(orderId, amount) {
 }
 
 export const handler = async (event) => {
-  const secret = (event.headers || {})["x-cron-secret"] || (event.queryStringParameters || {}).secret;
-  if (CRON_SECRET && secret !== CRON_SECRET) {
+  // Wajib ada CRON_SECRET di env — kalau tidak ada, tolak semua request
+  if (!CRON_SECRET) {
+    console.error("[check-expired] CRON_SECRET tidak diset di env!");
+    return { statusCode: 500, body: "Server misconfigured" };
+  }
+  // Header only — jangan terima dari query param (query param masuk ke logs)
+  const secret = (event.headers || {})["x-cron-secret"];
+  if (secret !== CRON_SECRET) {
+    console.warn("[check-expired] Unauthorized request");
     return { statusCode: 401, body: "Unauthorized" };
   }
 
