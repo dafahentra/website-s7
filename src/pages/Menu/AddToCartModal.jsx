@@ -87,6 +87,11 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
     }).filter(Boolean);
 
   const handleConfirm = () => {
+    if (!mokaItem?.id) {
+      alert("Item ini belum tersinkron");
+      return;      
+    }
+    
     onConfirm({
       item,
       itemName:         item.name,
