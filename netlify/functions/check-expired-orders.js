@@ -1,7 +1,13 @@
 /**
  * check-expired-orders.js
  * Netlify Function — dipanggil cron-job.org setiap 5 menit
- * ESM — di-bundle esbuild via netlify.toml node_bundler = "esbuild"
+ *
+ * KEAMANAN BERLAPIS:
+ *   Layer 1 — Blobs mokaStatus: skip kalau "completed", "rejected", "refunded", "expired"
+ *   Layer 2 — Midtrans API: hanya proses kalau status = settlement
+ *   Layer 3 — Moka API: hanya refund kalau status = "4" (EXPIRED) atau "3" (CANCELLED)
+ *
+ * Order yang completed/accepted di Moka TIDAK AKAN direfund.
  */
 
 import { getStore } from "@netlify/blobs";
@@ -14,7 +20,13 @@ const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 const REFUND_GROUP_ID     = process.env.REFUND_GROUP_ID;
 const MOKA_OUTLET_ID      = process.env.MOKA_OUTLET_ID;
 const CRON_SECRET         = process.env.CRON_SECRET;
-const EXPIRED_MS          = 12 * 60 * 1000;
+
+const EXPIRED_MS = 12 * 60 * 1000; // 12 menit
+
+// Status Moka yang AMAN untuk direfund
+const REFUNDABLE_MOKA_STATUS = ["4", "3"]; // EXPIRED, CANCELLED
+// Status Moka yang TIDAK BOLEH direfund
+const SAFE_MOKA_STATUS = ["0", "1", "2", "6"]; // INCOMING, ACCEPTED, COMPLETED, DELIVERED
 
 function getBlobsStore(name) {
   if (NETLIFY_SITE_ID && NETLIFY_API_TOKEN) {
@@ -49,11 +61,9 @@ async function getMidtransStatus(orderId) {
   });
   const text = await res.text();
   try {
-    const data = text ? JSON.parse(text) : {};
-    console.log("[midtrans] " + orderId + " -> " + data.transaction_status);
-    return data;
+    return text ? JSON.parse(text) : {};
   } catch (e) {
-    console.warn("[midtrans] bad JSON for " + orderId + ": " + text.slice(0, 80));
+    console.warn("[midtrans] bad JSON for " + orderId);
     return { transaction_status: "unknown" };
   }
 }
@@ -80,14 +90,14 @@ async function getMokaOrderStatus(token, orderId) {
   const res  = await fetch(url, { headers: { Authorization: "Bearer " + token } });
   const text = await res.text();
   let data = {};
-  try { data = text ? JSON.parse(text) : {}; } catch (e) { /* ignore */ }
-  console.log("[moka] " + orderId + " http=" + res.status + " raw=" + JSON.stringify(data).slice(0, 150));
+  try { data = text ? JSON.parse(text) : {}; } catch (e) {}
   if (!res.ok) return "http_error_" + res.status;
   const code = data?.data?.[0]?.status_code
     || data?.data?.status_code
     || data?.data?.[0]?.status
     || data?.data?.status
     || "unknown";
+  console.log("[moka] " + orderId + " status=" + code);
   return String(code);
 }
 
@@ -140,11 +150,17 @@ export const handler = async (event) => {
     try {
       const data = await store.get(key, { type: "json" });
       if (!data) continue;
-      if (data.mokaStatus === "expired" || data.mokaStatus === "refunded") continue;
+
+      // Layer 1: Skip kalau Blobs sudah menandai status final
+      const safeStatuses = ["completed", "rejected", "refunded", "expired"];
+      if (safeStatuses.includes(data.mokaStatus)) continue;
+
       if (!data.grossAmount) continue;
+
       const ts = data.mokaSubmittedAt || data.savedAt || data.orderTimestamp;
       if (!ts) continue;
       if (now - new Date(ts).getTime() < EXPIRED_MS) continue;
+
       candidates.push({ orderId: key, data: data });
     } catch (err) {
       console.warn("[check-expired] skip " + key + ":", err.message);
@@ -171,40 +187,47 @@ export const handler = async (event) => {
     const orderId = candidates[i].orderId;
     const data    = candidates[i].data;
     try {
-      // Step 1: cek Midtrans
+      // Layer 2: Cek Midtrans — hanya settlement yang diproses
       const mt       = await getMidtransStatus(orderId);
       const txStatus = mt.transaction_status || "unknown";
-      const fraudOk  = !mt.fraud_status || mt.fraud_status === "accept";
 
-      if (txStatus === "pending" || txStatus === "expire" || txStatus === "cancel" || txStatus === "deny" || txStatus === "unknown") {
+      if (txStatus !== "settlement" && !(txStatus === "capture" && mt.fraud_status === "accept")) {
         console.log("[check-expired] skip " + orderId + " midtrans=" + txStatus);
-        await store.setJSON(orderId, Object.assign({}, data, { mokaStatus: "expired", expiredAt: new Date().toISOString(), midtransStatus: txStatus }));
-        skipped++;
-        continue;
-      }
-      if (txStatus === "refund" || txStatus === "partial_refund") {
-        console.log("[check-expired] skip " + orderId + " sudah refund");
-        await store.setJSON(orderId, Object.assign({}, data, { mokaStatus: "refunded", refundSuccess: true, midtransStatus: txStatus }));
-        skipped++;
-        continue;
-      }
-
-      const settled = txStatus === "settlement" || (txStatus === "capture" && fraudOk);
-      if (!settled) {
-        console.log("[check-expired] skip " + orderId + " status=" + txStatus);
+        if (["expire", "cancel", "pending"].includes(txStatus)) {
+          await store.setJSON(orderId, Object.assign({}, data, {
+            mokaStatus: "expired",
+            expiredAt: new Date().toISOString(),
+            midtransStatus: txStatus,
+          }));
+        }
+        if (txStatus === "refund" || txStatus === "partial_refund") {
+          await store.setJSON(orderId, Object.assign({}, data, { mokaStatus: "refunded" }));
+        }
         skipped++;
         continue;
       }
 
-      // Step 2: cek Moka
+      // Layer 3: Cek Moka — HANYA refund kalau status EXPIRED atau CANCELLED
       const mokaStatus = await getMokaOrderStatus(mokaToken, orderId);
-      if (mokaStatus === "0" || mokaStatus === "1" || mokaStatus === "2" || mokaStatus === "6") {
-        console.log("[check-expired] skip " + orderId + " moka aktif=" + mokaStatus);
+
+      if (SAFE_MOKA_STATUS.includes(mokaStatus)) {
+        console.log("[check-expired] AMAN — skip " + orderId + " moka=" + mokaStatus + " (order masih aktif/selesai)");
+        // Update Blobs kalau completed
+        if (mokaStatus === "2") {
+          await store.setJSON(orderId, Object.assign({}, data, { mokaStatus: "completed" }));
+        }
         skipped++;
         continue;
       }
 
-      // Step 3: refund
+      if (!REFUNDABLE_MOKA_STATUS.includes(mokaStatus)) {
+        console.log("[check-expired] skip " + orderId + " moka status tidak dikenal=" + mokaStatus);
+        skipped++;
+        continue;
+      }
+
+      // Semua layer lolos → refund
+      console.log("[check-expired] REFUND " + orderId + " moka=" + mokaStatus);
       const nominal = formatRupiah(data.grossAmount);
       let refundOk  = false;
 
@@ -213,8 +236,6 @@ export const handler = async (event) => {
         refundOk = true;
         if (r.alreadyRefunded) {
           console.log("[check-expired] " + orderId + " sudah pernah direfund");
-        } else {
-          console.log("[check-expired] refund OK " + orderId);
         }
       } catch (err) {
         console.error("[check-expired] refund gagal " + orderId + ":", err.message);
@@ -230,16 +251,15 @@ export const handler = async (event) => {
       }
 
       if (data.customerPhone) {
-        const name = data.customerName || "Kak";
         await sendWA(data.customerPhone,
           refundOk
             ? "😔 *Pesananmu kadaluarsa*\n\n" +
-              "Halo " + name + ", pesananmu *" + orderId + "* tidak sempat diproses kasir.\n\n" +
+              "Halo " + (data.customerName || "Kak") + ", pesananmu *" + orderId + "* tidak sempat diproses kasir dalam 10 menit.\n\n" +
               "✅ *Refund " + nominal + " sudah otomatis diproses.*\n" +
               "Dana kembali dalam beberapa menit hingga 1 hari kerja.\n\n" +
               "_Sector Seven Coffee_"
             : "😔 *Pesananmu kadaluarsa*\n\n" +
-              "Halo " + name + ", pesananmu *" + orderId + "* tidak sempat diproses kasir.\n\n" +
+              "Halo " + (data.customerName || "Kak") + ", pesananmu *" + orderId + "* tidak sempat diproses kasir.\n\n" +
               "Refund " + nominal + " akan kami proses dalam 2 jam 🙏\n\n" +
               "_Sector Seven Coffee_"
         );
@@ -249,7 +269,6 @@ export const handler = async (event) => {
         mokaStatus: "expired",
         expiredAt: new Date().toISOString(),
         refundSuccess: refundOk,
-        midtransStatus: txStatus,
         mokaStatusCode: mokaStatus,
       }));
 
