@@ -142,19 +142,24 @@ export const handler = async (event) => {
   let customerPhone = null;
   let customerName  = "Pelanggan";
   let orderItems    = [];
-  let orderData     = null; // key di Blobs adalah "orderData" (dari save-pending-order.js)
+  let orderData     = null;
 
   try {
     const store = getBlobsStore("pending-orders");
     pendingData = await store.get(order_id, { type: "json" });
 
     if (pendingData) {
+      // Idempotency guard — kalau sudah diproses sebelumnya, skip Moka submit
+      if (pendingData.mokaStatus === "submitted" || pendingData.mokaStatus === "expired" || pendingData.mokaStatus === "refunded") {
+        console.log(`[midtrans-notify] ${order_id} sudah pernah diproses (${pendingData.mokaStatus}) — skip Moka submit, kirim WA saja`);
+        orderData = null; // skip submit ke Moka
+      } else {
+        orderData = pendingData.orderData || null;
+      }
       customerPhone = pendingData.customerPhone || null;
       customerName  = pendingData.customerName  || "Pelanggan";
       orderItems    = pendingData.items         || [];
-      // save-pending-order.js menyimpan payload dengan key "orderData"
-      orderData     = pendingData.orderData     || null;
-      console.log(`[Blobs] Data ditemukan — phone: ${customerPhone} | orderData: ${!!orderData}`);
+      console.log(`[Blobs] Data ditemukan — phone: ${customerPhone} | orderData: ${!!orderData} | status: ${pendingData.mokaStatus || "new"}`);
     } else {
       console.warn(`[Blobs] Tidak ada data untuk ${order_id}`);
     }

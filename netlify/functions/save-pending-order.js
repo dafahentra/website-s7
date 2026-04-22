@@ -57,7 +57,7 @@ export const handler = async (event) => {
         items:          items          || [],
         savedAt:        new Date().toISOString(),
       },
-      { ttl: 86400 } // 24 jam
+      { ttl: 259200 } // 72 jam
     );
 
     console.log(`[save-pending-order] Saved ${orderId}`);
