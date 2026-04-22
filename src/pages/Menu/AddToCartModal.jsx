@@ -247,7 +247,7 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
               <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20A10 10 0 0012 2z" />
               </svg>
-              Item ini belum tersinkron di Moka — pesanan tetap bisa dilanjutkan.
+              Item ini belum tersinkron di Moka — tidak bisa dipesan saat ini.
             </div>
           )}
 
@@ -275,7 +275,8 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
             {/* Tambah button - no hover scale animation */}
             <button
               onClick={handleConfirm}
-              className="flex-1 py-3.5 rounded-full text-white font-black text-sm shadow-md active:scale-[.97] transition-transform"
+              disabled={!mokaItem?.id}
+              className="flex-1 py-3.5 rounded-full text-white font-black text-sm shadow-md active:scale-[.97] transition-transform disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: "linear-gradient(135deg,#FF6B35,#e85d2a)" }}
             >
               Tambah · Rp{fmt(totalPrice)}

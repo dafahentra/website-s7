@@ -254,21 +254,7 @@ export const handler = async (event) => {
     console.warn(`[midtrans-notify] orderData null untuk ${order_id} — skip Moka submit`);
   }
 
-  // ── 5. Simpan grossAmount ke Blobs ────────────────────────────────────────────
-  // Dipakai moka-callback.js saat status rejected untuk tampilkan nominal refund
-  if (pendingData) {
-    try {
-      const store = getBlobsStore("pending-orders");
-      await store.setJSON(order_id, {
-        ...pendingData,
-        grossAmount: gross_amount,
-      });
-    } catch (err) {
-      console.error("[Blobs] Gagal simpan grossAmount:", err.message);
-    }
-  }
-
-  // ── 6. Kirim WA receipt ke customer ──────────────────────────────────────────
+  // ── 5. Kirim WA receipt ke customer ─────────────────────────────────────────
   if (customerPhone) {
     const itemList = orderItems.length > 0
       ? orderItems.map((i) => `  • ${i.name} x${i.qty}`).join("\n")
