@@ -34,7 +34,7 @@ export const handler = async (event) => {
 
   console.log(`[order-notify] forward ${eventType} → moka-callback status=${status} order=${orderId}`);
 
-  // Assicurarsi che grossAmount sia nel Blobs (viene da query param ?total=)
+  // Pastikan grossAmount tersimpan di Blobs dari query param ?total=
   const total = Number(q.total) || 0;
   if (total > 0) {
     try {
