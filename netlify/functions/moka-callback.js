@@ -128,6 +128,18 @@ export const handler = async (event) => {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
+  // ── Security: validasi MOKA_WEBHOOK_SECRET kalau di-set ──────────────────────
+  // Set di Netlify env: MOKA_WEBHOOK_SECRET=<random_string>
+  // Embed di callback URL: .../moka-callback?secret=<random_string>
+  const MOKA_WEBHOOK_SECRET = process.env.MOKA_WEBHOOK_SECRET;
+  if (MOKA_WEBHOOK_SECRET) {
+    const incomingSecret = event.queryStringParameters?.secret || event.headers["x-webhook-secret"];
+    if (incomingSecret !== MOKA_WEBHOOK_SECRET) {
+      console.warn("[moka-callback] Unauthorized request — bad secret");
+      return { statusCode: 200, body: "OK" }; // Return 200 bukan 401 agar Moka tidak retry
+    }
+  }
+
   let body;
   try {
     body = JSON.parse(event.body || "{}");

@@ -20,6 +20,17 @@ export const handler = async (event) => {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
+  // Hanya boleh dipanggil dari internal (frontend via relative URL)
+  // Validasi origin — hanya dari domain sendiri
+  const origin  = event.headers["origin"] || "";
+  const referer = event.headers["referer"] || "";
+  const allowed = ["https://sectorseven.space", "http://localhost"];
+  const isAllowed = allowed.some((d) => origin.startsWith(d) || referer.startsWith(d));
+  if (!isAllowed && origin !== "") {
+    console.warn("[save-pending-order] Blocked request from:", origin);
+    return { statusCode: 403, body: "Forbidden" };
+  }
+
   try {
     const body = JSON.parse(event.body || "{}");
 
@@ -57,7 +68,7 @@ export const handler = async (event) => {
         items:          items          || [],
         savedAt:        new Date().toISOString(),
       },
-      { ttl: 259200 } // 72 jam
+      { ttl: 86400 } // 24 jam
     );
 
     console.log(`[save-pending-order] Saved ${orderId}`);
