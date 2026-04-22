@@ -85,7 +85,6 @@ function buildMokaOrderPayload({
     customer_phone_number: normalizedPhone,
     application_order_id:  applicationOrderId,
     sales_type_id:         ONLINE_ORDER_SALES_TYPE_ID,
-    sales_type_name:       "Online Order",
     client_created_at:     new Date().toISOString(),
     ...(orderNote ? { note: orderNote } : {}),
 
