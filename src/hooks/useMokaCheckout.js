@@ -90,9 +90,9 @@ function buildMokaOrderPayload({
     ...(orderNote ? { note: orderNote } : {}),
 
     // ── Callback URL → moka-callback ──────────────────────────────────────────
-    complete_order_notification_url: `https://sectorseven.space/.netlify/functions/moka-callback`,
-    accept_order_notification_url:   `https://sectorseven.space/.netlify/functions/moka-callback`,
-    cancel_order_notification_url:   `https://sectorseven.space/.netlify/functions/moka-callback`,
+    complete_order_notification_url: `https://sectorseven.space/.netlify/functions/moka-callback?secret=64TbQqjQcFNOx73Sw2LwneEZq497UOuo`,
+    accept_order_notification_url:   `https://sectorseven.space/.netlify/functions/moka-callback?secret=64TbQqjQcFNOx73Sw2LwneEZq497UOuo`,
+    cancel_order_notification_url:   `https://sectorseven.space/.netlify/functions/moka-callback?secret=64TbQqjQcFNOx73Sw2LwneEZq497UOuo`,
 
     ...(hasDiscount
       ? {
