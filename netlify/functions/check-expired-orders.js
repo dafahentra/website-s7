@@ -261,15 +261,13 @@ export const handler = async (event) => {
       if (customerPhone) {
         await sendWA(customerPhone,
           refundSuccess
-            ? `😔 *Pesananmu kadaluarsa*\n\n` +
+            ? `😔 *Pesanan kadaluarsa*\n\n` +
               `Halo ${customerName || "Kak"}, pesananmu *${orderId}* tidak sempat diproses kasir.\n\n` +
               `✅ *Refund ${nominalText} sudah otomatis diproses.*\n` +
-              `Dana kembali dalam beberapa menit hingga 1 hari kerja.\n\n` +
-              `_Sector Seven Coffee_`
-            : `😔 *Pesananmu kadaluarsa*\n\n` +
+              `Dana kembali dalam beberapa menit hingga 1 hari kerja.`
+            : `😔 *Pesanan kadaluarsa*\n\n` +
               `Halo ${customerName || "Kak"}, pesananmu *${orderId}* tidak sempat diproses kasir.\n\n` +
-              `Refund ${nominalText} akan kami proses dalam 2 jam 🙏\n\n` +
-              `_Sector Seven Coffee_`
+              `Refund ${nominalText} akan kami proses dalam 2 jam 🙏'
         );
       }
 
