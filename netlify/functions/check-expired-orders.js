@@ -227,7 +227,12 @@ export const handler = async (event) => {
         continue;
       }
 
-      if (!REFUNDABLE_MOKA_STATUS.includes(mokaStatus)) {
+      // http_error_404 = Moka tidak kenal order ini via Advanced Ordering API
+      // Kemungkinan order lama atau tidak pernah masuk Moka → refund
+      if (mokaStatus.startsWith("http_error_404")) {
+        console.log("[check-expired] Moka 404 — order tidak ditemukan di Moka, lanjut refund: " + orderId);
+        // lanjut ke refund di bawah
+      } else if (!REFUNDABLE_MOKA_STATUS.includes(mokaStatus)) {
         console.log("[check-expired] skip " + orderId + " moka status tidak dikenal=" + mokaStatus);
         skipped++;
         continue;
