@@ -17,7 +17,6 @@ import { getStore } from "@netlify/blobs";
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 const FONNTE_TOKEN        = process.env.FONNTE_TOKEN;
 const REFUND_GROUP_ID     = process.env.REFUND_GROUP_ID;
-const SECTOR_GROUP_ID     = process.env.SECTOR_GROUP_ID;
 const NETLIFY_SITE_ID     = process.env.NETLIFY_SITE_ID;
 const NETLIFY_API_TOKEN   = process.env.NETLIFY_API_TOKEN;
 const SITE_URL            = process.env.URL || "https://sectorseven.space";
@@ -260,21 +259,45 @@ export const handler = async (event) => {
     console.warn(`[midtrans-notify] orderData null untuk ${order_id} — skip Moka submit`);
   }
 
-  // ── 5. Notif ke grup TEST ────────────────────────────────────────────────────
+  // ── 5. Notif ke grup TEST + ntfy ─────────────────────────────────────────────
+  const itemListGrup = orderItems.length > 0
+    ? orderItems.map((i) => `  • ${i.name} x${i.qty}`).join("\n")
+    : "-";
+
+  const grupMsg =
+    `🛎️ *ORDER ONLINE MASUK*\n\n` +
+    `Order ID : ${order_id}\n` +
+    `Total    : ${formatRupiah(gross_amount)}\n` +
+    `Waktu    : ${formatWaktuWIB(transaction_time)}\n` +
+    `Customer : ${customerName}\n` +
+    `HP       : ${customerPhone || "-"}\n\n` +
+    `Menu:\n${itemListGrup}`;
+
+  const notifTasks = [];
+
   if (REFUND_GROUP_ID) {
-    const itemListGrup = orderItems.length > 0
-      ? orderItems.map((i) => `  • ${i.name} x${i.qty}`).join("\n")
-      : "-";
-    await sendWA(REFUND_GROUP_ID,
-      `🛎️ *ORDER ONLINE MASUK*\n\n` +
-      `Order ID : ${order_id}\n` +
-      `Total    : ${formatRupiah(gross_amount)}\n` +
-      `Waktu    : ${formatWaktuWIB(transaction_time)}\n` +
-      `Customer : ${customerName}\n` +
-      `HP       : ${customerPhone || "-"}\n\n` +
-      `Menu:\n${itemListGrup}`
+    notifTasks.push(sendWA(REFUND_GROUP_ID, grupMsg));
+  }
+
+  // ntfy push notification ke tablet
+  const NTFY_TOPIC = process.env.NTFY_TOPIC; // set di Netlify env, cth: sectorseven-orders
+  if (NTFY_TOPIC) {
+    notifTasks.push(
+      fetch("https://ntfy.sh/" + NTFY_TOPIC, {
+        method: "POST",
+        headers: {
+          "Title":    "🛎️ Order Masuk! " + formatRupiah(gross_amount),
+          "Priority": "urgent",
+          "Tags":     "bell,coffee",
+        },
+        body:
+          customerName + " — " + formatRupiah(gross_amount) + "\n" +
+          itemListGrup,
+      }).catch((e) => console.error("[ntfy] gagal:", e.message))
     );
   }
+
+  await Promise.allSettled(notifTasks);
 
   // ── 6. Kirim WA receipt ke customer ─────────────────────────────────────────
   if (customerPhone) {
