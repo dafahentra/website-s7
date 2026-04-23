@@ -17,6 +17,7 @@ import { getStore } from "@netlify/blobs";
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 const FONNTE_TOKEN        = process.env.FONNTE_TOKEN;
 const REFUND_GROUP_ID     = process.env.REFUND_GROUP_ID;
+const SECTOR_GROUP_ID     = process.env.SECTOR_GROUP_ID;
 const NETLIFY_SITE_ID     = process.env.NETLIFY_SITE_ID;
 const NETLIFY_API_TOKEN   = process.env.NETLIFY_API_TOKEN;
 const SITE_URL            = process.env.URL || "https://sectorseven.space";
