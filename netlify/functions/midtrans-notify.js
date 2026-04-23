@@ -259,7 +259,23 @@ export const handler = async (event) => {
     console.warn(`[midtrans-notify] orderData null untuk ${order_id} — skip Moka submit`);
   }
 
-  // ── 5. Kirim WA receipt ke customer ─────────────────────────────────────────
+  // ── 5. Notif ke grup TEST ────────────────────────────────────────────────────
+  if (REFUND_GROUP_ID) {
+    const itemListGrup = orderItems.length > 0
+      ? orderItems.map((i) => `  • ${i.name} x${i.qty}`).join("\n")
+      : "-";
+    await sendWA(REFUND_GROUP_ID,
+      `🛎️ *ORDER ONLINE MASUK*\n\n` +
+      `Order ID : ${order_id}\n` +
+      `Total    : ${formatRupiah(gross_amount)}\n` +
+      `Waktu    : ${formatWaktuWIB(transaction_time)}\n` +
+      `Customer : ${customerName}\n` +
+      `HP       : ${customerPhone || "-"}\n\n` +
+      `Menu:\n${itemListGrup}`
+    );
+  }
+
+  // ── 6. Kirim WA receipt ke customer ─────────────────────────────────────────
   if (customerPhone) {
     const itemList = orderItems.length > 0
       ? orderItems.map((i) => `  • ${i.name} x${i.qty}`).join("\n")
