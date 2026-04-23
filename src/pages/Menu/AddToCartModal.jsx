@@ -1,9 +1,18 @@
 // pages/Menu/AddToCartModal.jsx
 // Uses REAL item_variants and active_modifiers from Moka API.
-import React, { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+// Default: variant "Regular", modifier option "Normal" — fallback ke index 0.
+import React, { useState, useMemo, useCallback } from "react";
+import { motion } from "framer-motion";
 
 const fmt = (n) => new Intl.NumberFormat("id-ID").format(n);
+
+// Cari option by nama (case-insensitive, trim-safe) → fallback item[0]
+const findDefault = (arr, preferredName) => {
+  if (!arr?.length) return null;
+  const target = preferredName.toLowerCase();
+  const match  = arr.find((x) => x?.name?.trim().toLowerCase() === target);
+  return match ?? arr[0];
+};
 
 const Chip = ({ label, sublabel, active, onClick }) => (
   <button
@@ -42,21 +51,23 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
       })),
   [mokaItem]);
 
-  // ── Initial state ─────────────────────────────────────────────────────────
+  // ── Initial state: default "Regular" / "Normal" ──────────────────────────
   const [selectedVariantId, setSelectedVariantId] = useState(
-    () => variants?.[0]?.id ?? null
+    () => findDefault(variants, "Regular")?.id ?? null
   );
   const [selectedMods, setSelectedMods] = useState(() => {
     const init = {};
     modifierGroups.forEach((g) => {
-      if (g.options.length > 0) init[g.id] = g.options[0].id;
+      const def = findDefault(g.options, "Normal");
+      if (def) init[g.id] = def.id;
     });
     return init;
   });
   const [qty, setQty] = useState(1);
 
   // ── Price calc ────────────────────────────────────────────────────────────
-  const selectedVariant = variants?.find((v) => v.id === selectedVariantId) ?? variants?.[0];
+  const selectedVariant =
+    variants?.find((v) => v.id === selectedVariantId) ?? variants?.[0];
 
   const basePrice = useMemo(() => {
     if (selectedVariant?.price) return selectedVariant.price;
@@ -73,7 +84,8 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
   const unitPrice  = basePrice + modifiersPrice;
   const totalPrice = unitPrice * qty;
 
-  const buildMokaModifiers = () =>
+  // ── Moka payload builder ──────────────────────────────────────────────────
+  const buildMokaModifiers = useCallback(() =>
     modifierGroups.map((g) => {
       const opt = g.options.find((o) => o.id === selectedMods[g.id]);
       if (!opt) return null;
@@ -84,22 +96,18 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
         modifier_option_name:  opt.name,
         modifier_option_price: opt.price ?? 0,
       };
-    }).filter(Boolean);
+    }).filter(Boolean),
+  [modifierGroups, selectedMods]);
 
   const handleConfirm = () => {
-    if (!mokaItem?.id) {
-      alert("Item ini belum tersinkron");
-      return;      
-    }
-    
     onConfirm({
       item,
       itemName:         item.name,
-      mokaItemId:       mokaItem?.id          ?? null,
-      mokaVariantId:    selectedVariant?.id    ?? null,
-      mokaVariantName:  selectedVariant?.name  ?? "",
-      mokaVariantSku:   selectedVariant?.sku   ?? "",
-      mokaCategoryId:   mokaItem?.category_id  ?? null,
+      mokaItemId:       mokaItem?.id             ?? null,
+      mokaVariantId:    selectedVariant?.id      ?? null,
+      mokaVariantName:  selectedVariant?.name    ?? "",
+      mokaVariantSku:   selectedVariant?.sku     ?? "",
+      mokaCategoryId:   mokaItem?.category_id    ?? null,
       mokaCategoryName: mokaItem?.category?.name ?? "",
       mokaModifiers:    buildMokaModifiers(),
       qty,
@@ -247,7 +255,7 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
               <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20A10 10 0 0012 2z" />
               </svg>
-              Item ini belum tersinkron di Moka — tidak bisa dipesan saat ini.
+              Item ini belum tersinkron di Moka — pesanan tetap bisa dilanjutkan.
             </div>
           )}
 
@@ -258,25 +266,32 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
                 className="w-7 h-7 rounded-full bg-white text-brand-navy flex items-center justify-center shadow-sm active:scale-90 transition-transform"
               >
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" d="M5 12h14"/></svg>
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" d="M5 12h14"/>
+                </svg>
               </button>
-              <motion.span key={qty} initial={{ scale: 1.35 }} animate={{ scale: 1 }}
-                className="text-brand-navy font-black text-sm w-5 text-center leading-none">
+              <motion.span
+                key={qty}
+                initial={{ scale: 1.35 }}
+                animate={{ scale: 1 }}
+                className="text-brand-navy font-black text-sm w-5 text-center leading-none"
+              >
                 {qty}
               </motion.span>
               <button
                 onClick={() => setQty((q) => q + 1)}
                 className="w-7 h-7 rounded-full bg-brand-orange text-white flex items-center justify-center shadow-sm active:scale-90 transition-transform"
               >
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" d="M12 5v14M5 12h14"/></svg>
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" d="M12 5v14M5 12h14"/>
+                </svg>
               </button>
             </div>
 
-            {/* Tambah button - no hover scale animation */}
+            {/* Tambah button */}
             <button
               onClick={handleConfirm}
-              disabled={!mokaItem?.id}
-              className="flex-1 py-3.5 rounded-full text-white font-black text-sm shadow-md active:scale-[.97] transition-transform disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex-1 py-3.5 rounded-full text-white font-black text-sm shadow-md active:scale-[.97] transition-transform"
               style={{ background: "linear-gradient(135deg,#FF6B35,#e85d2a)" }}
             >
               Tambah · Rp{fmt(totalPrice)}
