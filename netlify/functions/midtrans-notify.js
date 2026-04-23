@@ -280,19 +280,18 @@ export const handler = async (event) => {
   }
 
   // ntfy push notification ke tablet
-  const NTFY_TOPIC = process.env.NTFY_TOPIC; // set di Netlify env, cth: sectorseven-orders
+  const NTFY_TOPIC = process.env.NTFY_TOPIC;
   if (NTFY_TOPIC) {
     notifTasks.push(
       fetch("https://ntfy.sh/" + NTFY_TOPIC, {
         method: "POST",
         headers: {
-          "Title":    "🛎️ Order Masuk! " + formatRupiah(gross_amount),
+          "Title":    "Order Masuk! " + formatRupiah(gross_amount),
           "Priority": "urgent",
           "Tags":     "bell,coffee",
+          "Content-Type": "text/plain; charset=utf-8",
         },
-        body:
-          customerName + " — " + formatRupiah(gross_amount) + "\n" +
-          itemListGrup,
+        body: customerName + " - " + formatRupiah(gross_amount) + "\n" + itemListGrup,
       }).catch((e) => console.error("[ntfy] gagal:", e.message))
     );
   }
