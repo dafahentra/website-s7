@@ -1,76 +1,117 @@
 // src/hooks/useMokaData.js
-// Fetches all items from Moka via mokaApi service layer.
-// Builds a lookup map keyed by menuData numeric item ID.
+// Fetch semua item dari Moka via /.netlify/functions/moka-items
+// Build lookup map: { [menuData.id]: mokaItem }
+//
+// Strategi match (urut prioritas):
+//   1. mokaGuid (permanen, tidak pernah berubah)
+//   2. normalized name (fallback kalau mokaGuid lupa diisi)
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { fetchItems } from "../services/mokaApi";
+import { menuItems } from "../data/menuData";
 
-// Maps Moka item name (lowercase) → menuData numeric ID
-const NAME_TO_MENU_ID = {
-  "sectorize":              1,
-  "americano":              2,
-  "abericano":              3,
-  "latte":                  4,
-  "cappucino":              5,
-  "white vanilla":          6,
-  "buttery":                7,
-  "hazelnutz":              8,
-  "palmer":                 9,
-  "caramelted":             10,
-  "pure matcha":            11,
-  "green flag":             12,
-  "red flag":               13,
-  "dirty matcha":           14,
-  "sea salt matcha":        15,
-  "chocolate":              16,
-  "red velvet":             17,
-  "wizzie berry":           18,
-  "croissant almond":       19,
-  "cinnamon roll":          20,
-  "apple danish":           21,
-  "plain":                  22,
-  "double choco":           23,
-  "blueberry cream cheese": 24,
-};
+// Normalisasi nama untuk fallback match:
+// - lowercase
+// - trim
+// - collapse whitespace
+// - strip karakter non-alphanum/spasi (mis. em-dash, tanda kutip)
+const normalize = (s) =>
+  (s || "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/[^\w\s]/g, "");
+
+// Flatten menuItems jadi array { id, guid, nameKey }
+function flatMenuEntries() {
+  return Object.values(menuItems)
+    .flat()
+    .map((e) => ({
+      id: e.id,
+      guid: e.mokaGuid || null,
+      nameKey: normalize(e.name),
+    }));
+}
 
 export function useMokaData() {
-  const [mokaMap, setMokaMap] = useState({});  // { [menuId]: mokaItem }
+  const [mokaMap, setMokaMap] = useState({}); // { [menuId]: mokaItem }
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState(null);
+  const [error, setError] = useState(null);
+  const [missing, setMissing] = useState([]); // daftar menuId yang tidak ketemu
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const items = await fetchItems();
+
+      if (!Array.isArray(items) || items.length === 0) {
+        throw new Error(
+          "Moka items kosong. Cek token, outlet_id, atau pagination backend."
+        );
+      }
+
+      // Build 2 lookup dari response Moka
+      const byGuid = new Map();
+      const byName = new Map();
+      items.forEach((it) => {
+        if (it.is_deleted) return;
+        if (it.guid) byGuid.set(it.guid, it);
+        byName.set(normalize(it.name), it);
+      });
+
+      // Map menuData.id → Moka item
+      const map = {};
+      const notFound = [];
+
+      flatMenuEntries().forEach(({ id, guid, nameKey }) => {
+        let hit = null;
+
+        // 1. Prioritas: match by GUID (paling stabil)
+        if (guid && byGuid.has(guid)) {
+          hit = byGuid.get(guid);
+        }
+        // 2. Fallback: match by normalized name
+        else if (byName.has(nameKey)) {
+          hit = byName.get(nameKey);
+        }
+
+        if (hit) {
+          map[id] = hit;
+        } else {
+          notFound.push(id);
+        }
+      });
+
+      setMokaMap(map);
+      setMissing(notFound);
+
+      if (notFound.length > 0) {
+        console.warn(
+          "[useMokaData] menuId tanpa match Moka:",
+          notFound,
+          "→ item tersebut akan ter-disable di UI."
+        );
+      }
+    } catch (err) {
+      console.error("[useMokaData]", err);
+      setError(err.message);
+      setMokaMap({});
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
-
     (async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const items = await fetchItems();
-
-        if (cancelled) return;
-
-        // Build map: menuData numeric ID → full Moka item object
-        const map = {};
-        items.forEach((mokaItem) => {
-          const key    = (mokaItem.name || "").toLowerCase().trim();
-          const menuId = NAME_TO_MENU_ID[key];
-          if (menuId !== undefined) map[menuId] = mokaItem;
-        });
-
-        setMokaMap(map);
-      } catch (err) {
-        if (!cancelled) {
-          console.error("[useMokaData]", err);
-          setError(err.message);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+      if (!cancelled) await load();
     })();
+    return () => {
+      cancelled = true;
+    };
+  }, [load]);
 
-    return () => { cancelled = true; };
-  }, []);
-
-  return { mokaMap, loading, error };
+  return { mokaMap, loading, error, missing, reload: load };
 }

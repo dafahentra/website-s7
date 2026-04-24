@@ -1,232 +1,309 @@
 // src/hooks/useMokaCheckout.js
+// Flow: submit order ke Moka DULU → buka Midtrans SNAP → redirect handler.
 //
-// FLOW BENAR:
-//   1. Simpan payload ke Blobs (save-pending-order) — belum submit ke Moka
-//   2. Buka Midtrans SNAP
-//   3. Setelah settlement → midtrans-notify.js yang submit ke Moka
+// Perubahan utama vs versi lama:
+// 1. Validator `assertCartValid()` — fail fast kalau ada item_id null.
+// 2. `applicationOrderId` pakai random suffix (tidak predictable).
+// 3. Destructure customerInfo dibersihkan dari variabel yang tidak dipakai.
 
 import { useState, useCallback } from "react";
-import { getMidtransToken } from "../services/mokaApi";
+import { getMidtransToken, submitOrder } from "../services/mokaApi";
 
 const round = (n) => Math.round(Number(n) || 0);
 
+// Sales type ID untuk "Online Order" di Moka.
+// Didapat dari: GET /v1/outlets/{outlet_id}/sales_type (cari name "Online Order")
 const ONLINE_ORDER_SALES_TYPE_ID = 602868;
-const NETLIFY_FUNC = "/.netlify/functions"; // ← relative, aman di semua env
+
+const NOTIF_BASE = "https://sectorseven.space/.netlify/functions";
+const fmtRp = (n) => `Rp${new Intl.NumberFormat("id-ID").format(n)}`;
 
 const IS_PRODUCTION = import.meta.env.VITE_MIDTRANS_ENV === "production";
 const SNAP_URL = IS_PRODUCTION
   ? "https://app.midtrans.com/snap/snap.js"
   : "https://app.sandbox.midtrans.com/snap/snap.js";
 
-// ─── Helpers ───────────────────────────────────────────────────────────────────
+// ─── Random suffix untuk application_order_id ────────────────────────────────
+// Tidak pakai Date.now() saja karena predictable → retry token bisa di-brute force.
+// 6 hex char = 16 juta kombinasi, cukup untuk cegah guessing dalam rentang 1 detik.
+function randomSuffix() {
+  const c = globalThis.crypto || window.crypto;
+  const bytes = new Uint8Array(3);
+  c.getRandomValues(bytes);
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
+// ─── Load Midtrans SNAP script ───────────────────────────────────────────────
 function loadSnapScript(clientKey) {
   return new Promise((resolve, reject) => {
-    if (window.snap) { resolve(); return; }
+    if (window.snap) return resolve();
     const existing = document.querySelector(`script[src="${SNAP_URL}"]`);
-    if (existing) { existing.addEventListener("load", resolve); return; }
+    if (existing) {
+      existing.addEventListener("load", resolve);
+      return;
+    }
     const script = document.createElement("script");
     script.src = SNAP_URL;
     script.setAttribute("data-client-key", clientKey);
-    script.onload  = resolve;
+    script.onload = resolve;
     script.onerror = () => reject(new Error("Gagal memuat Midtrans SNAP."));
     document.head.appendChild(script);
   });
 }
 
-/**
- * Bangun Moka order payload.
- * Callback URL → moka-callback (BUKAN order-notify).
- */
-function buildMokaOrderPayload({
-  applicationOrderId, name, phone, orderNote,
-  discount, discountAmount, onlineFee, cart,
+// ─── Ringkasan item untuk WhatsApp notif ─────────────────────────────────────
+function buildItemsSummary(cart) {
+  return cart
+    .map((e) => {
+      const mods = (e.mokaModifiers ?? [])
+        .filter((m) => m.modifier_option_name)
+        .map((m) => m.modifier_option_name)
+        .join(", ");
+      const line = `${e.qty}x ${e.itemName}${
+        e.mokaVariantName && e.mokaVariantName !== "Regular"
+          ? ` (${e.mokaVariantName})`
+          : ""
+      }`;
+      return mods ? `${line} - ${mods}` : line;
+    })
+    .join("|");
+}
+
+// ─── VALIDATOR ───────────────────────────────────────────────────────────────
+// Fail fast kalau ada cart entry tanpa mokaItemId.
+// Pesan error jelas agar user tahu item mana yang bermasalah.
+function assertCartValid(cart) {
+  const bad = cart.filter((e) => !e.mokaItemId);
+  if (bad.length > 0) {
+    const names = bad.map((b) => b.itemName).join(", ");
+    throw new Error(
+      `item_id null untuk: ${names}. Refresh halaman dan coba lagi.`
+    );
+  }
+}
+
+// ─── Bangun payload & submit ke Moka ─────────────────────────────────────────
+async function sendMokaOrder(cart, {
+  applicationOrderId,
+  name,
+  phone,
+  orderNote,
+  discount,
+  discountAmount,
+  onlineFee,
+  finalPrice,
 }) {
-  const normalizedPhone = phone
-    .replace(/[\s-]/g, "")
-    .replace(/^\+/, "")
-    .replace(/^0/, "62")
-    .slice(0, 13);
+  assertCartValid(cart);
 
   const hasDiscount = discountAmount > 0 && discount?.mokaId;
 
   const order_items = cart.map((entry) => {
-    const modifierSum = (entry.mokaModifiers ?? [])
-      .reduce((s, m) => s + round(m.modifier_option_price ?? 0), 0);
+    // item_price_library = harga DASAR (tanpa modifier)
+    // Moka menambah modifier price sendiri dari item_modifiers
+    const modifierSum = (entry.mokaModifiers ?? []).reduce(
+      (s, m) => s + round(m.modifier_option_price ?? 0),
+      0
+    );
     const basePrice = round(entry.unitPrice) - modifierSum;
 
-    const mokaItem = {
-      item_id:            entry.mokaItemId,
-      item_name:          entry.itemName,
+    const item = {
+      item_id: entry.mokaItemId,
+      item_name: entry.itemName,
+      quantity: entry.qty,
+      item_variant_id: entry.mokaVariantId,
+      item_variant_name: entry.mokaVariantName || "Regular",
       item_price_library: basePrice,
-      quantity:           entry.qty,
-      item_variant_id:    entry.mokaVariantId   || null,
-      item_variant_name:  entry.mokaVariantName || "Regular",
-      category_id:        entry.mokaCategoryId  || null,
-      category_name:      entry.mokaCategoryName || "",
-      note:               entry.itemNote || "",
+      category_id: entry.mokaCategoryId,
+      category_name: entry.mokaCategoryName || "",
+      note: "",
     };
 
     if (entry.mokaModifiers?.length) {
-      mokaItem.item_modifiers = entry.mokaModifiers.map((m) => ({
-        item_modifier_id:           m.modifier_id,
-        item_modifier_name:         m.modifier_name         || "",
-        item_modifier_option_id:    m.modifier_option_id,
-        item_modifier_option_name:  m.modifier_option_name  || "",
-        item_modifier_option_price: round(m.modifier_option_price ?? 0),
+      item.item_modifiers = entry.mokaModifiers.map((mod) => ({
+        item_modifier_id: mod.modifier_id,
+        item_modifier_name: mod.modifier_name,
+        item_modifier_option_id: mod.modifier_option_id,
+        item_modifier_option_name: mod.modifier_option_name,
+        item_modifier_option_price: round(mod.modifier_option_price ?? 0),
       }));
     }
-
-    return mokaItem;
+    return item;
   });
 
-  return {
-    customer_name:         name.slice(0, 50),
-    customer_phone_number: normalizedPhone,
-    application_order_id:  applicationOrderId,
-    sales_type_id:         ONLINE_ORDER_SALES_TYPE_ID,
-    sales_type_name:       "Online Order",
-    client_created_at:     new Date().toISOString(),
-    ...(orderNote ? { note: orderNote } : {}),
+  // Diskon native Moka
+  const discountFields = hasDiscount
+    ? {
+        discount_id: discount.mokaId,
+        discount_name: discount.mokaName || discount.code,
+        discount_type:
+          discount.mokaType ||
+          (discount.type === "percentage" ? "percentage" : "cash"),
+        discount_amount: discount.value,
+        ...(discount.mokaGuid ? { discount_guid: discount.mokaGuid } : {}),
+      }
+    : {};
 
-    // ── Callback URL → moka-callback ──────────────────────────────────────────
-    complete_order_notification_url: `https://sectorseven.space/.netlify/functions/moka-callback?secret=64TbQqjQcFNOx73Sw2LwneEZq497UOuo`,
-    accept_order_notification_url:   `https://sectorseven.space/.netlify/functions/moka-callback?secret=64TbQqjQcFNOx73Sw2LwneEZq497UOuo`,
-    cancel_order_notification_url:   `https://sectorseven.space/.netlify/functions/moka-callback?secret=64TbQqjQcFNOx73Sw2LwneEZq497UOuo`,
+  // Note singkat untuk kasir (max 255 char per docs Moka)
+  const note = [orderNote, `Total ${fmtRp(finalPrice)}`]
+    .filter(Boolean)
+    .join(" | ")
+    .slice(0, 255);
 
-    ...(hasDiscount
-      ? {
-          discount_id:     discount.mokaId,
-          discount_type:   discount.mokaType || (discount.type === "percentage" ? "percentage" : "cash"),
-          discount_amount: discount.value,
-          discount_name:   (discount.mokaName || discount.description || discount.code || "").slice(0, 50),
-          ...(discount.mokaGuid ? { discount_guid: discount.mokaGuid } : {}),
-        }
-      : {}),
-
-    order_items,
-  };
-}
-
-/**
- * Simpan order ke Blobs.
- * Pakai relative URL — tidak bergantung pada env var domain.
- * Tidak submit ke Moka — midtrans-notify.js yang handle setelah settlement.
- */
-async function savePendingOrder({ applicationOrderId, orderPayload, name, phone, cart, finalPrice }) {
-  const normalizedPhone = phone
-    .replace(/[\s-]/g, "")
-    .replace(/^\+/, "")
+  // Moka limits: customer_name max 50 chars, phone max 13 digits
+  const phoneClean = phone
+    .replace(/\s|-|\+/g, "")
     .replace(/^0/, "62")
     .slice(0, 13);
+  const nameClean = name.trim().slice(0, 50);
 
-  const res = await fetch(`${NETLIFY_FUNC}/save-pending-order`, {
-    method:  "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      orderId:        applicationOrderId,
-      orderPayload:   orderPayload,
-      customerPhone:  normalizedPhone,
-      customerName:   name,
-      grossAmount:    finalPrice,
-      orderTimestamp: new Date().toISOString(),
-      items: cart.map((e) => ({
-        name: [e.itemName, e.mokaVariantName].filter(Boolean).join(" - "),
-        qty:  e.qty,
-      })),
-    }),
+  await submitOrder({
+    application_order_id: applicationOrderId,
+    payment_type: "online_orders",
+    client_created_at: new Date().toISOString(),
+    note,
+    customer_name: nameClean,
+    customer_phone_number: phoneClean,
+    sales_type_id: ONLINE_ORDER_SALES_TYPE_ID,
+    sales_type_name: "Online Order",
+    accept_order_notification_url: `${NOTIF_BASE}/order-notify?event=accepted&order=${applicationOrderId}&phone=${encodeURIComponent(
+      phone
+    )}&name=${encodeURIComponent(name)}&total=${finalPrice}&items=${encodeURIComponent(
+      buildItemsSummary(cart)
+    )}`,
+    complete_order_notification_url: `${NOTIF_BASE}/order-notify?event=completed&order=${applicationOrderId}&phone=${encodeURIComponent(
+      phone
+    )}&name=${encodeURIComponent(name)}&total=${finalPrice}&items=${encodeURIComponent(
+      buildItemsSummary(cart)
+    )}`,
+    cancel_order_notification_url: `${NOTIF_BASE}/order-notify?event=cancelled&order=${applicationOrderId}&phone=${encodeURIComponent(
+      phone
+    )}&name=${encodeURIComponent(name)}`,
+    ...discountFields,
+    order_items,
   });
-
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || `save-pending-order gagal: ${res.status}`);
-  }
 }
 
-// ─── Hook ──────────────────────────────────────────────────────────────────────
-
+// ─── Hook ────────────────────────────────────────────────────────────────────
 export function useMokaCheckout() {
   const [submitting, setSubmitting] = useState(false);
 
   const checkout = useCallback(async (cart, customerInfo = {}) => {
     if (!cart.length) throw new Error("Keranjang kosong");
+
+    // Fail fast sebelum setSubmitting(true) → tombol tidak stuck loading
+    assertCartValid(cart);
+
     setSubmitting(true);
 
     try {
-      const applicationOrderId = `S7-${Date.now()}`;
+      // Order ID: prefix + timestamp + 6 hex random → tidak bisa ditebak
+      const applicationOrderId = `S7-${Date.now()}-${randomSuffix()}`;
 
       const {
-        name           = "Customer",
-        phone          = "",
-        orderNote      = "",
-        discount       = null,
-        subtotal       = cart.reduce((s, e) => s + round(e.unitPrice * e.qty), 0),
-        discountAmount = discount?.discountAmount || 0,
-        onlineFee      = 0,
-        finalPrice     = Math.max(0, subtotal - discountAmount) + (onlineFee || 0),
+        name = "Customer",
+        phone = "",
+        orderNote = "",
+        discount = null,
+        onlineFee = 0,
       } = customerInfo;
 
-      const orderPayload = buildMokaOrderPayload({
-        applicationOrderId, name, phone, orderNote,
-        discount, discountAmount, onlineFee, cart,
-      });
+      const discountAmount = discount?.discountAmount || customerInfo.discountAmount || 0;
+      const subtotal = cart.reduce((s, e) => s + round(e.unitPrice * e.qty), 0);
+      const finalPrice =
+        customerInfo.finalPrice ??
+        Math.max(0, subtotal - discountAmount) + onlineFee;
 
-      // ── KASUS KHUSUS: diskon 100% (finalPrice = 0) ───────────────────────────
+      const mokaPayload = {
+        applicationOrderId,
+        name,
+        phone,
+        orderNote,
+        discount,
+        discountAmount,
+        onlineFee,
+        finalPrice,
+      };
+
+      // ── KASUS KHUSUS: diskon 100% (finalPrice = 0) ──────────────────────
+      // Midtrans menolak amount = 0, jadi langsung submit ke Moka tanpa payment
       if (finalPrice <= 0) {
-        const res = await fetch(`${NETLIFY_FUNC}/moka-checkout`, {
-          method:  "POST",
-          headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify({ order: orderPayload }),
-        });
-        if (!res.ok) {
-          const d = await res.json().catch(() => ({}));
-          throw new Error(d.error || "Order gratis gagal diproses");
+        try {
+          await sendMokaOrder(cart, mokaPayload);
+          return { success: true, order_id: applicationOrderId, free: true };
+        } catch (err) {
+          throw new Error(`Order gagal: ${err.message}`);
         }
-        return { success: true, order_id: applicationOrderId, free: true };
       }
 
-      // ── 1. Simpan payload ke Blobs ───────────────────────────────────────────
-      await savePendingOrder({ applicationOrderId, orderPayload, name, phone, cart, finalPrice });
-
-      // ── 2. Midtrans token ────────────────────────────────────────────────────
+      // ── Midtrans item list ──────────────────────────────────────────────
       const midtransItems = [
         ...cart.map((e) => ({
-          id:       String(e.mokaVariantId || e.mokaItemId || "item"),
-          price:    round(e.unitPrice),
+          id: String(e.mokaVariantId || e.mokaItemId),
+          price: round(e.unitPrice),
           quantity: e.qty,
-          name:     [e.itemName, e.mokaVariantName].filter(Boolean).join(" - ").slice(0, 50),
+          name: [e.itemName, e.mokaVariantName]
+            .filter(Boolean)
+            .join(" - ")
+            .slice(0, 50),
         })),
         ...(discountAmount > 0 && discount
-          ? [{ id: "DISCOUNT", price: -discountAmount, quantity: 1,
-               name: (discount.description || `Diskon ${discount.code}`).slice(0, 50) }]
+          ? [
+              {
+                id: "DISCOUNT",
+                price: -discountAmount,
+                quantity: 1,
+                name: (
+                  discount.description || `Diskon ${discount.code}`
+                ).slice(0, 50),
+              },
+            ]
           : []),
         ...(onlineFee > 0
-          ? [{ id: "ONLINE_FEE", price: onlineFee, quantity: 1, name: "Biaya Online Order" }]
+          ? [
+              {
+                id: "ONLINE_FEE",
+                price: onlineFee,
+                quantity: 1,
+                name: "Biaya Online Order",
+              },
+            ]
           : []),
       ];
 
+      // ── 1. Submit order ke Moka DULU (sebelum buka SNAP) ────────────────
+      // Penting: save-pending-order harus selesai sebelum customer bayar,
+      // supaya midtrans-notify bisa baca customerPhone dari Blobs saat settlement.
+      await sendMokaOrder(cart, mokaPayload);
+
+      // ── 2. Dapat token SNAP dari Midtrans ───────────────────────────────
       const { token } = await getMidtransToken({
         order_id: applicationOrderId,
-        amount:   round(finalPrice),
+        amount: finalPrice,
         customer: { name, phone },
-        items:    midtransItems,
+        items: midtransItems,
       });
 
-      // ── 3. Load Snap.js ──────────────────────────────────────────────────────
-      const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY;
-      if (!clientKey) throw new Error("VITE_MIDTRANS_CLIENT_KEY tidak ditemukan.");
-      await loadSnapScript(clientKey);
+      // ── 3. Load SNAP & buka payment popup ───────────────────────────────
+      await loadSnapScript(import.meta.env.VITE_MIDTRANS_CLIENT_KEY);
 
-      // ── 4. Buka SNAP ─────────────────────────────────────────────────────────
       return new Promise((resolve, reject) => {
         window.snap.pay(token, {
-          onSuccess: () => resolve({ success: true, order_id: applicationOrderId }),
-          onPending: () => resolve({ success: false, pending: true }),
-          onError:   () => reject(new Error("Pembayaran gagal. Silakan coba lagi.")),
-          onClose:   () => reject(new Error("Pembayaran dibatalkan.")),
+          onSuccess: (r) =>
+            resolve({ success: true, order_id: applicationOrderId, result: r }),
+          onPending: (r) =>
+            resolve({
+              success: true,
+              pending: true,
+              order_id: applicationOrderId,
+              result: r,
+            }),
+          onError: (e) =>
+            reject(new Error(e?.status_message || "Pembayaran gagal")),
+          onClose: () => reject(new Error("Pembayaran dibatalkan")),
         });
       });
-
     } finally {
       setSubmitting(false);
     }

@@ -1,18 +1,15 @@
-// pages/Menu/AddToCartModal.jsx
-// Uses REAL item_variants and active_modifiers from Moka API.
-// Default: variant "Regular", modifier option "Normal" — fallback ke index 0.
-import React, { useState, useMemo, useCallback } from "react";
+// src/pages/Menu/AddToCartModal.jsx
+// Pakai REAL item_variants dan active_modifiers dari Moka API.
+//
+// Perubahan utama:
+// - Hard guard di handleConfirm: refuse kalau mokaItem.id null.
+// - Tombol disabled saat loading / error / belum sinkron.
+// - Banner warning kalau item belum tersinkron dengan POS.
+
+import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 
 const fmt = (n) => new Intl.NumberFormat("id-ID").format(n);
-
-// Cari option by nama (case-insensitive, trim-safe) → fallback item[0]
-const findDefault = (arr, preferredName) => {
-  if (!arr?.length) return null;
-  const target = preferredName.toLowerCase();
-  const match  = arr.find((x) => x?.name?.trim().toLowerCase() === target);
-  return match ?? arr[0];
-};
 
 const Chip = ({ label, sublabel, active, onClick }) => (
   <button
@@ -32,34 +29,43 @@ const Chip = ({ label, sublabel, active, onClick }) => (
   </button>
 );
 
-const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onConfirm }) => {
+const AddToCartModal = ({
+  item,
+  mokaItem,
+  mokaLoading,
+  mokaError,
+  onClose,
+  onConfirm,
+}) => {
   // ── Variants ──────────────────────────────────────────────────────────────
-  const variants = useMemo(() =>
-    mokaItem?.item_variants?.filter((v) => !v.is_deleted) ?? null,
-  [mokaItem]);
+  const variants = useMemo(
+    () => mokaItem?.item_variants?.filter((v) => !v.is_deleted) ?? null,
+    [mokaItem]
+  );
 
   // ── Modifier groups ───────────────────────────────────────────────────────
-  const modifierGroups = useMemo(() =>
-    (mokaItem?.active_modifiers ?? [])
-      .filter((m) => !m.is_deleted)
-      .map((m) => ({
-        id:      m.id,
-        name:    m.name,
-        min:     m.min_no_of_options ?? 0,
-        max:     m.max_no_of_options ?? 1,
-        options: (m.modifier_options ?? []).filter((o) => !o.is_deleted),
-      })),
-  [mokaItem]);
+  const modifierGroups = useMemo(
+    () =>
+      (mokaItem?.active_modifiers ?? [])
+        .filter((m) => !m.is_deleted)
+        .map((m) => ({
+          id: m.id,
+          name: m.name,
+          min: m.min_no_of_options ?? 0,
+          max: m.max_no_of_options ?? 1,
+          options: (m.modifier_options ?? []).filter((o) => !o.is_deleted),
+        })),
+    [mokaItem]
+  );
 
-  // ── Initial state: default "Regular" / "Normal" ──────────────────────────
+  // ── Initial state ─────────────────────────────────────────────────────────
   const [selectedVariantId, setSelectedVariantId] = useState(
-    () => findDefault(variants, "Regular")?.id ?? null
+    () => variants?.[0]?.id ?? null
   );
   const [selectedMods, setSelectedMods] = useState(() => {
     const init = {};
     modifierGroups.forEach((g) => {
-      const def = findDefault(g.options, "Normal");
-      if (def) init[g.id] = def.id;
+      if (g.options.length > 0) init[g.id] = g.options[0].id;
     });
     return init;
   });
@@ -74,42 +80,55 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
     return parseInt(String(item.price).replace(/\./g, ""), 10) || 0;
   }, [selectedVariant, item.price]);
 
-  const modifiersPrice = useMemo(() =>
-    modifierGroups.reduce((sum, g) => {
-      const opt = g.options.find((o) => o.id === selectedMods[g.id]);
-      return sum + (opt?.price ?? 0);
-    }, 0),
-  [modifierGroups, selectedMods]);
+  const modifiersPrice = useMemo(
+    () =>
+      modifierGroups.reduce((sum, g) => {
+        const opt = g.options.find((o) => o.id === selectedMods[g.id]);
+        return sum + (opt?.price ?? 0);
+      }, 0),
+    [modifierGroups, selectedMods]
+  );
 
-  const unitPrice  = basePrice + modifiersPrice;
+  const unitPrice = basePrice + modifiersPrice;
   const totalPrice = unitPrice * qty;
 
-  // ── Moka payload builder ──────────────────────────────────────────────────
-  const buildMokaModifiers = useCallback(() =>
-    modifierGroups.map((g) => {
-      const opt = g.options.find((o) => o.id === selectedMods[g.id]);
-      if (!opt) return null;
-      return {
-        modifier_id:           g.id,
-        modifier_option_id:    opt.id,
-        modifier_name:         g.name,
-        modifier_option_name:  opt.name,
-        modifier_option_price: opt.price ?? 0,
-      };
-    }).filter(Boolean),
-  [modifierGroups, selectedMods]);
+  const buildMokaModifiers = () =>
+    modifierGroups
+      .map((g) => {
+        const opt = g.options.find((o) => o.id === selectedMods[g.id]);
+        if (!opt) return null;
+        return {
+          modifier_id: g.id,
+          modifier_option_id: opt.id,
+          modifier_name: g.name,
+          modifier_option_name: opt.name,
+          modifier_option_price: opt.price ?? 0,
+        };
+      })
+      .filter(Boolean);
+
+  // ── HARD GUARD ────────────────────────────────────────────────────────────
+  const isSynced = !!mokaItem?.id;
+  const canConfirm = !mokaLoading && !mokaError && isSynced;
 
   const handleConfirm = () => {
+    if (!isSynced) {
+      alert(
+        "Menu ini belum tersinkron dengan POS. Refresh halaman dan coba lagi."
+      );
+      return;
+    }
+
     onConfirm({
       item,
-      itemName:         item.name,
-      mokaItemId:       mokaItem?.id             ?? null,
-      mokaVariantId:    selectedVariant?.id      ?? null,
-      mokaVariantName:  selectedVariant?.name    ?? "",
-      mokaVariantSku:   selectedVariant?.sku     ?? "",
-      mokaCategoryId:   mokaItem?.category_id    ?? null,
-      mokaCategoryName: mokaItem?.category?.name ?? "",
-      mokaModifiers:    buildMokaModifiers(),
+      itemName: item.name,
+      mokaItemId: mokaItem.id,
+      mokaVariantId: selectedVariant?.id ?? null,
+      mokaVariantName: selectedVariant?.name ?? "",
+      mokaVariantSku: selectedVariant?.sku ?? "",
+      mokaCategoryId: mokaItem.category_id ?? null,
+      mokaCategoryName: mokaItem.category?.name ?? "",
+      mokaModifiers: buildMokaModifiers(),
       qty,
       unitPrice,
     });
@@ -137,7 +156,10 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
         {/* Hero */}
         <div
           className="relative flex items-center justify-center h-44 overflow-hidden"
-          style={{ background: "linear-gradient(150deg,#0a1628 0%,#1e3a5f 60%,#0a1628 100%)" }}
+          style={{
+            background:
+              "linear-gradient(150deg,#0a1628 0%,#1e3a5f 60%,#0a1628 100%)",
+          }}
         >
           <motion.img
             initial={{ scale: 0.85, opacity: 0 }}
@@ -151,30 +173,60 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
             onClick={onClose}
             className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 text-white/70 hover:bg-white/20 transition-all flex items-center justify-center"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
 
         {/* Body */}
         <div className="px-6 pt-5 pb-6 overflow-y-auto max-h-[60vh]">
-
           {/* Name + live price */}
           <div className="flex items-start justify-between mb-5">
             <div className="flex-1 mr-4">
-              <h2 className="text-xl font-black text-brand-navy leading-tight">{item.name}</h2>
-              <p className="text-gray-400 text-xs mt-1 leading-relaxed">{item.description}</p>
+              <h2 className="text-xl font-black text-brand-navy leading-tight">
+                {item.name}
+              </h2>
+              <p className="text-gray-400 text-xs mt-1 leading-relaxed">
+                {item.description}
+              </p>
             </div>
             <motion.span
               key={unitPrice}
               initial={{ scale: 1.1, opacity: 0 }}
-              animate={{ scale: 1,   opacity: 1 }}
+              animate={{ scale: 1, opacity: 1 }}
               className="text-brand-orange font-black text-lg whitespace-nowrap"
             >
               Rp{fmt(unitPrice)}
             </motion.span>
           </div>
+
+          {/* Status sinkron POS */}
+          {mokaLoading && (
+            <div className="mb-4 p-2.5 rounded-xl bg-gray-50 text-gray-500 text-xs">
+              Memuat data POS…
+            </div>
+          )}
+          {mokaError && (
+            <div className="mb-4 p-2.5 rounded-xl bg-red-50 text-red-600 text-xs">
+              Gagal muat data POS: {mokaError}
+            </div>
+          )}
+          {!mokaLoading && !mokaError && !isSynced && (
+            <div className="mb-4 p-2.5 rounded-xl bg-amber-50 text-amber-700 text-xs">
+              Item ini belum tersinkron dengan POS. Refresh halaman.
+            </div>
+          )}
 
           {/* Variants — from Moka item_variants */}
           {variants && variants.length > 1 && (
@@ -188,7 +240,7 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
                     key={v.id}
                     label={v.name}
                     sublabel={v.price ? `Rp${fmt(v.price)}` : null}
-                    active={selectedVariantId === v.id}
+                    active={v.id === selectedVariantId}
                     onClick={() => setSelectedVariantId(v.id)}
                   />
                 ))}
@@ -196,33 +248,21 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
             </div>
           )}
 
-          {/* Modifiers — from Moka active_modifiers */}
-          {modifierGroups.map((group) => (
-            <div key={group.id} className="mb-4">
-              <div className="flex items-center gap-2 mb-2.5">
-                <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                  {group.name}
-                </p>
-                {group.min > 0 && (
-                  <span className="text-[10px] font-semibold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">
-                    Wajib
-                  </span>
-                )}
-                {group.max > 1 && (
-                  <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                    Maks {group.max}
-                  </span>
-                )}
-              </div>
+          {/* Modifier groups */}
+          {modifierGroups.map((g) => (
+            <div key={g.id} className="mb-5">
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2.5">
+                {g.name}
+              </p>
               <div className="flex flex-wrap gap-2">
-                {group.options.map((opt) => (
+                {g.options.map((o) => (
                   <Chip
-                    key={opt.id}
-                    label={opt.name}
-                    sublabel={opt.price > 0 ? `+Rp${fmt(opt.price)}` : null}
-                    active={selectedMods[group.id] === opt.id}
+                    key={o.id}
+                    label={o.name}
+                    sublabel={o.price ? `+Rp${fmt(o.price)}` : null}
+                    active={selectedMods[g.id] === o.id}
                     onClick={() =>
-                      setSelectedMods((prev) => ({ ...prev, [group.id]: opt.id }))
+                      setSelectedMods((prev) => ({ ...prev, [g.id]: o.id }))
                     }
                   />
                 ))}
@@ -230,73 +270,43 @@ const AddToCartModal = ({ item, mokaItem, mokaLoading, mokaError, onClose, onCon
             </div>
           ))}
 
-          {/* ── Status Moka: loading / error / not found ── */}
-          {mokaLoading && !mokaItem && (
-            <div className="flex items-center gap-2 text-xs text-gray-300 mb-4">
-              <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-              </svg>
-              Memuat varian…
-            </div>
-          )}
-
-          {!mokaLoading && mokaError && (
-            <div className="flex items-center gap-2 text-xs text-red-400 bg-red-50 rounded-xl px-3 py-2 mb-4">
-              <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-              </svg>
-              Gagal memuat data: {mokaError}
-            </div>
-          )}
-
-          {!mokaLoading && !mokaError && !mokaItem && (
-            <div className="flex items-center gap-2 text-xs text-amber-500 bg-amber-50 rounded-xl px-3 py-2 mb-4">
-              <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20A10 10 0 0012 2z" />
-              </svg>
-              Item ini belum tersinkron di Moka — pesanan tetap bisa dilanjutkan.
-            </div>
-          )}
-
-          {/* Qty + CTA */}
-          <div className="flex items-center gap-3 mt-6">
-            <div className="flex items-center gap-2 bg-gray-100 rounded-full px-2 py-1.5 flex-shrink-0">
+          {/* Qty + Total + Confirm */}
+          <div className="flex items-center justify-between mt-6">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
-                className="w-7 h-7 rounded-full bg-white text-brand-navy flex items-center justify-center shadow-sm active:scale-90 transition-transform"
+                className="w-9 h-9 rounded-full bg-gray-100 text-gray-600 font-bold active:scale-90 transition-all"
               >
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" d="M5 12h14"/>
-                </svg>
+                −
               </button>
-              <motion.span
-                key={qty}
-                initial={{ scale: 1.35 }}
-                animate={{ scale: 1 }}
-                className="text-brand-navy font-black text-sm w-5 text-center leading-none"
-              >
-                {qty}
-              </motion.span>
+              <span className="w-6 text-center font-black text-lg">{qty}</span>
               <button
                 onClick={() => setQty((q) => q + 1)}
-                className="w-7 h-7 rounded-full bg-brand-orange text-white flex items-center justify-center shadow-sm active:scale-90 transition-transform"
+                className="w-9 h-9 rounded-full bg-gray-100 text-gray-600 font-bold active:scale-90 transition-all"
               >
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" d="M12 5v14M5 12h14"/>
-                </svg>
+                +
               </button>
             </div>
-
-            {/* Tambah button */}
-            <button
-              onClick={handleConfirm}
-              className="flex-1 py-3.5 rounded-full text-white font-black text-sm shadow-md active:scale-[.97] transition-transform"
-              style={{ background: "linear-gradient(135deg,#FF6B35,#e85d2a)" }}
-            >
-              Tambah · Rp{fmt(totalPrice)}
-            </button>
+            <span className="font-black text-brand-navy text-lg">
+              Rp{fmt(totalPrice)}
+            </span>
           </div>
+
+          <button
+            disabled={!canConfirm}
+            onClick={handleConfirm}
+            className={`mt-5 w-full py-3.5 rounded-full font-bold text-white text-sm transition-all ${
+              canConfirm
+                ? "bg-brand-navy active:scale-95 hover:opacity-90"
+                : "bg-gray-300 cursor-not-allowed"
+            }`}
+          >
+            {mokaLoading
+              ? "Memuat…"
+              : !isSynced
+              ? "Belum tersedia"
+              : "Tambah ke Keranjang"}
+          </button>
         </div>
       </motion.div>
     </motion.div>
