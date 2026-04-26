@@ -1,10 +1,11 @@
 // src/hooks/useMokaCheckout.js
 // Flow: submit order ke Moka DULU → buka Midtrans SNAP → redirect handler.
 //
-// Perubahan utama vs versi lama:
-// 1. Validator `assertCartValid()` — fail fast kalau ada item_id null.
-// 2. `applicationOrderId` pakai random suffix (tidak predictable).
-// 3. Destructure customerInfo dibersihkan dari variabel yang tidak dipakai.
+// Perubahan vs versi sebelumnya:
+// 1. Callback URL diperbaiki: order-notify → moka-callback (fix bug utama).
+// 2. Secret disertakan di callback URL via VITE_MOKA_WEBHOOK_SECRET.
+// 3. Query param phone/name dihapus dari callback URL — moka-callback.js
+//    sudah baca semua data dari Netlify Blobs, tidak perlu query string.
 
 import { useState, useCallback } from "react";
 import { getMidtransToken, submitOrder } from "../services/mokaApi";
@@ -23,9 +24,17 @@ const SNAP_URL = IS_PRODUCTION
   ? "https://app.midtrans.com/snap/snap.js"
   : "https://app.sandbox.midtrans.com/snap/snap.js";
 
+// ─── Callback URL builder ─────────────────────────────────────────────────────
+// Secret disertakan sebagai query param agar moka-callback.js bisa validasi.
+// Nilai diambil dari env VITE_MOKA_WEBHOOK_SECRET (harus sama dengan
+// MOKA_WEBHOOK_SECRET di Netlify env).
+// Jika env tidak di-set, URL tetap valid — secret check di server akan di-skip.
+const MOKA_CB_SECRET = import.meta.env.VITE_MOKA_WEBHOOK_SECRET || "";
+const MOKA_CB_URL = MOKA_CB_SECRET
+  ? `${NOTIF_BASE}/moka-callback?secret=${encodeURIComponent(MOKA_CB_SECRET)}`
+  : `${NOTIF_BASE}/moka-callback`;
+
 // ─── Random suffix untuk application_order_id ────────────────────────────────
-// Tidak pakai Date.now() saja karena predictable → retry token bisa di-brute force.
-// 6 hex char = 16 juta kombinasi, cukup untuk cegah guessing dalam rentang 1 detik.
 function randomSuffix() {
   const c = globalThis.crypto || window.crypto;
   const bytes = new Uint8Array(3);
@@ -72,8 +81,6 @@ function buildItemsSummary(cart) {
 }
 
 // ─── VALIDATOR ───────────────────────────────────────────────────────────────
-// Fail fast kalau ada cart entry tanpa mokaItemId.
-// Pesan error jelas agar user tahu item mana yang bermasalah.
 function assertCartValid(cart) {
   const bad = cart.filter((e) => !e.mokaItemId);
   if (bad.length > 0) {
@@ -100,8 +107,6 @@ async function sendMokaOrder(cart, {
   const hasDiscount = discountAmount > 0 && discount?.mokaId;
 
   const order_items = cart.map((entry) => {
-    // item_price_library = harga DASAR (tanpa modifier)
-    // Moka menambah modifier price sendiri dari item_modifiers
     const modifierSum = (entry.mokaModifiers ?? []).reduce(
       (s, m) => s + round(m.modifier_option_price ?? 0),
       0
@@ -132,7 +137,6 @@ async function sendMokaOrder(cart, {
     return item;
   });
 
-  // Diskon native Moka
   const discountFields = hasDiscount
     ? {
         discount_id: discount.mokaId,
@@ -145,13 +149,11 @@ async function sendMokaOrder(cart, {
       }
     : {};
 
-  // Note singkat untuk kasir (max 255 char per docs Moka)
   const note = [orderNote, `Total ${fmtRp(finalPrice)}`]
     .filter(Boolean)
     .join(" | ")
     .slice(0, 255);
 
-  // Moka limits: customer_name max 50 chars, phone max 13 digits
   const phoneClean = phone
     .replace(/\s|-|\+/g, "")
     .replace(/^0/, "62")
@@ -167,19 +169,12 @@ async function sendMokaOrder(cart, {
     customer_phone_number: phoneClean,
     sales_type_id: ONLINE_ORDER_SALES_TYPE_ID,
     sales_type_name: "Online Order",
-    accept_order_notification_url: `${NOTIF_BASE}/order-notify?event=accepted&order=${applicationOrderId}&phone=${encodeURIComponent(
-      phone
-    )}&name=${encodeURIComponent(name)}&total=${finalPrice}&items=${encodeURIComponent(
-      buildItemsSummary(cart)
-    )}`,
-    complete_order_notification_url: `${NOTIF_BASE}/order-notify?event=completed&order=${applicationOrderId}&phone=${encodeURIComponent(
-      phone
-    )}&name=${encodeURIComponent(name)}&total=${finalPrice}&items=${encodeURIComponent(
-      buildItemsSummary(cart)
-    )}`,
-    cancel_order_notification_url: `${NOTIF_BASE}/order-notify?event=cancelled&order=${applicationOrderId}&phone=${encodeURIComponent(
-      phone
-    )}&name=${encodeURIComponent(name)}`,
+    // Semua event Moka (accepted, completed, rejected/cancelled) diarahkan
+    // ke moka-callback.js. Data customer dibaca dari Blobs — tidak perlu
+    // dikirim ulang via query string.
+    accept_order_notification_url:   MOKA_CB_URL,
+    complete_order_notification_url: MOKA_CB_URL,
+    cancel_order_notification_url:   MOKA_CB_URL,
     ...discountFields,
     order_items,
   });
@@ -192,13 +187,11 @@ export function useMokaCheckout() {
   const checkout = useCallback(async (cart, customerInfo = {}) => {
     if (!cart.length) throw new Error("Keranjang kosong");
 
-    // Fail fast sebelum setSubmitting(true) → tombol tidak stuck loading
     assertCartValid(cart);
 
     setSubmitting(true);
 
     try {
-      // Order ID: prefix + timestamp + 6 hex random → tidak bisa ditebak
       const applicationOrderId = `S7-${Date.now()}-${randomSuffix()}`;
 
       const {
@@ -227,7 +220,6 @@ export function useMokaCheckout() {
       };
 
       // ── KASUS KHUSUS: diskon 100% (finalPrice = 0) ──────────────────────
-      // Midtrans menolak amount = 0, jadi langsung submit ke Moka tanpa payment
       if (finalPrice <= 0) {
         try {
           await sendMokaOrder(cart, mokaPayload);
@@ -272,9 +264,7 @@ export function useMokaCheckout() {
           : []),
       ];
 
-      // ── 1. Submit order ke Moka DULU (sebelum buka SNAP) ────────────────
-      // Penting: save-pending-order harus selesai sebelum customer bayar,
-      // supaya midtrans-notify bisa baca customerPhone dari Blobs saat settlement.
+      // ── 1. Submit order ke Moka DULU ────────────────────────────────────
       await sendMokaOrder(cart, mokaPayload);
 
       // ── 2. Dapat token SNAP dari Midtrans ───────────────────────────────

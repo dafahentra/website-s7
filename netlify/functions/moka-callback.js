@@ -3,20 +3,22 @@
  * Netlify Function — Menerima webhook status order dari Moka (Advanced Ordering)
  *
  * Dipasang sebagai callback URL saat submit order ke Moka:
- *   cancel_order_notification_url   → https://sectorseven.space/.netlify/functions/moka-callback
- *   accept_order_notification_url   → https://sectorseven.space/.netlify/functions/moka-callback
- *   complete_order_notification_url → https://sectorseven.space/.netlify/functions/moka-callback
+ *   cancel_order_notification_url   → https://sectorseven.space/.netlify/functions/moka-callback?secret=<MOKA_WEBHOOK_SECRET>
+ *   accept_order_notification_url   → https://sectorseven.space/.netlify/functions/moka-callback?secret=<MOKA_WEBHOOK_SECRET>
+ *   complete_order_notification_url → https://sectorseven.space/.netlify/functions/moka-callback?secret=<MOKA_WEBHOOK_SECRET>
  *
  * Flow per status:
  *   accepted  → kirim WA ke customer: pesanan dikonfirmasi, sedang dibuat
- *   rejected  → kirim WA ke customer: detail order + template form refund lengkap
- *   completed → kirim WA ke customer: pesanan selesai, silakan ambil
+ *   rejected  → auto-refund Midtrans + kirim WA ke customer
+ *   completed → kirim WA ke customer + tambah loyalty point
  *
  * ENV yang dibutuhkan:
  *   FONNTE_TOKEN
  *   REFUND_GROUP_ID   — ID grup WA TEST, cth: 120363xxxxxx@g.us
  *   NETLIFY_SITE_ID
  *   NETLIFY_API_TOKEN
+ *   MIDTRANS_SERVER_KEY
+ *   MOKA_WEBHOOK_SECRET  — secret untuk validasi webhook (opsional tapi dianjurkan)
  */
 
 import { getStore } from "@netlify/blobs";
@@ -97,7 +99,7 @@ async function refundMidtrans(orderId, amount) {
     },
     body: JSON.stringify({
       refund_key: `refund-${orderId}`,
-      amount:     Number(amount),
+      amount:     Math.round(Number(amount)),
       reason:     "Pesanan tidak dapat diproses oleh kasir",
     }),
   });
@@ -164,10 +166,10 @@ export const handler = async (event) => {
     console.warn(`[Blobs] Tidak bisa ambil data order ${application_order_id}: ${err.message}`);
   }
 
-  const customerPhone = pendingData?.customerPhone || null;
-  const customerName  = pendingData?.customerName  || "Kak";
-  const grossAmount   = pendingData?.grossAmount   || null;
-  const items         = pendingData?.items         || [];
+  const customerPhone  = pendingData?.customerPhone  || null;
+  const customerName   = pendingData?.customerName   || "Kak";
+  const grossAmount    = pendingData?.grossAmount    || null;
+  const items          = pendingData?.items          || [];
   const orderTimestamp = pendingData?.orderTimestamp || null;
 
   const itemList = items.length > 0
@@ -202,9 +204,8 @@ export const handler = async (event) => {
           (itemList ? `\n*Pesanan:*\n${itemList}\n` : "") +
           `\nSilakan diambil di counter ya! 😊`;
 
-        // ── WA + Loyalty paralel (keduanya di-await) ─────────────────────────
-        const siteUrl  = process.env.URL || "https://sectorseven.space";
-        const tasks    = [sendWA(customerPhone, msg)];
+        const siteUrl = process.env.URL || "https://sectorseven.space";
+        const tasks   = [sendWA(customerPhone, msg)];
 
         if (grossAmount) {
           tasks.push(
@@ -233,38 +234,70 @@ export const handler = async (event) => {
 
     // ── REJECTED ────────────────────────────────────────────────────────────────
     case "rejected": {
-      if (customerPhone) {
-        const nominalText   = formatRupiah(grossAmount);
-        const timestampText = formatTimestamp(orderTimestamp) || "—";
-        const menuText      = itemList || "—";
 
-        // ── Auto refund ke Midtrans ─────────────────────────────────────────────
+      // ── Guard: pastikan grossAmount valid sebelum refund ──────────────────────
+      // grossAmount disimpan oleh midtrans-notify.js setelah payment settled.
+      // Kalau null/NaN berarti data Blobs korup atau webhook Moka datang
+      // sebelum midtrans-notify selesai (sangat unlikely tapi perlu di-handle).
+      const refundAmount = grossAmount ? Math.round(Number(grossAmount)) : null;
+
+      if (!refundAmount || refundAmount <= 0) {
+        console.error(
+          `[moka-callback] grossAmount tidak valid untuk ${application_order_id}: "${grossAmount}" — skip auto-refund`
+        );
+        if (REFUND_GROUP_ID) {
+          await sendWA(
+            REFUND_GROUP_ID,
+            `🚨 *ORDER REJECTED — REFUND SKIP*\n\n` +
+            `Order ID : ${application_order_id}\n` +
+            `Reason   : grossAmount tidak ada / tidak valid di Blobs\n` +
+            `Value    : ${JSON.stringify(grossAmount)}\n\n` +
+            `Cek Midtrans dashboard dan proses refund manual.`
+          );
+        }
+        // Tetap kirim WA ke customer kalau ada phone, tapi tanpa info nominal
+        if (customerPhone) {
+          await sendWA(
+            customerPhone,
+            `😔 *Pesanan tidak bisa diproses*\n\n` +
+            `Halo ${customerName}, maaf pesananmu tidak bisa kami proses saat ini.\n\n` +
+            `Tim kami akan menghubungimu untuk proses refund dalam *1 jam* ya 🙏\n\n` +
+            `_Sector Seven Coffee_`
+          );
+        }
+        break;
+      }
+
+      const nominalText   = formatRupiah(refundAmount);
+      const timestampText = formatTimestamp(orderTimestamp) || "—";
+      const menuText      = itemList || "—";
+
+      if (customerPhone) {
+        // ── Auto refund ke Midtrans ───────────────────────────────────────────
         let refundSuccess = false;
         let refundError   = "";
 
-        if (grossAmount) {
-          try {
-            await refundMidtrans(application_order_id, grossAmount);
-            refundSuccess = true;
-            console.log(`[moka-callback] Auto refund berhasil: ${application_order_id}`);
-          } catch (err) {
-            refundError = err.message;
-            console.error(`[moka-callback] Auto refund gagal: ${err.message}`);
-            // Alert ke grup jika refund gagal
-            if (REFUND_GROUP_ID) {
-              await sendWA(REFUND_GROUP_ID,
-                `⚠️ *AUTO REFUND GAGAL*\n\n` +
-                `Order ID : ${application_order_id}\n` +
-                `Nominal  : ${nominalText}\n` +
-                `Error    : ${refundError}\n\n` +
-                `Proses refund manual via Midtrans dashboard.`
-              );
-            }
+        try {
+          await refundMidtrans(application_order_id, refundAmount);
+          refundSuccess = true;
+          console.log(`[moka-callback] Auto refund berhasil: ${application_order_id}`);
+        } catch (err) {
+          refundError = err.message;
+          console.error(`[moka-callback] Auto refund gagal: ${err.message}`);
+          if (REFUND_GROUP_ID) {
+            await sendWA(
+              REFUND_GROUP_ID,
+              `⚠️ *AUTO REFUND GAGAL*\n\n` +
+              `Order ID : ${application_order_id}\n` +
+              `Nominal  : ${nominalText}\n` +
+              `Error    : ${refundError}\n\n` +
+              `Proses refund manual via Midtrans dashboard.`
+            );
           }
         }
 
-        // ── Bubble 1: Info pesanan ditolak + status refund ───────────────────────
-        const msg1 = refundSuccess
+        // ── WA ke customer ────────────────────────────────────────────────────
+        const msg = refundSuccess
           ? `😔 *Pesanan tidak bisa diproses*\n\n` +
             `Halo ${customerName}, pesanan tidak bisa kami proses saat ini.\n\n` +
             `Order ID: *${application_order_id}*\n` +
@@ -282,8 +315,7 @@ export const handler = async (event) => {
             `Tim kami akan memproses refund dalam *1 jam*.\n` +
             `Silakan kirim data refund kamu di pesan berikutnya 👇`;
 
-        await sendWA(customerPhone, msg1);
-
+        await sendWA(customerPhone, msg);
         console.log(`[moka-callback] Rejected flow selesai — refundSuccess: ${refundSuccess}`);
 
       } else {
@@ -294,7 +326,7 @@ export const handler = async (event) => {
             REFUND_GROUP_ID,
             `⚠️ *ORDER REJECTED — NO CUSTOMER PHONE*\n\n` +
             `Order ID : ${application_order_id}\n` +
-            `Total    : ${formatRupiah(grossAmount)}\n\n` +
+            `Total    : ${nominalText}\n\n` +
             `Customer tidak bisa dihubungi via WA. Proses manual.`
           );
         }
