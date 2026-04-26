@@ -15,12 +15,13 @@ import { menuItems, isActiveRoute } from "../../data/navbarData";
 import useAnalytics from "../../hooks/useAnalytics";
 import { TYPOGRAPHY } from "../../styles/designSystem";
 import {
-  LuHome, LuInfo, LuLayoutGrid, LuStore, LuPhone, LuUtensilsCrossed,
+  LuHome, LuInfo, LuLayoutGrid, LuStore, LuPhone, LuUtensilsCrossed, LuStar,
 } from "react-icons/lu";
 
 const iconMap = {
   Home: <LuHome size={20} />,
   About: <LuInfo size={20} />,
+  Loyalty: <LuStar size={20} />,
   Menu: <LuLayoutGrid size={20} />,
   Store: <LuStore size={20} />,
   Contact: <LuPhone size={20} />,
