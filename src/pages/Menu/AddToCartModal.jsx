@@ -59,13 +59,22 @@ const AddToCartModal = ({
   );
 
   // ── Initial state ─────────────────────────────────────────────────────────
-  const [selectedVariantId, setSelectedVariantId] = useState(
-    () => variants?.[0]?.id ?? null
-  );
+  const [selectedVariantId, setSelectedVariantId] = useState(() => {
+    if (!variants?.length) return null;
+    const regular = variants.find((v) =>
+      v.name?.toLowerCase().includes("regular")
+    );
+    return (regular ?? variants[0]).id;
+  });
   const [selectedMods, setSelectedMods] = useState(() => {
     const init = {};
     modifierGroups.forEach((g) => {
-      if (g.options.length > 0) init[g.id] = g.options[0].id;
+      if (g.options.length > 0) {
+        const normal = g.options.find((o) =>
+          o.name?.toLowerCase().includes("normal")
+        );
+        init[g.id] = (normal ?? g.options[0]).id;
+      }
     });
     return init;
   });
