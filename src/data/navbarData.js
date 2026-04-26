@@ -5,6 +5,7 @@
 
 export const menuItems = [
 { name: "About", path: "/about" },
+{ name: "Loyalty", path: "/loyalty" },
 { name: "Menu", path: "/menu" },
 { name: "Store", path: "/store" },
 // { name: "News", path: "/news" }, //
