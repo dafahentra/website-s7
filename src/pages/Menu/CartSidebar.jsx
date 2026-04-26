@@ -101,7 +101,7 @@ const CustomerInfoModal = React.memo(({
           <textarea
             value={orderNote}
             onChange={(e) => { setOrderNote(e.target.value); save({ orderNote: e.target.value }); }}
-            placeholder="Contoh: less ice, no sugar, extra hot..."
+            placeholder="Contoh: jam pickup, less ice, no sugar...."
             rows={2} maxLength={200}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium text-gray-800 placeholder-gray-300 outline-none transition-all focus:border-orange-400 focus:bg-white resize-none"
           />
