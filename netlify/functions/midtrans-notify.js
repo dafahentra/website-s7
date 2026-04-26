@@ -365,7 +365,6 @@ export const handler = async (event) => {
         method:  "POST",
         headers: {
           "Title":        "Order Masuk! " + formatRupiah(gross_amount),
-          "Priority":     "urgent",
           "Tags":         "bell",
           "Content-Type": "text/plain; charset=utf-8",
         },
