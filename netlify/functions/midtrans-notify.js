@@ -7,15 +7,8 @@
  *   2. Cek settlement / capture+accept
  *   3. Baca orderData dari Blobs (key = orderData, disimpan oleh save-pending-order.js)
  *   4. Submit order ke Moka via moka-checkout
- *   5. Kalau Moka gagal → auto-refund + alert grup + ntfy URGENT
- *   6. Update Blobs: mokaStatus = "submitted" + mokaSubmittedAt
- *   7. Notif grup TEST + ntfy "Order Masuk" ke tablet kasir
- *   8. Kirim WA receipt ke customer
- *
- * Tambahan baru (vs versi sebelumnya):
- *   - URGENT alert kalau pending data hilang dari Blobs (Moka tidak punya order
- *     tapi customer sudah bayar) — wajib manual handling.
- *   - URGENT alert kalau Moka gagal + auto-refund juga gagal.
+ *   5. Simpan grossAmount ke Blobs (dipakai moka-callback saat rejected)
+ *   6. Kirim WA receipt ke customer
  */
 
 import crypto from "crypto";
@@ -60,8 +53,8 @@ function formatWaktuWIB(dateStr) {
 
 function formatRupiah(amount) {
   return new Intl.NumberFormat("id-ID", {
-    style:                 "currency",
-    currency:              "IDR",
+    style:                "currency",
+    currency:             "IDR",
     minimumFractionDigits: 0,
   }).format(amount);
 }
@@ -79,28 +72,6 @@ async function sendWA(target, message) {
   } catch (err) {
     console.error("[sendWA] Error:", err.message);
     return null;
-  }
-}
-
-// ─── ntfy helper inline (priority 5 = urgent, untuk alert manual handling) ─
-async function ntfyAlert(title, message, tags = "rotating_light", click = "") {
-  const topic = process.env.NTFY_TOPIC;
-  if (!topic) return;
-  try {
-    const headers = {
-      "Content-Type": "text/plain; charset=utf-8",
-      "Title":        String(title).slice(0, 250),
-      "Priority":     "5",
-      "Tags":         tags,
-    };
-    if (click) headers.Click = click;
-    await fetch(`https://ntfy.sh/${topic}`, {
-      method:  "POST",
-      headers,
-      body:    String(message).slice(0, 4096),
-    });
-  } catch (e) {
-    console.error("[midtrans-notify][ntfyAlert]", e.message);
   }
 }
 
@@ -179,11 +150,7 @@ export const handler = async (event) => {
 
     if (pendingData) {
       // Idempotency guard — kalau sudah diproses sebelumnya, skip Moka submit
-      if (
-        pendingData.mokaStatus === "submitted" ||
-        pendingData.mokaStatus === "expired" ||
-        pendingData.mokaStatus === "refunded"
-      ) {
+      if (pendingData.mokaStatus === "submitted" || pendingData.mokaStatus === "expired" || pendingData.mokaStatus === "refunded") {
         console.log(`[midtrans-notify] ${order_id} sudah pernah diproses (${pendingData.mokaStatus}) — skip Moka submit, kirim WA saja`);
         orderData = null; // skip submit ke Moka
       } else {
@@ -200,30 +167,6 @@ export const handler = async (event) => {
     console.error(`[Blobs] Error: ${err.message}`);
   }
 
-  // ── 3b. ALERT URGENT — pending data hilang total ──────────────────────────────
-  // Customer SUDAH BAYAR tapi data order tidak ada di Blobs.
-  // Kasir TIDAK akan tahu order ini — wajib manual handling.
-  if (!pendingData) {
-    ntfyAlert(
-      `🚨 Payment Settled WITHOUT Pending Data: ${order_id}`,
-      [
-        `Order ID: ${order_id}`,
-        `Total: ${formatRupiah(gross_amount)}`,
-        `Waktu: ${formatWaktuWIB(transaction_time)}`,
-        "",
-        "⚠️ Customer sudah BAYAR tapi data order tidak ada di Blobs!",
-        "Kasir TIDAK tahu ada order ini.",
-        "",
-        "ACTION:",
-        "1. Cek Midtrans Dashboard untuk customer detail",
-        "2. Input order manual ke Moka POS",
-        "3. ATAU refund manual via Midtrans Dashboard",
-      ].join("\n"),
-      "rotating_light,money_with_wings",
-      `https://dashboard.midtrans.com/beta/transactions?search=${order_id}`
-    );
-  }
-
   // ── 4. Submit order ke Moka ───────────────────────────────────────────────────
   if (orderData) {
     try {
@@ -235,7 +178,6 @@ export const handler = async (event) => {
         );
       }
       await submitOrderToMoka(orderData);
-
       // Simpan timestamp submit ke Moka — dipakai check-expired-orders untuk deteksi EXPIRED
       if (pendingData) {
         try {
@@ -258,11 +200,11 @@ export const handler = async (event) => {
       try {
         const auth = Buffer.from(`${MIDTRANS_SERVER_KEY}:`).toString("base64");
         const refundRes = await fetch(`https://api.midtrans.com/v2/${order_id}/refund`, {
-          method:  "POST",
+          method: "POST",
           headers: {
-            Accept:          "application/json",
-            "Content-Type":  "application/json",
-            Authorization:   `Basic ${auth}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Basic ${auth}`,
           },
           body: JSON.stringify({
             refund_key: `refund-${order_id}`,
@@ -270,9 +212,8 @@ export const handler = async (event) => {
             reason:     "Pesanan gagal diproses sistem — refund otomatis",
           }),
         });
-        const refundData  = await refundRes.json();
-        const isDuplicate =
-          refundData.status_code === "412" ||
+        const refundData = await refundRes.json();
+        const isDuplicate = refundData.status_code === "412" ||
           (refundData.status_message || "").toLowerCase().includes("duplicate");
         if (isDuplicate || refundData.status_code === "200") {
           refundSuccess = true;
@@ -284,26 +225,7 @@ export const handler = async (event) => {
         console.error("[midtrans-notify] Auto refund gagal:", refundErr.message);
       }
 
-      // ntfy URGENT (kalau auto-refund gagal → lebih kritis)
-      ntfyAlert(
-        refundSuccess
-          ? `⚠️ Moka Failed (Auto-Refunded): ${order_id}`
-          : `🚨 Moka Failed + Refund FAILED: ${order_id}`,
-        [
-          `Order ID: ${order_id}`,
-          `Total: ${formatRupiah(gross_amount)}`,
-          `Customer: ${customerName}`,
-          `Moka Error: ${err.message}`,
-          "",
-          refundSuccess
-            ? "✅ Customer sudah otomatis di-refund."
-            : "❌ Auto-refund GAGAL — wajib refund manual via Midtrans Dashboard!",
-        ].join("\n"),
-        refundSuccess ? "warning,moka" : "rotating_light,money_with_wings",
-        `https://dashboard.midtrans.com/beta/transactions?search=${order_id}`
-      );
-
-      // Alert ke grup WA
+      // Alert ke grup
       if (REFUND_GROUP_ID) {
         await sendWA(
           REFUND_GROUP_ID,
@@ -337,7 +259,7 @@ export const handler = async (event) => {
     console.warn(`[midtrans-notify] orderData null untuk ${order_id} — skip Moka submit`);
   }
 
-  // ── 5. Notif grup TEST + ntfy ke tablet kasir ────────────────────────────────
+  // ── 5. Notif ke grup TEST + ntfy ─────────────────────────────────────────────
   const itemListGrup = orderItems.length > 0
     ? orderItems.map((i) => `  • ${i.name} x${i.qty}`).join("\n")
     : "-";
@@ -357,16 +279,19 @@ export const handler = async (event) => {
     notifTasks.push(sendWA(REFUND_GROUP_ID, grupMsg));
   }
 
-  // ntfy push notification ke tablet (existing flow — tidak diubah)
+  // ntfy push notification ke tablet
   const NTFY_TOPIC = process.env.NTFY_TOPIC;
   if (NTFY_TOPIC) {
     notifTasks.push(
       fetch("https://ntfy.sh/" + NTFY_TOPIC, {
-        method:  "POST",
+        method: "POST",
         headers: {
           "Title":        "Order Masuk! " + formatRupiah(gross_amount),
           "Priority":     "urgent",
           "Tags":         "bell",
+          "Title":    "Order Masuk! " + formatRupiah(gross_amount),
+          "Priority": "urgent",
+          "Tags":     "bell,coffee",
           "Content-Type": "text/plain; charset=utf-8",
         },
         body: customerName + " - " + formatRupiah(gross_amount) + "\n" + itemListGrup,

@@ -5,36 +5,10 @@
 const SHEETS_URL    = process.env.LOYALTY_SHEETS_URL;
 const SHEETS_SECRET = process.env.LOYALTY_SHEETS_SECRET || "s7loyalty2026";
 
-// HARUS sync dengan REWARDS di loyalty-redeem.js — sama persis
 const REWARDS = [
-  {
-    id:               "tier_130",
-    points:           130,
-    label:            "Free Regular Drink",
-    description:      "Klaim 1 minuman regular size (coffee atau matcha based)",
-    mokaDiscountName: "REWARD_130PTS",
-  },
-  {
-    id:               "tier_170",
-    points:           170,
-    label:            "Free Large Drink",
-    description:      "Klaim 1 minuman large size (coffee atau matcha based)",
-    mokaDiscountName: "REWARD_170PTS",
-  },
-  {
-    id:               "tier_200",
-    points:           200,
-    label:            "Coffee Combo",
-    description:      "1 regular + 1 large coffee, ATAU 1 regular coffee + pastry/sourdough",
-    mokaDiscountName: "REWARD_200PTS",
-  },
-  {
-    id:               "tier_240",
-    points:           240,
-    label:            "Matcha Combo",
-    description:      "1 regular + 1 large matcha, ATAU 1 regular matcha + pastry/sourdough",
-    mokaDiscountName: "REWARD_240PTS",
-  },
+  { id: "free_regular",  points: 100,  label: "Free Regular Drink",     description: "Claim 1 free any regular-sized beverage",  mokaDiscountName: "REWARD_100PTS"  },
+  { id: "free_large", points: 120,  label: "Free Large Drink", description: "Claim 1 free any large-sized beverage", mokaDiscountName: "REWARD_120PTS"  },
+  { id: "free_combo",   points: 180, label: "Free Combo",   description: "Claim 2 regular drinks OR 1 regular drink + pastry",   mokaDiscountName: "REWARD_180PTS" },
 ];
 
 function normalizePhone(phone) {
@@ -50,55 +24,27 @@ async function sheetsGet(params) {
 }
 
 export const handler = async (event) => {
-  const cors = {
-    "Access-Control-Allow-Origin": "*",
-    "Content-Type":                "application/json",
-  };
-
+  const cors = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: cors, body: "" };
 
   try {
-    const phone = event.queryStringParameters?.phone;
-    if (!phone) {
-      return {
-        statusCode: 400, headers: cors,
-        body: JSON.stringify({ error: "phone required" }),
-      };
-    }
+    const phone      = event.queryStringParameters?.phone;
+    if (!phone) return { statusCode: 400, headers: cors, body: JSON.stringify({ error: "phone required" }) };
 
     const normalized = normalizePhone(phone);
     const data       = await sheetsGet({ action: "get_customer", phone: normalized });
 
     if (!data.found) {
-      return {
-        statusCode: 200, headers: cors,
-        body: JSON.stringify({
-          found:      false,
-          phone:      normalized,
-          allRewards: REWARDS,
-        }),
-      };
+      return { statusCode: 200, headers: cors, body: JSON.stringify({ found: false, phone: normalized, allRewards: REWARDS }) };
     }
 
     const availableRewards = REWARDS.filter((r) => data.points >= r.points);
-
     return {
       statusCode: 200, headers: cors,
-      body: JSON.stringify({
-        found:            true,
-        phone:            data.phone,
-        name:             data.name,
-        points:           data.points,
-        availableRewards,
-        allRewards:       REWARDS,
-        history:          data.history || [],
-      }),
+      body: JSON.stringify({ found: true, phone: data.phone, name: data.name, points: data.points, availableRewards, allRewards: REWARDS, history: data.history || [] }),
     };
   } catch (err) {
     console.error("[loyalty-get] Error:", err.message);
-    return {
-      statusCode: 500, headers: cors,
-      body: JSON.stringify({ error: err.message }),
-    };
+    return { statusCode: 500, headers: cors, body: JSON.stringify({ error: err.message }) };
   }
 };
