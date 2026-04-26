@@ -9,7 +9,7 @@
  *
  * Flow per status:
  *   accepted  → kirim WA ke customer: pesanan dikonfirmasi, sedang dibuat
- *   rejected  → auto-refund Midtrans + kirim WA ke customer
+ *   rejected  → auto-refund Midtrans + kirim WA ke customer (tanpa notif grup)
  *   completed → kirim WA ke customer + tambah loyalty point
  *
  * ENV yang dibutuhkan:
@@ -245,17 +245,7 @@ export const handler = async (event) => {
         console.error(
           `[moka-callback] grossAmount tidak valid untuk ${application_order_id}: "${grossAmount}" — skip auto-refund`
         );
-        if (REFUND_GROUP_ID) {
-          await sendWA(
-            REFUND_GROUP_ID,
-            `🚨 *ORDER REJECTED — REFUND SKIP*\n\n` +
-            `Order ID : ${application_order_id}\n` +
-            `Reason   : grossAmount tidak ada / tidak valid di Blobs\n` +
-            `Value    : ${JSON.stringify(grossAmount)}\n\n` +
-            `Cek Midtrans dashboard dan proses refund manual.`
-          );
-        }
-        // Tetap kirim WA ke customer kalau ada phone, tapi tanpa info nominal
+          // Kirim WA ke customer kalau ada phone, tapi tanpa info nominal
         if (customerPhone) {
           await sendWA(
             customerPhone,
@@ -284,16 +274,6 @@ export const handler = async (event) => {
         } catch (err) {
           refundError = err.message;
           console.error(`[moka-callback] Auto refund gagal: ${err.message}`);
-          if (REFUND_GROUP_ID) {
-            await sendWA(
-              REFUND_GROUP_ID,
-              `⚠️ *AUTO REFUND GAGAL*\n\n` +
-              `Order ID : ${application_order_id}\n` +
-              `Nominal  : ${nominalText}\n` +
-              `Error    : ${refundError}\n\n` +
-              `Proses refund manual via Midtrans dashboard.`
-            );
-          }
         }
 
         // ── WA ke customer ────────────────────────────────────────────────────
@@ -319,17 +299,8 @@ export const handler = async (event) => {
         console.log(`[moka-callback] Rejected flow selesai — refundSuccess: ${refundSuccess}`);
 
       } else {
-        // Tidak ada nomor customer — alert langsung ke grup TEST
-        console.warn(`[moka-callback] customerPhone tidak ada untuk ${application_order_id}`);
-        if (REFUND_GROUP_ID) {
-          await sendWA(
-            REFUND_GROUP_ID,
-            `⚠️ *ORDER REJECTED — NO CUSTOMER PHONE*\n\n` +
-            `Order ID : ${application_order_id}\n` +
-            `Total    : ${nominalText}\n\n` +
-            `Customer tidak bisa dihubungi via WA. Proses manual.`
-          );
-        }
+        // Tidak ada nomor customer — log saja, tidak ada notif grup
+        console.warn(`[moka-callback] customerPhone tidak ada untuk ${application_order_id} — refund ${nominalText} sudah diproses`);
       }
       break;
     }
