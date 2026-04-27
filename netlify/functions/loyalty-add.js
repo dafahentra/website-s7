@@ -115,7 +115,7 @@ export const handler = async (event) => {
 
     // ── WA notif ────────────────────────────────────────────────────────
     const bonusLine = bonusPts > 0
-      ? `\n🎉 *Bonus campaign: +${bonusPts} pts!*`
+      ? `\n🎉 *Bonus points: +${bonusPts} pts!*`
       : "";
 
     await sendWA(normalized,
