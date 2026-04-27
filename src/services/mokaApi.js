@@ -1,7 +1,6 @@
 // src/services/mokaApi.js
 const BASE = "/.netlify/functions";
 
-// ── Fetch items dari Moka ─────────────────────────────────────────────────────
 export async function fetchItems() {
   const res = await fetch(`${BASE}/moka-items`);
   if (!res.ok) {
@@ -12,13 +11,23 @@ export async function fetchItems() {
   return data.items ?? [];
 }
 
-// ── Kirim order ke Moka Advanced Ordering ────────────────────────────────────
-// extra opsional — berisi { final_price, price_context? }
-// final_price selalu dikirim (untuk disimpan di Blobs).
-// price_context hanya dikirim untuk free order (validasi server-side).
+// Simpan order ke Blobs SEBELUM payment — dipanggil frontend.
+// midtrans-notify akan baca ini setelah settlement → submit ke Moka.
+export async function savePendingOrder(payload) {
+  const res = await fetch(`${BASE}/save-pending-order`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error || `save-pending-order failed: ${res.status}`);
+  return data;
+}
+
+// Submit order ke Moka — dipanggil untuk FREE order dari frontend.
+// Untuk paid order, hanya dipanggil oleh midtrans-notify (server-side).
 export async function submitOrder(orderPayload, extra = null) {
   const body = { order: orderPayload, ...(extra || {}) };
-
   const res = await fetch(`${BASE}/moka-checkout`, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
@@ -29,7 +38,6 @@ export async function submitOrder(orderPayload, extra = null) {
   return data;
 }
 
-// ── Buat Midtrans SNAP token ──────────────────────────────────────────────────
 export async function getMidtransToken({ order_id, amount, customer, items }) {
   const res = await fetch(`${BASE}/midtrans-token`, {
     method:  "POST",
@@ -38,25 +46,19 @@ export async function getMidtransToken({ order_id, amount, customer, items }) {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data?.error || `midtrans-token failed: ${res.status}`);
-  return data; // { token, redirect_url }
+  return data;
 }
 
-// ── Validasi kode diskon dari Moka ───────────────────────────────────────────
 export async function validateDiscount({ code, orderTotal }) {
   const res = await fetch(`${BASE}/validate-discount`, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
     body:    JSON.stringify({ code, orderTotal }),
   });
-
   const data = await res.json().catch(() => ({
     valid: false,
     error: "Response tidak valid dari server",
   }));
-
-  if (!res.ok) {
-    throw new Error(data?.error || `validate-discount failed: ${res.status}`);
-  }
-
+  if (!res.ok) throw new Error(data?.error || `validate-discount failed: ${res.status}`);
   return data;
 }
