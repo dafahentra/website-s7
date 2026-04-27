@@ -3,22 +3,23 @@
  * Netlify Function — Menerima webhook status order dari Moka (Advanced Ordering)
  *
  * Dipasang sebagai callback URL saat submit order ke Moka:
- *   cancel_order_notification_url   → https://sectorseven.space/.netlify/functions/moka-callback?secret=<MOKA_WEBHOOK_SECRET>
- *   accept_order_notification_url   → https://sectorseven.space/.netlify/functions/moka-callback?secret=<MOKA_WEBHOOK_SECRET>
- *   complete_order_notification_url → https://sectorseven.space/.netlify/functions/moka-callback?secret=<MOKA_WEBHOOK_SECRET>
+ *   cancel_order_notification_url   → .../moka-callback?secret=<MOKA_WEBHOOK_SECRET>
+ *   accept_order_notification_url   → .../moka-callback?secret=<MOKA_WEBHOOK_SECRET>
+ *   complete_order_notification_url → .../moka-callback?secret=<MOKA_WEBHOOK_SECRET>
  *
  * Flow per status:
  *   accepted  → kirim WA ke customer: pesanan dikonfirmasi, sedang dibuat
- *   rejected  → auto-refund Midtrans + kirim WA ke customer (tanpa notif grup)
+ *   rejected  → auto-refund Midtrans + kirim WA ke customer
  *   completed → kirim WA ke customer + tambah loyalty point
  *
- * ENV yang dibutuhkan:
- *   FONNTE_TOKEN
- *   REFUND_GROUP_ID   — ID grup WA TEST, cth: 120363xxxxxx@g.us
- *   NETLIFY_SITE_ID
- *   NETLIFY_API_TOKEN
- *   MIDTRANS_SERVER_KEY
- *   MOKA_WEBHOOK_SECRET  — secret untuk validasi webhook (opsional tapi dianjurkan)
+ * Perubahan:
+ *   [FIX] grossAmount fallback ke clientFinalPrice dari Blobs.
+ *   moka-checkout.js sekarang menyimpan clientFinalPrice saat save-pending-order.
+ *   Ini mencegah race condition: Moka callback fire sebelum midtrans-notify
+ *   → grossAmount null → refund/loyalty gagal.
+ *
+ *   [FIX] Free order (clientFinalPrice = 0) yang di-reject kasir
+ *   → skip refund (tidak ada transaksi Midtrans).
  */
 
 import { getStore } from "@netlify/blobs";
@@ -107,7 +108,6 @@ async function refundMidtrans(orderId, amount) {
   const data = await res.json();
   console.log(`[refundMidtrans] ${orderId} → status: ${data.status_code} | ${data.status_message}`);
 
-  // 200 = sukses, 412 = duplicate refund key (sudah pernah direfund) → treat sukses
   const isDuplicate = data.status_code === "412" ||
     (data.status_message || "").toLowerCase().includes("duplicate");
 
@@ -130,15 +130,13 @@ export const handler = async (event) => {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
-  // ── Security: validasi MOKA_WEBHOOK_SECRET kalau di-set ──────────────────────
-  // Set di Netlify env: MOKA_WEBHOOK_SECRET=<random_string>
-  // Embed di callback URL: .../moka-callback?secret=<random_string>
+  // ── Security: validasi MOKA_WEBHOOK_SECRET ────────────────────────────────────
   const MOKA_WEBHOOK_SECRET = process.env.MOKA_WEBHOOK_SECRET;
   if (MOKA_WEBHOOK_SECRET) {
     const incomingSecret = event.queryStringParameters?.secret || event.headers["x-webhook-secret"];
     if (incomingSecret !== MOKA_WEBHOOK_SECRET) {
       console.warn("[moka-callback] Unauthorized request — bad secret");
-      return { statusCode: 200, body: "OK" }; // Return 200 bukan 401 agar Moka tidak retry
+      return { statusCode: 200, body: "OK" };
     }
   }
 
@@ -168,9 +166,20 @@ export const handler = async (event) => {
 
   const customerPhone  = pendingData?.customerPhone  || null;
   const customerName   = pendingData?.customerName   || "Kak";
-  const grossAmount    = pendingData?.grossAmount    || null;
   const items          = pendingData?.items          || [];
-  const orderTimestamp = pendingData?.orderTimestamp || null;
+  const orderTimestamp = pendingData?.orderTimestamp  || null;
+
+  // ── Resolve grossAmount: Midtrans (paling trusted) → clientFinalPrice (fallback)
+  // grossAmount ditulis oleh midtrans-notify setelah payment settled.
+  // clientFinalPrice ditulis oleh moka-checkout saat order pertama kali dibuat.
+  // Jika Moka callback fire sebelum midtrans-notify → grossAmount null → pakai fallback.
+  const grossAmount = pendingData?.grossAmount ?? pendingData?.clientFinalPrice ?? null;
+
+  if (!pendingData?.grossAmount && pendingData?.clientFinalPrice != null) {
+    console.log(
+      `[moka-callback] grossAmount null — fallback ke clientFinalPrice: ${pendingData.clientFinalPrice}`
+    );
+  }
 
   const itemList = items.length > 0
     ? items.map((i) => `  • ${i.name} x${i.qty}`).join("\n")
@@ -207,7 +216,8 @@ export const handler = async (event) => {
         const siteUrl = process.env.URL || "https://sectorseven.space";
         const tasks   = [sendWA(customerPhone, msg)];
 
-        if (grossAmount) {
+        // Loyalty points — skip jika grossAmount = 0 (free order)
+        if (grossAmount && Number(grossAmount) > 0) {
           tasks.push(
             fetch(`${siteUrl}/.netlify/functions/loyalty-add`, {
               method:  "POST",
@@ -234,18 +244,29 @@ export const handler = async (event) => {
 
     // ── REJECTED ────────────────────────────────────────────────────────────────
     case "rejected": {
-
-      // ── Guard: pastikan grossAmount valid sebelum refund ──────────────────────
-      // grossAmount disimpan oleh midtrans-notify.js setelah payment settled.
-      // Kalau null/NaN berarti data Blobs korup atau webhook Moka datang
-      // sebelum midtrans-notify selesai (sangat unlikely tapi perlu di-handle).
       const refundAmount = grossAmount ? Math.round(Number(grossAmount)) : null;
 
+      // ── Free order yang di-reject → tidak ada pembayaran Midtrans ──────────
+      // Cukup kirim WA, skip refund.
+      if (refundAmount === 0) {
+        console.log(`[moka-callback] Free order rejected: ${application_order_id} — no refund needed`);
+        if (customerPhone) {
+          await sendWA(
+            customerPhone,
+            `😔 *Pesanan tidak bisa diproses*\n\n` +
+            `Halo ${customerName}, maaf pesananmu tidak bisa kami proses saat ini.\n\n` +
+            `Karena ini pesanan gratis, tidak ada refund yang perlu diproses.\n\n` +
+            `_Sector Seven Coffee_`
+          );
+        }
+        break;
+      }
+
+      // ── Guard: grossAmount harus valid untuk refund ────────────────────────
       if (!refundAmount || refundAmount <= 0) {
         console.error(
           `[moka-callback] grossAmount tidak valid untuk ${application_order_id}: "${grossAmount}" — skip auto-refund`
         );
-          // Kirim WA ke customer kalau ada phone, tapi tanpa info nominal
         if (customerPhone) {
           await sendWA(
             customerPhone,
@@ -299,7 +320,6 @@ export const handler = async (event) => {
         console.log(`[moka-callback] Rejected flow selesai — refundSuccess: ${refundSuccess}`);
 
       } else {
-        // Tidak ada nomor customer — log saja, tidak ada notif grup
         console.warn(`[moka-callback] customerPhone tidak ada untuk ${application_order_id} — refund ${nominalText} sudah diproses`);
       }
       break;

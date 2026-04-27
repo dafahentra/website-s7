@@ -1,20 +1,20 @@
 // src/hooks/useMokaCheckout.js
 // Flow: submit order ke Moka DULU → buka Midtrans SNAP → redirect handler.
 //
-// Perubahan vs versi sebelumnya:
-// 1. Callback URL diperbaiki: order-notify → moka-callback (fix bug utama).
-// 2. Secret disertakan di callback URL via VITE_MOKA_WEBHOOK_SECRET.
-// 3. Query param phone/name dihapus dari callback URL — moka-callback.js
-//    sudah baca semua data dari Netlify Blobs, tidak perlu query string.
-// 4. [SECURITY] Free order kirim price_context ke server untuk validasi.
-//    Server hitung ulang subtotal + diskon + fee. Jika finalPrice > 0 → reject.
+// Perubahan:
+// 1. Callback URL → moka-callback.js (fix bug utama).
+// 2. Secret via VITE_MOKA_WEBHOOK_SECRET.
+// 3. Query param phone/name dihapus — moka-callback baca dari Blobs.
+// 4. [SECURITY] Free order kirim price_context → server validasi ulang.
+// 5. [FIX] final_price SELALU dikirim ke server → disimpan di Blobs.
+//    Mencegah race condition: Moka callback fire sebelum midtrans-notify
+//    → grossAmount null → refund gagal.
 
 import { useState, useCallback } from "react";
 import { getMidtransToken, submitOrder } from "../services/mokaApi";
 
 const round = (n) => Math.round(Number(n) || 0);
 
-// Sales type ID untuk "Online Order" di Moka.
 const ONLINE_ORDER_SALES_TYPE_ID = 602868;
 
 const NOTIF_BASE = "https://sectorseven.space/.netlify/functions";
@@ -25,13 +25,11 @@ const SNAP_URL = IS_PRODUCTION
   ? "https://app.midtrans.com/snap/snap.js"
   : "https://app.sandbox.midtrans.com/snap/snap.js";
 
-// ─── Callback URL builder ─────────────────────────────────────────────────────
 const MOKA_CB_SECRET = import.meta.env.VITE_MOKA_WEBHOOK_SECRET || "";
 const MOKA_CB_URL = MOKA_CB_SECRET
   ? `${NOTIF_BASE}/moka-callback?secret=${encodeURIComponent(MOKA_CB_SECRET)}`
   : `${NOTIF_BASE}/moka-callback`;
 
-// ─── Random suffix untuk application_order_id ────────────────────────────────
 function randomSuffix() {
   const c = globalThis.crypto || window.crypto;
   const bytes = new Uint8Array(3);
@@ -41,7 +39,6 @@ function randomSuffix() {
     .join("");
 }
 
-// ─── Load Midtrans SNAP script ───────────────────────────────────────────────
 function loadSnapScript(clientKey) {
   return new Promise((resolve, reject) => {
     if (window.snap) return resolve();
@@ -59,7 +56,6 @@ function loadSnapScript(clientKey) {
   });
 }
 
-// ─── Ringkasan item untuk WhatsApp notif ─────────────────────────────────────
 function buildItemsSummary(cart) {
   return cart
     .map((e) => {
@@ -77,7 +73,6 @@ function buildItemsSummary(cart) {
     .join("|");
 }
 
-// ─── VALIDATOR ───────────────────────────────────────────────────────────────
 function assertCartValid(cart) {
   const bad = cart.filter((e) => !e.mokaItemId);
   if (bad.length > 0) {
@@ -89,18 +84,14 @@ function assertCartValid(cart) {
 }
 
 // ─── Bangun payload & submit ke Moka ─────────────────────────────────────────
-// Parameter `priceContext` opsional — hanya dikirim untuk free order.
-async function sendMokaOrder(cart, {
-  applicationOrderId,
-  name,
-  phone,
-  orderNote,
-  discount,
-  discountAmount,
-  onlineFee,
-  finalPrice,
-}, priceContext = null) {
+// serverExtra: { final_price, price_context? } — diteruskan ke moka-checkout.
+async function sendMokaOrder(cart, mokaPayload, serverExtra = null) {
   assertCartValid(cart);
+
+  const {
+    applicationOrderId, name, phone, orderNote,
+    discount, discountAmount, onlineFee, finalPrice,
+  } = mokaPayload;
 
   const hasDiscount = discountAmount > 0 && discount?.mokaId;
 
@@ -174,9 +165,7 @@ async function sendMokaOrder(cart, {
     order_items,
   };
 
-  // submitOrder sekarang kirim { order, price_context } ke moka-checkout.
-  // price_context hanya ada untuk free order — server pakai ini untuk validasi.
-  await submitOrder(orderPayload, priceContext);
+  await submitOrder(orderPayload, serverExtra);
 }
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
@@ -219,27 +208,30 @@ export function useMokaCheckout() {
       };
 
       // ── KASUS KHUSUS: finalPrice ≤ 0 (free order) ──────────────────────
-      // Midtrans menolak amount = 0.
-      // Kirim price_context agar server validasi ulang sebelum submit ke Moka.
       if (finalPrice <= 0) {
-        const priceContext = {
-          isFreeOrder:    true,
-          subtotal,
-          discountCode:   discount?.code || null,
-          discountAmount,
-          onlineFee,
-          finalPrice,
+        const serverExtra = {
+          final_price: finalPrice,
+          price_context: {
+            isFreeOrder:    true,
+            subtotal,
+            discountCode:   discount?.code || null,
+            discountAmount,
+            onlineFee,
+            finalPrice,
+          },
         };
 
         try {
-          await sendMokaOrder(cart, mokaPayload, priceContext);
+          await sendMokaOrder(cart, mokaPayload, serverExtra);
           return { success: true, order_id: applicationOrderId, free: true };
         } catch (err) {
           throw new Error(`Order gagal: ${err.message}`);
         }
       }
 
-      // ── Midtrans item list ──────────────────────────────────────────────
+      // ── Paid order: selalu kirim final_price ke server ──────────────────
+      const serverExtra = { final_price: finalPrice };
+
       const midtransItems = [
         ...cart.map((e) => ({
           id: String(e.mokaVariantId || e.mokaItemId),
@@ -275,7 +267,7 @@ export function useMokaCheckout() {
       ];
 
       // ── 1. Submit order ke Moka DULU ────────────────────────────────────
-      await sendMokaOrder(cart, mokaPayload);
+      await sendMokaOrder(cart, mokaPayload, serverExtra);
 
       // ── 2. Dapat token SNAP dari Midtrans ───────────────────────────────
       const { token } = await getMidtransToken({

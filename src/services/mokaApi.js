@@ -13,10 +13,11 @@ export async function fetchItems() {
 }
 
 // ── Kirim order ke Moka Advanced Ordering ────────────────────────────────────
-// priceContext opsional — hanya dikirim untuk free order (validasi server-side).
-export async function submitOrder(orderPayload, priceContext = null) {
-  const body = { order: orderPayload };
-  if (priceContext) body.price_context = priceContext;
+// extra opsional — berisi { final_price, price_context? }
+// final_price selalu dikirim (untuk disimpan di Blobs).
+// price_context hanya dikirim untuk free order (validasi server-side).
+export async function submitOrder(orderPayload, extra = null) {
+  const body = { order: orderPayload, ...(extra || {}) };
 
   const res = await fetch(`${BASE}/moka-checkout`, {
     method:  "POST",

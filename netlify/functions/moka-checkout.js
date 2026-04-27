@@ -11,13 +11,10 @@
 //   1. validateOrder() — tolak payload invalid sebelum hit Moka API.
 //   2. redactPayload() — PII (nama/phone) tidak muncul plain-text di log Netlify.
 //   3. ntfy alert (inline) kalau Moka response error.
-//      Skip alert untuk error "duplicate" supaya tidak false alarm saat retry.
-//   4. [SECURITY] validateFreeOrder() — server-side recalculation.
-//      Jika frontend klaim free order (finalPrice=0), server validasi ulang:
-//      - Hitung subtotal dari order_items
-//      - Validasi diskon ke Moka API (by discount_id)
-//      - Hitung online fee (mirror rules dari onlineFee.js)
-//      - Jika recalculated finalPrice > 0 → REJECT, harus bayar via Midtrans.
+//   4. [SECURITY] validateFreeOrder() — server-side recalculation untuk free order.
+//   5. [FIX] final_price dari frontend disimpan sebagai clientFinalPrice di Blobs.
+//      Ini mencegah race condition: moka-callback fire sebelum midtrans-notify
+//      → grossAmount null → refund/loyalty gagal.
 
 const MOKA_BASE = "https://api.mokapos.com";
 
@@ -34,8 +31,8 @@ const safeJson = async (res) => {
 // ─── Online Fee Rules (mirror dari src/utils/onlineFee.js) ───────────────────
 // ⚠️ SYNC MANUAL: Kalau ubah fee di frontend, HARUS update di sini juga.
 const ONLINE_FEE_RULES = [
-  { maxAmount: 49999, fee: 500  },   // order < Rp50.000 → fee Rp500
-  { maxAmount: Infinity, fee: 1000 }, // order ≥ Rp50.000 → fee Rp1.000
+  { maxAmount: 49999, fee: 500  },
+  { maxAmount: Infinity, fee: 1000 },
 ];
 
 function calcOnlineFee(amountAfterDiscount) {
@@ -156,20 +153,10 @@ function validateOrder(order) {
 }
 
 // ─── [SECURITY] Server-side Free Order Validation ────────────────────────────
-// Dipanggil HANYA ketika frontend klaim isFreeOrder = true (finalPrice ≤ 0).
-// Panggilan dari midtrans-notify TIDAK kirim price_context → skip validasi ini.
-//
-// Langkah:
-//   1. Hitung subtotal dari order_items (harga × qty)
-//   2. Jika ada discount_id di order → query Moka API, hitung diskon
-//   3. afterDiscount = subtotal - discountAmount
-//   4. Hitung online fee dari afterDiscount
-//   5. serverFinalPrice = afterDiscount + onlineFee
-//   6. Jika serverFinalPrice > 0 → REJECT
 async function validateFreeOrder(order, priceContext, mokaToken) {
   const outletId = process.env.MOKA_OUTLET_ID;
 
-  // ── 1. Hitung subtotal dari order_items ────────────────────────────────
+  // 1. Hitung subtotal dari order_items
   const serverSubtotal = (order.order_items || []).reduce((sum, item) => {
     const basePrice = Number(item.item_price_library) || 0;
     const modSum    = (item.item_modifiers || []).reduce(
@@ -178,9 +165,7 @@ async function validateFreeOrder(order, priceContext, mokaToken) {
     return sum + (basePrice + modSum) * (Number(item.quantity) || 1);
   }, 0);
 
-  console.log(`[price-validate] serverSubtotal = ${serverSubtotal}`);
-
-  // ── 2. Validasi diskon ke Moka API ─────────────────────────────────────
+  // 2. Validasi diskon ke Moka API
   let serverDiscountAmount = 0;
 
   if (order.discount_id) {
@@ -192,7 +177,6 @@ async function validateFreeOrder(order, priceContext, mokaToken) {
       const discData = await safeJson(discRes);
       const discounts = discData?.data?.discount ?? [];
 
-      // Cari berdasarkan ID (lebih aman daripada nama)
       const matched = discounts.find(
         (d) => !d.is_deleted && d.id === order.discount_id
       );
@@ -208,7 +192,6 @@ async function validateFreeOrder(order, priceContext, mokaToken) {
       if (matched.type === "percentage") {
         serverDiscountAmount = Math.round((serverSubtotal * amount) / 100);
       } else {
-        // cash — cap ke subtotal agar tidak negatif
         serverDiscountAmount = Math.min(amount, serverSubtotal);
       }
 
@@ -221,23 +204,20 @@ async function validateFreeOrder(order, priceContext, mokaToken) {
     }
   }
 
-  // ── 3. Hitung online fee ───────────────────────────────────────────────
+  // 3. Hitung online fee + final price
   const afterDiscount   = Math.max(0, serverSubtotal - serverDiscountAmount);
   const serverOnlineFee = calcOnlineFee(afterDiscount);
-
-  // ── 4. Final price ─────────────────────────────────────────────────────
   const serverFinalPrice = afterDiscount + serverOnlineFee;
 
   console.log(
-    `[price-validate] afterDiscount=${afterDiscount} onlineFee=${serverOnlineFee} ` +
-    `finalPrice=${serverFinalPrice}`
+    `[price-validate] subtotal=${serverSubtotal} disc=${serverDiscountAmount} ` +
+    `afterDisc=${afterDiscount} fee=${serverOnlineFee} final=${serverFinalPrice}`
   );
 
-  // ── 5. Verdict ─────────────────────────────────────────────────────────
   if (serverFinalPrice > 0) {
     return {
       valid:            false,
-      reason:           `Server hitung finalPrice = Rp${serverFinalPrice} (subtotal=${serverSubtotal}, disc=${serverDiscountAmount}, fee=${serverOnlineFee}). Harus bayar via Midtrans.`,
+      reason:           `Server: finalPrice=Rp${serverFinalPrice} (sub=${serverSubtotal} disc=${serverDiscountAmount} fee=${serverOnlineFee}). Harus bayar via Midtrans.`,
       serverFinalPrice,
       serverOnlineFee,
     };
@@ -288,6 +268,12 @@ export const handler = async (event) => {
     order = parsed.order;
     const priceContext = parsed.price_context || null;
 
+    // final_price dari frontend — disimpan di Blobs sebagai fallback
+    // untuk moka-callback jika grossAmount belum ada dari midtrans-notify.
+    const clientFinalPrice = typeof parsed.final_price === "number"
+      ? parsed.final_price
+      : null;
+
     // ── 1. Validasi payload ──────────────────────────────────────────────
     const validationError = validateOrder(order);
     if (validationError) {
@@ -309,8 +295,6 @@ export const handler = async (event) => {
     const token = await getValidToken();
 
     // ── 1b. [SECURITY] Validasi harga untuk free order ───────────────────
-    // Frontend kirim price_context.isFreeOrder = true kalau finalPrice ≤ 0.
-    // midtrans-notify TIDAK kirim price_context → langsung proceed (step 3).
     if (priceContext?.isFreeOrder === true) {
       console.log(`[moka-checkout] Free order claimed: ${order.application_order_id} — validating...`);
 
@@ -392,6 +376,8 @@ export const handler = async (event) => {
     }
 
     // ── 4. Simpan pending order ke Blobs (fire-and-forget) ───────────────
+    // clientFinalPrice disimpan agar moka-callback punya fallback
+    // jika grossAmount belum ditulis oleh midtrans-notify.
     const siteUrl = process.env.URL || "https://sectorseven.space";
     fetch(`${siteUrl}/.netlify/functions/save-pending-order`, {
       method:  "POST",
@@ -399,6 +385,7 @@ export const handler = async (event) => {
       body: JSON.stringify({
         orderId:      order.application_order_id,
         orderPayload: order,
+        clientFinalPrice,
         customerPhone: order.customer_phone_number
           ? order.customer_phone_number.replace(/^\+/, "").replace(/^0/, "62")
           : null,

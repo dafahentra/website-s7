@@ -1,7 +1,14 @@
 // netlify/functions/save-pending-order.js
 // Simpan order payload ke Netlify Blobs sebelum Midtrans dibuka.
-// Dipanggil oleh useMokaCheckout.js (frontend) sebelum buka SNAP.
-// Data dibaca oleh midtrans-notify.js setelah settlement untuk submit ke Moka.
+// Dipanggil oleh moka-checkout.js setelah order berhasil masuk Moka.
+// Data dibaca oleh:
+//   - midtrans-notify.js → setelah settlement, tulis grossAmount
+//   - moka-callback.js   → saat kasir accept/reject/complete
+//
+// Perubahan:
+//   [FIX] Simpan clientFinalPrice dari frontend.
+//   moka-callback.js pakai ini sebagai fallback jika grossAmount
+//   belum ditulis oleh midtrans-notify (race condition).
 
 import { getStore } from "@netlify/blobs";
 
@@ -20,8 +27,7 @@ export const handler = async (event) => {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
-  // Hanya boleh dipanggil dari internal (frontend via relative URL)
-  // Validasi origin — hanya dari domain sendiri
+  // Hanya boleh dipanggil dari internal
   const origin  = event.headers["origin"] || "";
   const referer = event.headers["referer"] || "";
   const allowed = ["https://sectorseven.space", "http://localhost"];
@@ -39,6 +45,7 @@ export const handler = async (event) => {
       customerPhone,
       customerName,
       grossAmount,
+      clientFinalPrice,
       orderTimestamp,
       items,
     } = body;
@@ -55,23 +62,26 @@ export const handler = async (event) => {
 
     const store = getBlobsStore("pending-orders");
 
-    // Simpan dengan key "orderData" — konsisten dengan midtrans-notify.js dan retry-order.js
     await store.setJSON(
       orderId,
       {
         orderId,
         orderData,
-        customerPhone:  customerPhone  || null,
-        customerName:   customerName   || "Pelanggan",
-        grossAmount:    grossAmount    || null,
-        orderTimestamp: orderTimestamp || new Date().toISOString(),
-        items:          items          || [],
-        savedAt:        new Date().toISOString(),
+        customerPhone:   customerPhone    || null,
+        customerName:    customerName     || "Pelanggan",
+        grossAmount:     grossAmount      || null,
+        clientFinalPrice: typeof clientFinalPrice === "number" ? clientFinalPrice : null,
+        orderTimestamp:  orderTimestamp    || new Date().toISOString(),
+        items:           items            || [],
+        savedAt:         new Date().toISOString(),
       },
       { ttl: 86400 } // 24 jam
     );
 
-    console.log(`[save-pending-order] Saved ${orderId}`);
+    console.log(
+      `[save-pending-order] Saved ${orderId}` +
+      (clientFinalPrice != null ? ` | clientFinalPrice=${clientFinalPrice}` : "")
+    );
 
     return {
       statusCode: 200,
