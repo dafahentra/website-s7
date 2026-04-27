@@ -6,6 +6,8 @@
 // 2. Secret disertakan di callback URL via VITE_MOKA_WEBHOOK_SECRET.
 // 3. Query param phone/name dihapus dari callback URL — moka-callback.js
 //    sudah baca semua data dari Netlify Blobs, tidak perlu query string.
+// 4. [SECURITY] Free order kirim price_context ke server untuk validasi.
+//    Server hitung ulang subtotal + diskon + fee. Jika finalPrice > 0 → reject.
 
 import { useState, useCallback } from "react";
 import { getMidtransToken, submitOrder } from "../services/mokaApi";
@@ -13,7 +15,6 @@ import { getMidtransToken, submitOrder } from "../services/mokaApi";
 const round = (n) => Math.round(Number(n) || 0);
 
 // Sales type ID untuk "Online Order" di Moka.
-// Didapat dari: GET /v1/outlets/{outlet_id}/sales_type (cari name "Online Order")
 const ONLINE_ORDER_SALES_TYPE_ID = 602868;
 
 const NOTIF_BASE = "https://sectorseven.space/.netlify/functions";
@@ -25,10 +26,6 @@ const SNAP_URL = IS_PRODUCTION
   : "https://app.sandbox.midtrans.com/snap/snap.js";
 
 // ─── Callback URL builder ─────────────────────────────────────────────────────
-// Secret disertakan sebagai query param agar moka-callback.js bisa validasi.
-// Nilai diambil dari env VITE_MOKA_WEBHOOK_SECRET (harus sama dengan
-// MOKA_WEBHOOK_SECRET di Netlify env).
-// Jika env tidak di-set, URL tetap valid — secret check di server akan di-skip.
 const MOKA_CB_SECRET = import.meta.env.VITE_MOKA_WEBHOOK_SECRET || "";
 const MOKA_CB_URL = MOKA_CB_SECRET
   ? `${NOTIF_BASE}/moka-callback?secret=${encodeURIComponent(MOKA_CB_SECRET)}`
@@ -92,6 +89,7 @@ function assertCartValid(cart) {
 }
 
 // ─── Bangun payload & submit ke Moka ─────────────────────────────────────────
+// Parameter `priceContext` opsional — hanya dikirim untuk free order.
 async function sendMokaOrder(cart, {
   applicationOrderId,
   name,
@@ -101,7 +99,7 @@ async function sendMokaOrder(cart, {
   discountAmount,
   onlineFee,
   finalPrice,
-}) {
+}, priceContext = null) {
   assertCartValid(cart);
 
   const hasDiscount = discountAmount > 0 && discount?.mokaId;
@@ -160,7 +158,7 @@ async function sendMokaOrder(cart, {
     .slice(0, 13);
   const nameClean = name.trim().slice(0, 50);
 
-  await submitOrder({
+  const orderPayload = {
     application_order_id: applicationOrderId,
     payment_type: "online_orders",
     client_created_at: new Date().toISOString(),
@@ -169,15 +167,16 @@ async function sendMokaOrder(cart, {
     customer_phone_number: phoneClean,
     sales_type_id: ONLINE_ORDER_SALES_TYPE_ID,
     sales_type_name: "Online Order",
-    // Semua event Moka (accepted, completed, rejected/cancelled) diarahkan
-    // ke moka-callback.js. Data customer dibaca dari Blobs — tidak perlu
-    // dikirim ulang via query string.
     accept_order_notification_url:   MOKA_CB_URL,
     complete_order_notification_url: MOKA_CB_URL,
     cancel_order_notification_url:   MOKA_CB_URL,
     ...discountFields,
     order_items,
-  });
+  };
+
+  // submitOrder sekarang kirim { order, price_context } ke moka-checkout.
+  // price_context hanya ada untuk free order — server pakai ini untuk validasi.
+  await submitOrder(orderPayload, priceContext);
 }
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
@@ -219,10 +218,21 @@ export function useMokaCheckout() {
         finalPrice,
       };
 
-      // ── KASUS KHUSUS: diskon 100% (finalPrice = 0) ──────────────────────
+      // ── KASUS KHUSUS: finalPrice ≤ 0 (free order) ──────────────────────
+      // Midtrans menolak amount = 0.
+      // Kirim price_context agar server validasi ulang sebelum submit ke Moka.
       if (finalPrice <= 0) {
+        const priceContext = {
+          isFreeOrder:    true,
+          subtotal,
+          discountCode:   discount?.code || null,
+          discountAmount,
+          onlineFee,
+          finalPrice,
+        };
+
         try {
-          await sendMokaOrder(cart, mokaPayload);
+          await sendMokaOrder(cart, mokaPayload, priceContext);
           return { success: true, order_id: applicationOrderId, free: true };
         } catch (err) {
           throw new Error(`Order gagal: ${err.message}`);
