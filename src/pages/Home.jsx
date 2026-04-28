@@ -24,6 +24,7 @@ return (
     <Story />
     <Follow />
     <Contact />
+    <PromoPopup />
     </>
 );
 };

@@ -5,9 +5,9 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ── KONFIGURASI ───────────────────────────────────────────────────────────────
-import poster from "../assets/test-popup.jpg";
+import poster from "../assets/PopUpPoints.png";
 const POSTER_IMAGE  = poster;
-const CTA_LABEL     = "Klaim Diskon";
+const CTA_LABEL     = "Klaim Poin Sekarang ";
 const CTA_HREF      = "/menu";
 const PROMO_CODE    = "DEPON50"; // ← kode diskon dari Moka (null = tidak ada)
 // ─────────────────────────────────────────────────────────────────────────────
