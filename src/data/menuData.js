@@ -138,7 +138,7 @@ export const menuItems = {
       name: "Green Flag",
       description:
         "Vibrant matcha latte with pure matcha suspended in creamy milk",
-      price: "27.000",
+      price: "25.000",
       image: MatchaLatte,
     },
     {
